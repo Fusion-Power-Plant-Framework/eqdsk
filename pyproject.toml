@@ -1,0 +1,81 @@
+[project]
+name = "eqdsk"
+authors = [{name="The eqdsk team"}]
+description = """A reader writer and converter for the eqdsk format"""
+readme = "README.md"
+requires-python = ">=3.8"
+dynamic=['version']
+classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU Lesser General Public License v2.1 or later (LGPLv2.1+)",
+        "Operating System :: POSIX :: Linux",
+    ]
+dependencies = [
+    "fortranformat",
+    "numpy",
+]
+
+[project.urls]
+homepage = "https://github.com/Fusion-Power-Plant-Framework/eqdsk"
+repository = "https://github.com/Fusion-Power-Plant-Framework/eqdsk"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "flake8-absolute-import",
+    "flake8-bandit",
+    "flake8-docstrings",
+    "pep8-naming",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-html",
+    "pytest-metadata",
+    "pytest-json-report",
+    "sphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    "typeguard",
+    "versioneer",
+]
+
+[build-system]
+requires = ["setuptools", "versioneer[toml]>=0.26"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["eqdsk*"]
+exclude = ["tests*"]
+
+[tool.black]
+line-length = 89
+include = '\.pyi?$'
+extend-exclude = '\.env'
+
+[tool.coverage.report]
+"exclude_lines" = [
+  "if __name__ == .__main__.:"
+]
+"omit" = [
+  "eqdsk/_version.py"
+]
+
+[tool.isort]
+line_length = 89
+profile = "black"
+skip_gitignore = true
+known_first_party = ["eqdsk"]
+
+[tool.pytest.ini_options]
+addopts = "--html=report.html --self-contained-html --strict-markers"
+
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "eqdsk/_version.py"
+versionfile_build = "eqdsk/_version.py"
+tag_prefix = "v"
+parentdir_prefix = "eqdsk-"

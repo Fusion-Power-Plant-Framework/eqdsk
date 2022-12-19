@@ -29,25 +29,24 @@ import numpy as np
 import pytest
 from typeguard import check_type
 
-from bluemira.base.file import get_bluemira_path
-from bluemira.equilibria.file import EQDSKInterface
-from bluemira.utilities.tools import compare_dicts
+from eqdsk.file import EQDSKInterface
+from eqdsk.tools import compare_dicts, get_eqdsk_path
 from tests._helpers import combine_text_mock_write_calls
 
 OPEN = "builtins.open"
 
 
 class TestEQDSKInterface:
-    path = get_bluemira_path("equilibria/test_data", subfolder="tests")
+    path = get_eqdsk_path("test_data", subfolder="tests")
     testfiles = [
-        os.path.join(get_bluemira_path("eqdsk", subfolder="data"), "jetto.eqdsk_out"),
+        os.path.join(get_eqdsk_path("test_data", subfolder="tests"), "jetto.eqdsk_out"),
         os.path.join(path, "DN-DEMO_eqref.json"),
         os.path.join(path, "eqref_OOB.json"),
     ]
 
     @classmethod
     def setup_class(cls):
-        data_dir = get_bluemira_path("equilibria", subfolder="data")
+        data_dir = get_eqdsk_path("test_data", subfolder="tests")
         data_file = os.path.join(data_dir, "DN-DEMO_eqref.json")
         with open(data_file, "r") as f:
             cls.eudemo_sof_data = json.load(f)
@@ -55,10 +54,10 @@ class TestEQDSKInterface:
     def read_strict_geqdsk(self, file_path):
         """
         Reads an input EQDSK file in, assuming strict adherence to the
-        GEQDSK format. Used to check bluemira outputs can be read by
+        GEQDSK format. Used to check eqdsk outputs can be read by
         external readers.
 
-        Note: The main bluemira GEQDSK reader is more forgiving to
+        Note: The main eqdsk GEQDSK reader is more forgiving to
         format variations than this!
 
         Parameters
@@ -151,7 +150,7 @@ class TestEQDSKInterface:
 
         # Check eqdsk is readable by Fortran readers.
         # This demands stricter adherence to the G-EQDSK
-        # format than bluemira's main reader.
+        # format than eqdsk's main reader.
         self.read_strict_geqdsk(fname)
 
         # Write data read in from test file into a new JSON

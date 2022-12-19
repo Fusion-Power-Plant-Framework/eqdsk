@@ -31,8 +31,8 @@ from typing import Dict, Optional
 import fortranformat as ff
 import numpy as np
 
-from bluemira.base.look_and_feel import bluemira_warn
-from bluemira.utilities.tools import is_num, json_writer
+from eqdsk.log import eqdsk_warn
+from eqdsk.tools import is_num, json_writer
 
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
 
@@ -177,7 +177,12 @@ class EQDSKInterface:
         return d
 
     def write(
-        self, file_path: str, format: str = "json", json_kwargs: Optional[Dict] = None
+        self,
+        file_path: str,
+        format: str = "json",
+        json_kwargs: Optional[Dict] = None,
+        *,
+        mood: bool = False,
     ):
         """
         Write the EQDSK data to file in the given format.
@@ -197,9 +202,10 @@ class EQDSKInterface:
             json_kwargs = {} if json_kwargs is None else json_kwargs
             json_writer(self.to_dict(), file_path, **json_kwargs)
         elif format in ["eqdsk", "geqdsk"]:
-            bluemira_warn(
-                "You are in the 21st century. Are you sure you want to be making an EDQSK in this day and age?"
-            )
+            if mood:
+                eqdsk_warn(
+                    "You are in the 21st century. Are you sure you want to be making an EDQSK in this day and age?"
+                )
             _write_eqdsk(file_path, self.to_dict())
 
     def update(self, eqdsk_data: Dict):
