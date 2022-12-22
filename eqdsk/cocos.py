@@ -100,6 +100,26 @@ class COCOS(Enum, metaclass=COCOSEnumMeta):
     def number(self) -> int:
         return int(self.name.strip("C"))
 
+    @DynamicClassAttribute
+    def exp_Bp(self) -> int:
+        return self.value.exp_Bp
+
+    @DynamicClassAttribute
+    def sign_R_phi_Z(self) -> int:
+        return self.value.sign_R_phi_Z
+
+    @DynamicClassAttribute
+    def sign_rho_theta_phi(self) -> int:
+        return self.value.sign_rho_theta_phi
+
+    @DynamicClassAttribute
+    def sign_q(self) -> int:
+        return self.value.sign_q
+
+    @DynamicClassAttribute
+    def sign_pprime(self) -> int:
+        return self.value.sign_pprime
+
 
 def convert(
     eqdsk: EQDSKInterface, conv_to: COCOS, conv_from: Optional[COCOS] = None
@@ -118,27 +138,34 @@ def convert(
 
     new_eqdsk = deepcopy(eqdsk)
     update_dict = {}
-    if conv_from.sign_Bp != conv_to.sign_Bp:
-        update_dict["psi"] = -new_eqdsk.psi
-        update_dict["psibdry"] = -new_eqdsk.psibdry
-        update_dict["psimag"] = -new_eqdsk.psimag
-        update_dict["pprime"] = -new_eqdsk.pprime
-        update_dict["ffprime"] = -new_eqdsk.ffprime
 
-    if conv_from.sign_rho_theta_phi != conv_to.sign_rho_theta_phi:
-        update_dict["qpsi"] = -new_eqdsk.qpsi
+    # I have no idea what I'm doing here...
+    two_pi_exp = np.pi * 2**conv_to.exp_Bp - conv_from.exp_Bp
+    sign_Ip = conv_from.sign_R_phi_Z * conv_to.sign_R_phi_Z
+    sign_Bp = conv_from.sign_Bp * conv_to.sign_Bp
+    sign_rtp = conv_from.sign_rho_theta_phi * conv_to.sign_rho_theta_phi
 
-    if conv_from.sign_R_phi_Z != conv_to.sign_R_phi_Z:
+    if int(sign_Ip * sign_Bp * two_pi_exp) != 1:
+        transform = int(sign_Ip * sign_Bp) * two_pi_exp
+        transform2 = int(sign_Ip * sign_Bp) / two_pi_exp
+        update_dict["psi"] = new_eqdsk.psi * transform
+        update_dict["psibdry"] = new_eqdsk.psibdry * transform
+        update_dict["psimag"] = new_eqdsk.psimag * transform
+        update_dict["pprime"] = new_eqdsk.pprime * transform2
+        update_dict["ffprime"] = new_eqdsk.ffprime * transform2
 
-        update_dict["psi"] = -update_dict.get("psi", new_eqdsk.psi)
-        update_dict["psibdry"] = -update_dict.get("psi", new_eqdsk.psibdry)
-        update_dict["psimag"] = -update_dict.get("psi", new_eqdsk.psimag)
-        update_dict["psimag"] = -update_dict.get("pprime", new_eqdsk.pprime)
-        update_dict["psimag"] = -update_dict.get("ffprime", new_eqdsk.ffprime)
-        update_dict["qpsi"] = -update_dict.get("qpsi", new_eqdsk.qpsi)
-        update_dict["bcentre"] = -new_eqdsk.bcentre
-        update_dict["Ic"] = -new_eqdsk.Ic
-        update_dict["fpol"] = -new_eqdsk.fpol
+    if int(sign_Ip * sign_Ip * sign_rtp) != 1:
+        update_dict["qpsi"] = new_eqdsk.qpsi * int(sign_Ip * sign_Ip * sign_rtp)
+
+    if int(sign_Ip) != 1:
+
+        update_dict["bcentre"] = new_eqdsk.bcentre * sign_Ip
+        update_dict["Ic"] = new_eqdsk.Ic * sign_Ip
+
+    if int(sign_Ip * sign_rtp) != 1:
+        update_dict["fpol"] = new_eqdsk.fpol * sign_Ip * sign_rtp
+        # Missing one...
+        # transforms['BP'] = sign_Ip * sign_rtp
 
     eqdsk.update(update_dict)
 
