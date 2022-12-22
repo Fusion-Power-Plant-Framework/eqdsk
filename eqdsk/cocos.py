@@ -105,6 +105,10 @@ class COCOS(Enum, metaclass=COCOSEnumMeta):
         return self.value.exp_Bp
 
     @DynamicClassAttribute
+    def sign_Bp(self) -> int:
+        return self.value.sign_Bp
+
+    @DynamicClassAttribute
     def sign_R_phi_Z(self) -> int:
         return self.value.sign_R_phi_Z
 
@@ -139,11 +143,11 @@ def convert(
     new_eqdsk = deepcopy(eqdsk)
     update_dict = {}
 
-    # I have no idea what I'm doing here...
-    two_pi_exp = np.pi * 2**conv_to.exp_Bp - conv_from.exp_Bp
-    sign_Ip = conv_from.sign_R_phi_Z * conv_to.sign_R_phi_Z
-    sign_Bp = conv_from.sign_Bp * conv_to.sign_Bp
-    sign_rtp = conv_from.sign_rho_theta_phi * conv_to.sign_rho_theta_phi
+    # I have no idea what I'm doing for the rest of this function...
+    two_pi_exp = (np.pi * 2) ** (conv_to.exp_Bp.value - conv_from.exp_Bp.value)
+    sign_Ip = conv_from.sign_R_phi_Z.value * conv_to.sign_R_phi_Z.value
+    sign_Bp = conv_from.sign_Bp.value * conv_to.sign_Bp.value
+    sign_rtp = conv_from.sign_rho_theta_phi.value * conv_to.sign_rho_theta_phi.value
 
     if int(sign_Ip * sign_Bp * two_pi_exp) != 1:
         transform = int(sign_Ip * sign_Bp) * two_pi_exp
