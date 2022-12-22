@@ -171,7 +171,9 @@ def convert(
         # Missing one...
         # transforms['BP'] = sign_Ip * sign_rtp
 
-    eqdsk.update(update_dict)
+    new_eqdsk.update(update_dict)
+
+    return new_eqdsk
 
 
 def identify(
