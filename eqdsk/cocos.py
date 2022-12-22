@@ -1,8 +1,11 @@
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, EnumMeta
+from types import DynamicClassAttribute
+from typing import Optional, Union
 
 import numpy as np
 
+from eqdsk.file import EQDSKInterface
 from eqdsk.log import eqdsk_print, eqdsk_warn
 
 
@@ -45,7 +48,7 @@ class pp(Enum):
 @dataclass
 class Convention:
 
-    exp_Bp: exp_Bp
+    exp_Bp: expBp
     sign_Bp: Bp
     sign_R_phi_Z: RpZ
     sign_rho_theta_phi: rtp
@@ -53,7 +56,22 @@ class Convention:
     sign_pprime: pp
 
 
-class COCOS(Enum):
+class COCOSEnumMeta(EnumMeta):
+    """
+    Allow override of KeyError error string
+    """
+
+    def __getitem__(self, name: Union[float, int, str]) -> Enum:
+        if isinstance(name, (float, int)):
+            return super().__getitem__(f"C{int(name)}")
+        else:
+            try:
+                return super().__getitem__(name)
+            except KeyError:
+                return super().__getitem__(f"C{name}")
+
+
+class COCOS(Enum, metaclass=COCOSEnumMeta):
     C1: Convention = Convention(expBp(0), Bp(1), RpZ(1), rtp(1), q(1), pp(-1))
     C2: Convention = Convention(expBp(0), Bp(1), RpZ(-1), rtp(1), q(1), pp(-1))
     C3: Convention = Convention(expBp(0), Bp(-1), RpZ(1), rtp(-1), q(-1), pp(1))
@@ -76,8 +94,9 @@ class COCOS(Enum):
         Bp(-1): {rtp(-1): {RpZ(1): 3, RpZ(-1): 4}, rtp(1): {RpZ(1): 7, RpZ(-1): 8}},
     }
 
-    def number(self):
-        return self.name.strip("C")
+    @DynamicClassAttribute
+    def number(self) -> int:
+        return int(self.name.strip("C"))
 
 
 def convert(
@@ -95,31 +114,33 @@ def convert(
     # eqdsk.
 
 
-def identify(eqdsk: EQDSKInterface, sign_R_phi_Z=None, minor_radius_fl=None) -> COCOS:
+def identify(
+    eqdsk: EQDSKInterface,
+    sign_R_phi_Z: Optional[int] = None,
+    minor_radius_fl: Optional[np.ndarray] = None,
+) -> COCOS:
     current_sign = np.sign(eqdsk.Ic)
 
     if sign_R_phi_Z is None:
-        sign_R_phi_Z = [1, -1]
+        sign_R_phi_Z = [RpZ(1), RpZ(-1)]
     else:
-        sign_R_phi_Z = [sign_R_phi_Z]
+        sign_R_phi_Z = [RpZ(int(sign_R_phi_Z))]
 
-    for s_R_phi_Z in sign_R_phi_Z:
+    for s_RpZ in sign_R_phi_Z:
 
-        sign_Bz = -1 * s_R_phi_Z * current_sign
-        sign_Bp = sign_Bz * s_R_phi_Z * -1 * np.sign(eqdsk.psibdry - eqdsk.psimag)
+        sign_Bz = -1 * s_RpZ.value * current_sign
+        sign_Bp = -1 * sign_Bz * s_RpZ.value * np.sign(eqdsk.psibdry - eqdsk.psimag)
         sign_rho_theta_phi = (
-            s_R_phi_Z * current_sign * np.sign(eqdsk.bcentre) * np.sign(eqdsk.qpsi)
+            s_RpZ.value * current_sign * np.sign(eqdsk.bcentre) * np.sign(eqdsk.qpsi)
         )
         raw_number.append(
-            COCOS._identification[Bp(sign_Bp)][rtp(sign_rho_theta_phi)][RpZ(s_R_phi_Z)]
+            COCOS._identification[Bp(int(sign_Bp))][rtp(int(sign_rho_theta_phi))][s_RpZ]
         )
 
     raw_number = np.array(raw_number)
 
     if minor_radius_fl:
-        index = np.argmin(np.abs(eqdsk.qpsi))
-        if index == 0:
-            index = 1
+        index = np.argmin(np.abs(eqdsk.qpsi)) or 1
         q_estimate = np.abs(
             (np.pi * eqdsk.bcentre * (minor_radius_fl - minor_radius_fl[0]) ** 2)
             / (eqdsk.psimag - eqdsk.psimag[0])
@@ -131,4 +152,15 @@ def identify(eqdsk: EQDSKInterface, sign_R_phi_Z=None, minor_radius_fl=None) -> 
     else:
         number = np.append(raw_number, raw_number + 10)
 
-    return (COCOS[f"C{no}"] for no in number)
+    return (COCOS[no] for no in number)
+
+
+@dataclass(repr=False)
+class COCOSEQDSKInterface(EQDSKInterface):
+    @property
+    def cocos_version(self):
+        # TODO set sign_R_phi_Z and minor_radius_fl or have this as a raw attr
+        return identify(self)
+
+    def as_cocos(self, cocos_conv: Union[float, int, str]):
+        return convert(self, COCOS[cocos_conv])  # TODO save cocos version on object
