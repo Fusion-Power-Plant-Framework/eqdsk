@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
 from types import DynamicClassAttribute
-from typing import Optional, Union
+from typing import Iterable, Optional, Union
 
 import numpy as np
 
@@ -126,6 +126,7 @@ def identify(
     else:
         sign_R_phi_Z = [RpZ(int(sign_R_phi_Z))]
 
+    raw_number = []
     for s_RpZ in sign_R_phi_Z:
 
         sign_Bz = -1 * s_RpZ.value * current_sign
