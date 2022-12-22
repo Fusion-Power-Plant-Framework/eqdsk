@@ -289,10 +289,7 @@ def _eqdsk_generator(file):
     generator: generator
         The generator of the file handle being read
     """
-    while True:
-        line = file.readline()
-        if not line:
-            break
+    while line := file.readline():
 
         # Distinguish negative/positive numbers from negative/positive exponent
         if "E" in line or "e" in line:
