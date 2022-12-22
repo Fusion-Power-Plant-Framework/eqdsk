@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
 from types import DynamicClassAttribute
@@ -5,6 +6,7 @@ from typing import Iterable, Optional, Union
 
 import numpy as np
 
+from eqdsk.error import COCOSError
 from eqdsk.file import EQDSKInterface
 from eqdsk.log import eqdsk_print, eqdsk_warn
 
@@ -103,15 +105,42 @@ def convert(
     eqdsk: EQDSKInterface, conv_to: COCOS, conv_from: Optional[COCOS] = None
 ) -> EQDSKInterface:
     conv_from = conv_from or identify(eqdsk)
-    if isinstance(conv_from, Iterable) and len(conv_from) == 1:
-        conv_from = conv_from[0]
+    if isinstance(conv_from, Iterable):
+        if len(conv_from) == 1:
+            conv_from = conv_from[0]
+        else:
+            raise COCOSError("More than one COCOS version available: {conv_from}")
     if isinstance(conv_from, COCOS) and conv_from == conv_to:
         eqdsk_warn("No conversion needed")
         return eqdsk
 
     eqdsk_print("Converting from COCOS-{conv_from.number} to COCOS-{conv_to.number}")
 
-    # eqdsk.
+    new_eqdsk = deepcopy(eqdsk)
+    update_dict = {}
+    if conv_from.sign_Bp != conv_to.sign_Bp:
+        update_dict["psi"] = -new_eqdsk.psi
+        update_dict["psibdry"] = -new_eqdsk.psibdry
+        update_dict["psimag"] = -new_eqdsk.psimag
+        update_dict["pprime"] = -new_eqdsk.pprime
+        update_dict["ffprime"] = -new_eqdsk.ffprime
+
+    if conv_from.sign_rho_theta_phi != conv_to.sign_rho_theta_phi:
+        update_dict["qpsi"] = -new_eqdsk.qpsi
+
+    if conv_from.sign_R_phi_Z != conv_to.sign_R_phi_Z:
+
+        update_dict["psi"] = -update_dict.get("psi", new_eqdsk.psi)
+        update_dict["psibdry"] = -update_dict.get("psi", new_eqdsk.psibdry)
+        update_dict["psimag"] = -update_dict.get("psi", new_eqdsk.psimag)
+        update_dict["psimag"] = -update_dict.get("pprime", new_eqdsk.pprime)
+        update_dict["psimag"] = -update_dict.get("ffprime", new_eqdsk.ffprime)
+        update_dict["qpsi"] = -update_dict.get("qpsi", new_eqdsk.qpsi)
+        update_dict["bcentre"] = -new_eqdsk.bcentre
+        update_dict["Ic"] = -new_eqdsk.Ic
+        update_dict["fpol"] = -new_eqdsk.fpol
+
+    eqdsk.update(update_dict)
 
 
 def identify(
