@@ -231,13 +231,6 @@ class EQDSKInterface:
                     f"Cannot update EQDSKInterface from dict. Unrecognised key '{key}'."
                 )
 
-    def as_cocos(self, cocos_conv):
-        if isinstance(cocos_conv, (float, int)):
-            conv = getattr(COCOS, f"C{int(cocos_conv)}")
-        elif isinstance(cocos, str):
-            conv = getattr(COCOS, cocos_conv)
-        return cocos.convert(self, conv)  # TODO save cocos version on object
-
 
 def _read_json(file) -> Dict:
     if isinstance(file, str):
