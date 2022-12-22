@@ -236,9 +236,7 @@ class EQDSKInterface:
             conv = getattr(COCOS, f"C{int(cocos_conv)}")
         elif isinstance(cocos, str):
             conv = getattr(COCOS, cocos_conv)
-        return cocos.convert(self, conv) # TODO save cocos version on object
-
-
+        return cocos.convert(self, conv)  # TODO save cocos version on object
 
 
 def _read_json(file) -> Dict:
