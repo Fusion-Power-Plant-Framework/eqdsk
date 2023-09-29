@@ -3,7 +3,7 @@
 # codes, to carry out a range of typical conceptual fusion reactor design
 # activities.
 #
-# Copyright (C) 2021-2022 M. Coleman, J. Cook, F. Franza, I.A. Maione, S. McIntosh,
+# Copyright (C) 2021-2023 M. Coleman, J. Cook, F. Franza, I.A. Maione, S. McIntosh,
 #                         J. Morris, D. Short
 #
 # bluemira is free software; you can redistribute it and/or
@@ -23,10 +23,11 @@ Input and output file interface. EQDSK and json. NOTE: jsons are better :)
 """
 
 import json
+import math
 import os
 import time
 from dataclasses import asdict, dataclass
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import fortranformat as ff
 import numpy as np
@@ -60,7 +61,7 @@ class EQDSKInterface:
     """
 
     bcentre: float
-    """Magnetic field at the reference radius [T]."""
+    """Vacuum toroidal Magnetic field at the reference radius [T]."""
     cplasma: float
     """Plasma current [A]."""
     dxc: np.ndarray
@@ -148,7 +149,7 @@ class EQDSKInterface:
 
         Parameters
         ----------
-        file_path: str
+        file_path:
             Path to a file of one of the following formats:
 
                 * JSON
@@ -158,8 +159,7 @@ class EQDSKInterface:
 
         Returns
         -------
-        EQDSKInterface
-            An instance of this class containing the EQDSK file's data.
+        An instance of this class containing the EQDSK file's data.
         """
         _, file_extension = os.path.splitext(file_path)
         file_name = os.path.basename(file_path)
@@ -177,24 +177,19 @@ class EQDSKInterface:
         return d
 
     def write(
-        self,
-        file_path: str,
-        format: str = "json",
-        json_kwargs: Optional[Dict] = None,
-        *,
-        mood: bool = False,
+        self, file_path: str, format: str = "json", json_kwargs: Optional[Dict] = None
     ):
         """
         Write the EQDSK data to file in the given format.
 
         Parameters
         ----------
-        file_path: str
+        file_path:
             Path to where the file should be written.
-        format: str
+        format:
             The format to save the file in. One of 'json', 'eqdsk', or
             'geqdsk'.
-        json_kwargs: Dict
+        json_kwargs:
             Key word arguments to pass to the ``json.dump`` call. Only
             used if ``format`` is 'json'.
         """
@@ -202,19 +197,18 @@ class EQDSKInterface:
             json_kwargs = {} if json_kwargs is None else json_kwargs
             json_writer(self.to_dict(), file_path, **json_kwargs)
         elif format in ["eqdsk", "geqdsk"]:
-            if mood:
-                eqdsk_warn(
-                    "You are in the 21st century. Are you sure you want to be making an EDQSK in this day and age?"
-                )
+            eqdsk_warn(
+                "You are in the 21st century. Are you sure you want to be making an EDQSK in this day and age?"
+            )
             _write_eqdsk(file_path, self.to_dict())
 
-    def update(self, eqdsk_data: Dict):
+    def update(self, eqdsk_data: Dict[str, Any]):
         """
         Update this object's data with values from a dictionary.
 
         Parameters
         ----------
-        eqdsk_data: Dict
+        eqdsk_data:
             A dict containing the new eqdsk data.
 
         Raises
@@ -232,7 +226,7 @@ class EQDSKInterface:
                 )
 
 
-def _read_json(file) -> Dict:
+def _read_json(file) -> Dict[str, Any]:
     if isinstance(file, str):
         with open(file, "r") as f_h:
             return _read_json(f_h)
@@ -281,15 +275,17 @@ def _eqdsk_generator(file):
 
     Parameters
     ----------
-    file: file object
+    file:
         The file to read
 
     Returns
     -------
-    generator: generator
-        The generator of the file handle being read
+    The generator of the file handle being read
     """
-    while line := file.readline():
+    while True:
+        line = file.readline()
+        if not line:
+            break
 
         # Distinguish negative/positive numbers from negative/positive exponent
         if "E" in line or "e" in line:
@@ -428,15 +424,15 @@ def _derive_psinorm(fpol):
     return np.linspace(0, 1, len(fpol))
 
 
-def _write_eqdsk(file, data):
+def _write_eqdsk(file: str, data: Dict):
     """
     Writes data out to a text file in G-EQDSK format.
 
     Parameters
     ----------
-    file: str
+    file:
         The full path string of the file to be created
-    data: dict
+    data:
         Dictionary of EQDSK data.
     """
     if isinstance(file, str):
@@ -445,21 +441,23 @@ def _write_eqdsk(file, data):
         with open(file, "w") as f_handle:
             return _write_eqdsk(f_handle, data)
 
-    def write_header(fortran_format, id_string, var_list):
+    def write_header(
+        fortran_format: ff.FortranRecordWriter, id_string: str, var_list: List[str]
+    ):
         """
         Writes G-EQDSK header out to file.
 
         Parameters
         ----------
-        fortran_format: ff.FortranRecordWriter
+        fortran_format:
             FortranRecordWriter object for Fortran format edit descriptor
             to be used for header output.
-        id_string: str
+        id_string:
             String containing name of file to be used as identification
             string. Will be trimmed if length exceeds 39 characters,
             so it will fit within the permitted header length of the
             GEQDSK specification when a timestamp is added.
-        var_list: list
+        var_list:
             List of names of keys in EQDSKInterface.data identifying
             variables to add to the header following the id_string.
             Empty strings will be recorded as 0.
@@ -469,16 +467,16 @@ def _write_eqdsk(file, data):
         file.write(fortran_format.write(line))
         file.write("\n")
 
-    def write_line(fortran_format, var_list):
+    def write_line(fortran_format: ff.FortranRecordWriter, var_list: List[str]):
         """
         Writes a line of variable values out to a G-EQDSK file.
 
         Parameters
         ----------
-        fortran_format: ff.FortranRecordWriter
+        fortran_format:
             FortranRecordWriter object for Fortran format edit descriptor
             to be used for the format of the line output.
-        var_list: list
+        var_list:
             List of names of keys in EQDSKInterface.data identifying
             variables to added to the current line.
             Empty strings will be recorded as 0.
@@ -487,16 +485,16 @@ def _write_eqdsk(file, data):
         file.write(fortran_format.write(line))
         file.write("\n")
 
-    def write_array(fortran_format, array):
+    def write_array(fortran_format: ff.FortranRecordWriter, array: np.ndarray):
         """
         Writes a numpy array out to a G-EQDSK file.
 
         Parameters
         ----------
-        fortran_format: ff.FortranRecordWriter
+        fortran_format:
             FortranRecordWriter object for Fortran format edit descriptor
             to be used for the format of the line output.
-        array: np.array
+        array:
             Numpy array of variables to be written to file.
             Array will be flattened in column-major (Fortran)
             order if is more than one-dimensional.
