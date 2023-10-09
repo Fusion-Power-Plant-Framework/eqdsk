@@ -28,8 +28,6 @@ class COCOSConvention:
     sign_Bp: Sign  # ψ (P -> increasing)/(N -> decreasing) from the magnetic axis
     sign_R_phi_Z: Sign  # P -> (R, ϕ, Z) ϕ cnt-clockwise, N -> (R, Z, ϕ) ϕ clockwise
     sign_rho_theta_phi: Sign  # P -> (ρ, θ, ϕ), N -> (ρ, ϕ, θ)
-    sign_q: Sign  # same as sign_rho_theta_phi
-    sign_pprime: Sign  # opposite of sign_Bp
 
 
 C1 = COCOSConvention(
@@ -38,8 +36,6 @@ C1 = COCOSConvention(
     sign_Bp=Sign.P,
     sign_R_phi_Z=Sign.P,
     sign_rho_theta_phi=Sign.P,
-    sign_q=Sign.P,
-    sign_pprime=Sign.N,
 )
 C11 = COCOSConvention(
     cc_index=11,
@@ -47,8 +43,6 @@ C11 = COCOSConvention(
     sign_Bp=Sign.P,
     sign_R_phi_Z=Sign.P,
     sign_rho_theta_phi=Sign.P,
-    sign_q=Sign.P,
-    sign_pprime=Sign.N,
 )
 C2 = COCOSConvention(
     cc_index=2,
@@ -56,8 +50,6 @@ C2 = COCOSConvention(
     sign_Bp=Sign.P,
     sign_R_phi_Z=Sign.N,
     sign_rho_theta_phi=Sign.P,
-    sign_q=Sign.P,
-    sign_pprime=Sign.N,
 )
 C12 = COCOSConvention(
     cc_index=12,
@@ -65,8 +57,6 @@ C12 = COCOSConvention(
     sign_Bp=Sign.P,
     sign_R_phi_Z=Sign.N,
     sign_rho_theta_phi=Sign.P,
-    sign_q=Sign.P,
-    sign_pprime=Sign.N,
 )
 C3 = COCOSConvention(
     cc_index=3,
@@ -74,8 +64,6 @@ C3 = COCOSConvention(
     sign_Bp=Sign.N,
     sign_R_phi_Z=Sign.P,
     sign_rho_theta_phi=Sign.N,
-    sign_q=Sign.N,
-    sign_pprime=Sign.P,
 )
 C13 = COCOSConvention(
     cc_index=13,
@@ -83,8 +71,6 @@ C13 = COCOSConvention(
     sign_Bp=Sign.N,
     sign_R_phi_Z=Sign.P,
     sign_rho_theta_phi=Sign.N,
-    sign_q=Sign.N,
-    sign_pprime=Sign.P,
 )
 C4 = COCOSConvention(
     cc_index=4,
@@ -92,8 +78,6 @@ C4 = COCOSConvention(
     sign_Bp=Sign.N,
     sign_R_phi_Z=Sign.N,
     sign_rho_theta_phi=Sign.N,
-    sign_q=Sign.N,
-    sign_pprime=Sign.P,
 )
 C14 = COCOSConvention(
     cc_index=14,
@@ -101,8 +85,6 @@ C14 = COCOSConvention(
     sign_Bp=Sign.N,
     sign_R_phi_Z=Sign.N,
     sign_rho_theta_phi=Sign.N,
-    sign_q=Sign.N,
-    sign_pprime=Sign.P,
 )
 C5 = COCOSConvention(
     cc_index=5,
@@ -110,8 +92,6 @@ C5 = COCOSConvention(
     sign_Bp=Sign.P,
     sign_R_phi_Z=Sign.P,
     sign_rho_theta_phi=Sign.N,
-    sign_q=Sign.N,
-    sign_pprime=Sign.N,
 )
 C15 = COCOSConvention(
     cc_index=15,
@@ -119,8 +99,6 @@ C15 = COCOSConvention(
     sign_Bp=Sign.P,
     sign_R_phi_Z=Sign.P,
     sign_rho_theta_phi=Sign.N,
-    sign_q=Sign.N,
-    sign_pprime=Sign.N,
 )
 C6 = COCOSConvention(
     cc_index=6,
@@ -128,8 +106,6 @@ C6 = COCOSConvention(
     sign_Bp=Sign.P,
     sign_R_phi_Z=Sign.N,
     sign_rho_theta_phi=Sign.N,
-    sign_q=Sign.N,
-    sign_pprime=Sign.N,
 )
 C16 = COCOSConvention(
     cc_index=16,
@@ -137,8 +113,6 @@ C16 = COCOSConvention(
     sign_Bp=Sign.P,
     sign_R_phi_Z=Sign.N,
     sign_rho_theta_phi=Sign.N,
-    sign_q=Sign.N,
-    sign_pprime=Sign.N,
 )
 C7 = COCOSConvention(
     cc_index=7,
@@ -146,8 +120,6 @@ C7 = COCOSConvention(
     sign_Bp=Sign.N,
     sign_R_phi_Z=Sign.P,
     sign_rho_theta_phi=Sign.P,
-    sign_q=Sign.P,
-    sign_pprime=Sign.P,
 )
 C17 = COCOSConvention(
     cc_index=17,
@@ -155,8 +127,6 @@ C17 = COCOSConvention(
     sign_Bp=Sign.N,
     sign_R_phi_Z=Sign.P,
     sign_rho_theta_phi=Sign.P,
-    sign_q=Sign.P,
-    sign_pprime=Sign.P,
 )
 C8 = COCOSConvention(
     cc_index=8,
@@ -164,8 +134,6 @@ C8 = COCOSConvention(
     sign_Bp=Sign.N,
     sign_R_phi_Z=Sign.N,
     sign_rho_theta_phi=Sign.P,
-    sign_q=Sign.P,
-    sign_pprime=Sign.P,
 )
 C18 = COCOSConvention(
     cc_index=18,
@@ -173,8 +141,6 @@ C18 = COCOSConvention(
     sign_Bp=Sign.N,
     sign_R_phi_Z=Sign.N,
     sign_rho_theta_phi=Sign.P,
-    sign_q=Sign.P,
-    sign_pprime=Sign.P,
 )
 
 
@@ -225,8 +191,6 @@ def matching_conventions(
                 sign_R_phi_Z is None or c.sign_R_phi_Z == sign_R_phi_Z,
                 sign_rho_theta_phi is None
                 or c.sign_rho_theta_phi == sign_rho_theta_phi,
-                sign_q is None or c.sign_q == sign_q,
-                sign_pprime is None or c.sign_pprime == sign_pprime,
             ]
         )
 
