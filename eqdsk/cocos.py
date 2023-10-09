@@ -1,11 +1,14 @@
+from __future__ import annotations
+
+from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 
-# from eqdsk.error import COCOSError
-from eqdsk.file import EQDSKInterface
+if TYPE_CHECKING:
+    from eqdsk.file import EQDSKInterface
 
 
 class ZeroOne(Enum):
@@ -175,180 +178,179 @@ C18 = COCOSConvention(
 )
 
 
-class COCOSHelper:
-    @staticmethod
-    def get_convention(cocos_index: int) -> COCOSConvention:
-        if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
-            raise ValueError(
-                f"Convention number {cocos_index} is not valid. "
-                "Must be between 1 and 8 or 11 and 18."
-            )
-        return next(
-            x for x in COCOSHelper.all_conventions() if x.cc_index == cocos_index
+def get_convention(cocos_index: int) -> COCOSConvention:
+    if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
+        raise ValueError(
+            f"Convention number {cocos_index} is not valid. "
+            "Must be between 1 and 8 or 11 and 18."
+        )
+    # gets first matching index
+    return next(x for x in all_conventions() if x.cc_index == cocos_index)
+
+
+def all_conventions() -> tuple[COCOSConvention, ...]:
+    return (
+        C1,
+        C2,
+        C3,
+        C4,
+        C5,
+        C6,
+        C7,
+        C8,
+        C11,
+        C12,
+        C13,
+        C14,
+        C15,
+        C16,
+        C17,
+        C18,
+    )
+
+
+def matching_conventions(
+    exp_Bp: Optional[ZeroOne] = None,
+    sign_Bp: Optional[Sign] = None,
+    sign_R_phi_Z: Optional[Sign] = None,
+    sign_rho_theta_phi: Optional[Sign] = None,
+    sign_q: Optional[Sign] = None,
+    sign_pprime: Optional[Sign] = None,
+) -> list[COCOSConvention]:
+    def _match_cocos(c: COCOSConvention) -> bool:
+        return all(
+            [
+                exp_Bp is None or c.exp_Bp == exp_Bp,
+                sign_Bp is None or c.sign_Bp == sign_Bp,
+                sign_R_phi_Z is None or c.sign_R_phi_Z == sign_R_phi_Z,
+                sign_rho_theta_phi is None
+                or c.sign_rho_theta_phi == sign_rho_theta_phi,
+                sign_q is None or c.sign_q == sign_q,
+                sign_pprime is None or c.sign_pprime == sign_pprime,
+            ]
         )
 
-    @staticmethod
-    def all_conventions() -> list[COCOSConvention]:
-        return [
-            C1,
-            C2,
-            C3,
-            C4,
-            C5,
-            C6,
-            C7,
-            C8,
-            C11,
-            C12,
-            C13,
-            C14,
-            C15,
-            C16,
-            C17,
-            C18,
-        ]
+    return list(filter(_match_cocos, all_conventions()))
 
-    @staticmethod
-    def matching(
-        exp_Bp: Optional[ZeroOne] = None,
-        sign_Bp: Optional[Sign] = None,
-        sign_R_phi_Z: Optional[Sign] = None,
-        sign_rho_theta_phi: Optional[Sign] = None,
-        sign_q: Optional[Sign] = None,
-        sign_pprime: Optional[Sign] = None,
-    ) -> list[COCOSConvention]:
-        def _match_cocos(c: COCOSConvention) -> bool:
-            return all(
-                [
-                    exp_Bp is None or c.exp_Bp == exp_Bp,
-                    sign_Bp is None or c.sign_Bp == sign_Bp,
-                    sign_R_phi_Z is None or c.sign_R_phi_Z == sign_R_phi_Z,
-                    sign_rho_theta_phi is None
-                    or c.sign_rho_theta_phi == sign_rho_theta_phi,
-                    sign_q is None or c.sign_q == sign_q,
-                    sign_pprime is None or c.sign_pprime == sign_pprime,
-                ]
-            )
 
-        return list(filter(_match_cocos, COCOSHelper.all_conventions()))
+def identify_eqdsk(
+    eqdsk: EQDSKInterface,
+    # is the direction of the toroidal B field
+    # (the toroidal magnetic field) clockwise?
+    clockwise_phi: Optional[bool] = None,
+    volt_seconds_per_radian: Optional[bool] = None,
+    flux_surfaces_minor_radius: Optional[np.ndarray] = None,
+) -> list[COCOSConvention]:
+    sign_Ip = np.sign(eqdsk.cplasma)
+    sign_B0 = np.sign(eqdsk.bcentre)
 
-    @staticmethod
-    def identify_eqdsk(
-        eqdsk: EQDSKInterface,
-        # is the direction of the toroidal B field
-        # (the toroidal magnetic field) clockwise?
-        clockwise_phi: Optional[bool] = None,
-        flux_surfaces_minor_radius: Optional[np.ndarray] = None,
-    ) -> list[COCOSConvention]:
-        sign_Ip = np.sign(eqdsk.cplasma)
-        sign_B0 = np.sign(eqdsk.bcentre)
+    # todo: what if qpsi is None??
+    sign_q = np.sign(eqdsk.qpsi)
+    if sign_q.min() != sign_q.max():
+        raise ValueError("The sign of qpsi is not consistent across the flux surfaces.")
+    sign_q = sign_q.max()
 
-        sign_q = np.sign(eqdsk.qpsi)
-        if sign_q.min() != sign_q.max():
-            raise ValueError(
-                "The sign of qpsi is not consistent across the flux surfaces."
-            )
-        sign_q = sign_q.max()
+    sign_d_psi_towards_boundary = np.sign(eqdsk.psibdry - eqdsk.psimag)
 
-        sign_d_psi_towards_boundary = np.sign(eqdsk.psibdry - eqdsk.psimag)
+    sign_Bp = sign_Ip * sign_d_psi_towards_boundary
+    sign_rho_theta_phi = sign_Ip * sign_B0 * sign_q
 
-        sign_Bp = sign_Ip * sign_d_psi_towards_boundary
-        sign_rho_theta_phi = sign_Ip * sign_B0 * sign_q
+    if clockwise_phi is None:
+        sign_R_phi_Z = None
+    elif clockwise_phi:
+        sign_R_phi_Z = Sign.N
+    else:
+        sign_R_phi_Z = Sign.P
 
-        if clockwise_phi is None:
-            sign_R_phi_Z = None
-        elif clockwise_phi:
-            sign_R_phi_Z = Sign.N
+    # not sure if this is needed
+    # in the utf8 code they do it, in omas they don't
+    # if sign_R_phi_Z is not None:
+    #     sign_rho_theta_phi *= sign_R_phi_Z.value
+
+    sign_Bp = Sign(sign_Bp)
+    sign_rho_theta_phi = Sign(sign_rho_theta_phi)
+
+    exp_Bp = None
+    if volt_seconds_per_radian is not None:
+        if volt_seconds_per_radian:
+            exp_Bp = ZeroOne.ONE
         else:
-            sign_R_phi_Z = Sign.P
+            exp_Bp = ZeroOne.ZERO
+    elif flux_surfaces_minor_radius is not None:
+        a = flux_surfaces_minor_radius
 
-        # not sure if this is needed
-        # in the utf8 code they do it, in omas they don't
-        # if sign_R_phi_Z is not None:
-        #     sign_rho_theta_phi *= sign_R_phi_Z.value
+        # from OMAS
+        # https://gafusion.github.io/omas/_modules/omas/omas_physics.html
 
-        sign_Bp = Sign(sign_Bp)
-        sign_rho_theta_phi = Sign(sign_rho_theta_phi)
+        # idx of min q, not sure why yet
+        index = np.argmin(np.abs(eqdsk.qpsi))
+        if index == 0:
+            index = 1
 
-        exp_Bp = None
-        if flux_surfaces_minor_radius is not None:
-            a = flux_surfaces_minor_radius
-            # from OMAS
-            # https://gafusion.github.io/omas/_modules/omas/omas_physics.html
-            index = np.argmin(np.abs(eqdsk.qpsi))
-            if index == 0:
-                index = 1
-            q_estimate = np.abs(
-                (np.pi * eqdsk.bcentre * (a[index] - a[0]) ** 2)
-                / (
-                    # this won't work becuase psi is a 2d grid
-                    eqdsk.psi[index]
-                    - eqdsk.psi[0]
-                )
+        q_estimate = np.abs(
+            (np.pi * eqdsk.bcentre * (a[index] - a[0]) ** 2)
+            / (
+                # todo: this won't work because psi is a 2d grid?
+                eqdsk.psi[index]
+                - eqdsk.psi[0]
             )
-            q_actual = np.abs(eqdsk.qpsi[index])
-            if abs(q_estimate - q_actual) < abs(q_estimate / (2 * np.pi) - q_actual):
-                exp_Bp = ZeroOne.ONE
-            else:
-                exp_Bp = ZeroOne.ZERO
-
-        return COCOSHelper.matching(
-            exp_Bp=exp_Bp,
-            sign_Bp=sign_Bp,
-            sign_R_phi_Z=sign_R_phi_Z,
-            sign_rho_theta_phi=sign_rho_theta_phi,
         )
+        q_actual = np.abs(eqdsk.qpsi[index])
 
-    @staticmethod
-    def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
-        ...
+        if abs(q_estimate - q_actual) < abs(q_estimate / (2 * np.pi) - q_actual):
+            exp_Bp = ZeroOne.ONE
+        else:
+            exp_Bp = ZeroOne.ZERO
+
+    return matching_conventions(
+        exp_Bp=exp_Bp,
+        sign_Bp=sign_Bp,
+        sign_R_phi_Z=sign_R_phi_Z,
+        sign_rho_theta_phi=sign_rho_theta_phi,
+    )
 
 
-# def convert(
-#     eqdsk: EQDSKInterface, conv_to: COCOS, conv_from: Optional[COCOS] = None
-# ) -> EQDSKInterface:
-#     conv_from = conv_from or identify(eqdsk)
-#     if isinstance(conv_from, Iterable):
-#         if len(conv_from) == 1:
-#             conv_from = conv_from[0]
-#         else:
-#             raise COCOSError("More than one COCOS version available: {conv_from}")
-#     if isinstance(conv_from, COCOS) and conv_from == conv_to:
-#         eqdsk_warn("No conversion needed")
-#         return eqdsk
+def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
+    org_cocos = eqdsk.cocos_convention
 
-#     eqdsk_print("Converting from COCOS-{conv_from.number} to COCOS-{conv_to.number}")
+    if org_cocos.cc_index == to_cocos_index:
+        return eqdsk
 
-#     new_eqdsk = deepcopy(eqdsk)
-#     update_dict = {}
+    tgt_cocos = get_convention(to_cocos_index)
 
-#     # I have no idea what I'm doing for the rest of this function...
-#     two_pi_exp = (np.pi * 2) ** (conv_to.exp_Bp.value - conv_from.exp_Bp.value)
-#     sign_Ip = conv_from.sign_R_phi_Z.value * conv_to.sign_R_phi_Z.value
-#     sign_Bp = conv_from.sign_Bp.value * conv_to.sign_Bp.value
-#     sign_rtp = conv_from.sign_rho_theta_phi.value * conv_to.sign_rho_theta_phi.value
+    org_eqdsk = eqdsk
+    tgt_eqdsk = deepcopy(eqdsk)
 
-#     if int(sign_Ip * sign_Bp * two_pi_exp) != 1:
-#         transform = int(sign_Ip * sign_Bp) * two_pi_exp
-#         transform2 = int(sign_Ip * sign_Bp) / two_pi_exp
-#         update_dict["psi"] = new_eqdsk.psi * transform
-#         update_dict["psibdry"] = new_eqdsk.psibdry * transform
-#         update_dict["psimag"] = new_eqdsk.psimag * transform
-#         update_dict["pprime"] = new_eqdsk.pprime * transform2
-#         update_dict["ffprime"] = new_eqdsk.ffprime * transform2
+    eff_bp = tgt_cocos.sign_Bp.value * org_cocos.sign_Bp.value
+    eff_R_phi_Z = tgt_cocos.sign_R_phi_Z.value * org_cocos.sign_R_phi_Z.value
+    eff_rho_theta_phi = (
+        tgt_cocos.sign_rho_theta_phi.value * org_cocos.sign_rho_theta_phi.value
+    )
+    eff_exp_bp = tgt_cocos.exp_Bp.value - org_cocos.exp_Bp.value
 
-#     if int(sign_Ip * sign_Ip * sign_rtp) != 1:
-#         update_dict["qpsi"] = new_eqdsk.qpsi * int(sign_Ip * sign_Ip * sign_rtp)
+    # when eff_exp_bp is -1, it means org is vs/rad and trg isn't,
+    # thus this is 1/2pi.
+    # Meaning for tgt_psi, we'll effectively multiply org_psi by 2pi
+    # getting rid of the /rad factor.
+    # pprime and ffprime go with 1/psi thus are the opposite.
+    pi_factor = 2 * np.pi**eff_exp_bp
 
-#     if int(sign_Ip) != 1:
-#         update_dict["bcentre"] = new_eqdsk.bcentre * sign_Ip
-#         update_dict["Ic"] = new_eqdsk.Ic * sign_Ip
+    tgt_eqdsk.cplasma = eff_R_phi_Z * org_eqdsk.cplasma
+    tgt_eqdsk.bcentre = eff_R_phi_Z * org_eqdsk.bcentre
 
-#     if int(sign_Ip * sign_rtp) != 1:
-#         update_dict["fpol"] = new_eqdsk.fpol * sign_Ip * sign_rtp
-#         # Missing one...
-#         # transforms['BP'] = sign_Ip * sign_rtp
+    # not sure about these, but this make sense to me
+    # tgt_eqdsk.Ic = eff_R_phi_Z * org_eqdsk.Ic
+    # tgt_eqdsk.fpol = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.fpol
 
-#     new_eqdsk.update(update_dict)
+    tgt_eqdsk.psi = eff_bp * eff_R_phi_Z * (1 / pi_factor) * org_eqdsk.psi
+    tgt_eqdsk.psibdry = eff_bp * eff_R_phi_Z * (1 / pi_factor) * org_eqdsk.psibdry
+    tgt_eqdsk.psimag = eff_bp * eff_R_phi_Z * (1 / pi_factor) * org_eqdsk.psimag
 
-#     return new_eqdsk
+    tgt_eqdsk.pprime = eff_bp * eff_R_phi_Z * pi_factor * org_eqdsk.pprime
+    tgt_eqdsk.ffprime = eff_bp * eff_R_phi_Z * pi_factor * org_eqdsk.ffprime
+
+    if org_eqdsk.qpsi is not None:
+        # there isn't much agreement on this one
+        tgt_eqdsk.qpsi = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.qpsi
+
+    return eqdsk

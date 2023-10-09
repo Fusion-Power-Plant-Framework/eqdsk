@@ -1,9 +1,7 @@
-from eqdsk.cocos import COCOSHelper
-from eqdsk.file import EQDSKInterface
 from pprint import pprint
 
+from eqdsk.file import EQDSKInterface
 
 ed = EQDSKInterface.from_file("jetto.eqdsk_out")
-a = COCOSHelper.identify_eqdsk(ed)
 
-pprint(a)
+pprint(ed.cocos_convention)
