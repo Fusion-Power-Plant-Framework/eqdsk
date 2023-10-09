@@ -23,7 +23,6 @@ Input and output file interface. EQDSK and json. NOTE: jsons are better :)
 """
 
 import json
-import math
 import os
 import time
 from dataclasses import asdict, dataclass
@@ -32,12 +31,14 @@ from typing import Any, Dict, List, Optional
 import fortranformat as ff
 import numpy as np
 
+from eqdsk.cocos import identify_eqdsk
 from eqdsk.log import eqdsk_warn
 from eqdsk.tools import is_num, json_writer
 
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
 
 
+# repr = False to avoid printing the data in the repr
 @dataclass(repr=False)
 class EQDSKInterface:
     """
@@ -141,6 +142,7 @@ class EQDSKInterface:
             self.z = _derive_z(self.zmid, self.zdim, self.nz)
         if self.psinorm is None:
             self.psinorm = _derive_psinorm(self.fpol)
+        self._cocos_convention = None
 
     @classmethod
     def from_file(cls, file_path: str):
@@ -164,10 +166,34 @@ class EQDSKInterface:
         _, file_extension = os.path.splitext(file_path)
         file_name = os.path.basename(file_path)
         if file_extension.lower() in EQDSK_EXTENSIONS:
-            return cls(file_name=file_name, **_read_eqdsk(file_path))
-        if file_extension.lower() == ".json":
-            return cls(file_name=file_name, **_read_json(file_path))
-        raise ValueError(f"Unrecognised file format '{file_extension}'.")
+            inst = cls(file_name=file_name, **_read_eqdsk(file_path))
+        elif file_extension.lower() == ".json":
+            inst = cls(file_name=file_name, **_read_json(file_path))
+        else:
+            raise ValueError(f"Unrecognised file format '{file_extension}'.")
+        inst.identify()
+        # set to normalised cocos convention
+        return inst
+
+    @property
+    def cocos_convention(self):
+        if self._cocos_convention is None:
+            raise ValueError(
+                "The COCOS convention has not been identified. The 'identify' method"
+                "must be called first."
+            )
+        return self._cocos_convention
+
+    def identify(self):
+        conventions = identify_eqdsk(self)
+        conv = conventions[0]
+        if len(conventions) != 1:
+            eqdsk_warn(
+                f"A single COCOS convention could not be determined, "
+                f"found conventions ({', '.join([str(c.cc_index) for c in conventions])}) "  # noqa: E501
+                f"for the EQDSK file. Using convention {conv.cc_index}"
+            )
+        self._cocos_convention = conv
 
     def to_dict(self) -> Dict:
         """Return a dictionary of the EQDSK data."""
