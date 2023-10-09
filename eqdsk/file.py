@@ -31,7 +31,7 @@ from typing import Any, Dict, List, Optional
 import fortranformat as ff
 import numpy as np
 
-from eqdsk.cocos import identify_eqdsk
+from eqdsk.cocos import convert_eqdsk, identify_eqdsk
 from eqdsk.log import eqdsk_warn
 from eqdsk.tools import is_num, json_writer
 
@@ -60,6 +60,8 @@ class EQDSKInterface:
 
     Plasma current direction is not enforced here!
     """
+
+    DEFAULT_COCOS_CONVENTION = 2
 
     bcentre: float
     """Vacuum toroidal Magnetic field at the reference radius [T]."""
@@ -171,8 +173,10 @@ class EQDSKInterface:
             inst = cls(file_name=file_name, **_read_json(file_path))
         else:
             raise ValueError(f"Unrecognised file format '{file_extension}'.")
+
         inst.identify()
-        # set to normalised cocos convention
+        inst = inst.to_normalised_cocos()
+
         return inst
 
     @property
@@ -191,9 +195,19 @@ class EQDSKInterface:
             eqdsk_warn(
                 f"A single COCOS convention could not be determined, "
                 f"found conventions ({', '.join([str(c.cc_index) for c in conventions])}) "  # noqa: E501
-                f"for the EQDSK file. Using convention {conv.cc_index}"
+                f"for the EQDSK file. Choosing convention {conv.cc_index}."
             )
         self._cocos_convention = conv
+
+    def to_normalised_cocos(self):
+        """
+        Return a copy of this object with the COCOS convention set to
+        the normalised convention.
+        """
+        # checks the cocos convention has been set
+        if self.cocos_convention.cc_index != EQDSKInterface.DEFAULT_COCOS_CONVENTION:
+            eqdsk_warn("Converting EQDSK to normalised COCOS convention 2")
+        return convert_eqdsk(self, EQDSKInterface.DEFAULT_COCOS_CONVENTION)
 
     def to_dict(self) -> Dict:
         """Return a dictionary of the EQDSK data."""

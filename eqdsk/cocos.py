@@ -302,7 +302,7 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     tgt_eqdsk.cplasma = eff_R_phi_Z * org_eqdsk.cplasma
     tgt_eqdsk.bcentre = eff_R_phi_Z * org_eqdsk.bcentre
 
-    # not sure about these, but this make sense to me
+    # todo: not sure about these, but this make sense to me
     # tgt_eqdsk.Ic = eff_R_phi_Z * org_eqdsk.Ic
     # tgt_eqdsk.fpol = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.fpol
 
@@ -317,4 +317,6 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
         # there isn't much agreement on this one
         tgt_eqdsk.qpsi = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.qpsi
 
-    return eqdsk
+    tgt_eqdsk.identify()
+
+    return tgt_eqdsk
