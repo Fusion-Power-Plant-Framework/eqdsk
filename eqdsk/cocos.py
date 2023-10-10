@@ -180,8 +180,6 @@ def matching_conventions(
     sign_Bp: Optional[Sign] = None,
     sign_R_phi_Z: Optional[Sign] = None,
     sign_rho_theta_phi: Optional[Sign] = None,
-    sign_q: Optional[Sign] = None,
-    sign_pprime: Optional[Sign] = None,
 ) -> list[COCOSConvention]:
     def _match_cocos(c: COCOSConvention) -> bool:
         return all(
@@ -189,8 +187,7 @@ def matching_conventions(
                 exp_Bp is None or c.exp_Bp == exp_Bp,
                 sign_Bp is None or c.sign_Bp == sign_Bp,
                 sign_R_phi_Z is None or c.sign_R_phi_Z == sign_R_phi_Z,
-                sign_rho_theta_phi is None
-                or c.sign_rho_theta_phi == sign_rho_theta_phi,
+                sign_rho_theta_phi is None or c.sign_rho_theta_phi == sign_rho_theta_phi,
             ]
         )
 
@@ -303,8 +300,8 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     tgt_eqdsk.bcentre = eff_R_phi_Z * org_eqdsk.bcentre
 
     # todo: not sure about these, but this make sense to me
-    # tgt_eqdsk.Ic = eff_R_phi_Z * org_eqdsk.Ic
-    # tgt_eqdsk.fpol = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.fpol
+    tgt_eqdsk.Ic = eff_R_phi_Z * org_eqdsk.Ic
+    tgt_eqdsk.fpol = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.fpol
 
     tgt_eqdsk.psi = eff_bp * eff_R_phi_Z * (1 / pi_factor) * org_eqdsk.psi
     tgt_eqdsk.psibdry = eff_bp * eff_R_phi_Z * (1 / pi_factor) * org_eqdsk.psibdry
@@ -317,6 +314,9 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
         # there isn't much agreement on this one
         tgt_eqdsk.qpsi = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.qpsi
 
-    tgt_eqdsk.identify()
+    tgt_eqdsk.identify(
+        clockwise_phi=tgt_cocos.sign_R_phi_Z == Sign.P,
+        volt_seconds_per_radian=tgt_cocos.exp_Bp == ZeroOne.ONE,
+    )
 
     return tgt_eqdsk

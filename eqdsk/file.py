@@ -147,7 +147,13 @@ class EQDSKInterface:
         self._cocos_convention = None
 
     @classmethod
-    def from_file(cls, file_path: str):
+    def from_file(
+        cls,
+        file_path: str,
+        clockwise_phi: Optional[bool] = None,
+        volt_seconds_per_radian: Optional[bool] = None,
+        raw: bool = False,
+    ):
         """
         Create an EQDSKInterface object from a file.
 
@@ -174,8 +180,9 @@ class EQDSKInterface:
         else:
             raise ValueError(f"Unrecognised file format '{file_extension}'.")
 
-        inst.identify()
-        inst = inst.to_normalised_cocos()
+        inst.identify(clockwise_phi, volt_seconds_per_radian)
+        if not raw:
+            inst = inst.to_normalised_cocos()
 
         return inst
 
@@ -188,8 +195,12 @@ class EQDSKInterface:
             )
         return self._cocos_convention
 
-    def identify(self):
-        conventions = identify_eqdsk(self)
+    def identify(
+        self,
+        clockwise_phi: Optional[bool] = None,
+        volt_seconds_per_radian: Optional[bool] = None,
+    ):
+        conventions = identify_eqdsk(self, clockwise_phi, volt_seconds_per_radian)
         conv = conventions[0]
         if len(conventions) != 1:
             eqdsk_warn(
@@ -238,7 +249,8 @@ class EQDSKInterface:
             json_writer(self.to_dict(), file_path, **json_kwargs)
         elif format in ["eqdsk", "geqdsk"]:
             eqdsk_warn(
-                "You are in the 21st century. Are you sure you want to be making an EDQSK in this day and age?"
+                "You are in the 21st century. "
+                "Are you sure you want to be making an EDQSK in this day and age?"
             )
             _write_eqdsk(file_path, self.to_dict())
 
