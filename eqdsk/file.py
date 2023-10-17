@@ -31,7 +31,7 @@ from typing import Any, Dict, List, Optional
 import fortranformat as ff
 import numpy as np
 
-from eqdsk.cocos import convert_eqdsk, identify_eqdsk
+from eqdsk.cocos import COCOSConvention, convert_eqdsk, identify_eqdsk
 from eqdsk.log import eqdsk_warn
 from eqdsk.tools import is_num, json_writer
 
@@ -180,14 +180,14 @@ class EQDSKInterface:
         else:
             raise ValueError(f"Unrecognised file format '{file_extension}'.")
 
-        inst.identify(clockwise_phi, volt_seconds_per_radian)
         if not raw:
-            inst = inst.to_normalised_cocos()
+            inst.identify(clockwise_phi, volt_seconds_per_radian)
+            inst = inst.as_normalised_cocos()
 
         return inst
 
     @property
-    def cocos_convention(self):
+    def cocos_convention(self) -> COCOSConvention:
         if self._cocos_convention is None:
             raise ValueError(
                 "The COCOS convention has not been identified. The 'identify' method"
@@ -210,14 +210,18 @@ class EQDSKInterface:
             )
         self._cocos_convention = conv
 
-    def to_normalised_cocos(self):
+    def as_normalised_cocos(self) -> "EQDSKInterface":
         """
         Return a copy of this object with the COCOS convention set to
         the normalised convention.
         """
         # checks the cocos convention has been set
         if self.cocos_convention.cc_index != EQDSKInterface.DEFAULT_COCOS_CONVENTION:
-            eqdsk_warn("Converting EQDSK to normalised COCOS convention 2")
+            eqdsk_warn(
+                "Converting EQDSK to normalised COCOS convention "
+                f"{EQDSKInterface.DEFAULT_COCOS_CONVENTION} from "
+                f"convention {self.cocos_convention.cc_index}."
+            )
         return convert_eqdsk(self, EQDSKInterface.DEFAULT_COCOS_CONVENTION)
 
     def to_dict(self) -> Dict:
