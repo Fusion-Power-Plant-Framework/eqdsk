@@ -219,7 +219,7 @@ class EQDSKInterface:
         if self.cocos_convention.cc_index != EQDSKInterface.DEFAULT_COCOS_CONVENTION:
             eqdsk_warn(
                 "Converting EQDSK to normalised COCOS convention "
-                f"{EQDSKInterface.DEFAULT_COCOS_CONVENTION} from "
+                f"{EQDSKInterface.DEFAULT_COCOS_CONVENTION}, from "
                 f"convention {self.cocos_convention.cc_index}."
             )
         return convert_eqdsk(self, EQDSKInterface.DEFAULT_COCOS_CONVENTION)
