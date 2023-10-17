@@ -175,95 +175,93 @@ def all_conventions() -> tuple[COCOSConvention, ...]:
     )
 
 
-def matching_conventions(
-    exp_Bp: Optional[ZeroOne] = None,
-    sign_Bp: Optional[Sign] = None,
-    sign_R_phi_Z: Optional[Sign] = None,
-    sign_rho_theta_phi: Optional[Sign] = None,
-) -> list[COCOSConvention]:
+def matching_convention(
+    exp_Bp: ZeroOne,
+    sign_Bp: Sign,
+    sign_R_phi_Z: Sign,
+    sign_rho_theta_phi: Sign,
+) -> COCOSConvention:
     def _match_cocos(c: COCOSConvention) -> bool:
         return all(
             [
-                exp_Bp is None or c.exp_Bp == exp_Bp,
-                sign_Bp is None or c.sign_Bp == sign_Bp,
-                sign_R_phi_Z is None or c.sign_R_phi_Z == sign_R_phi_Z,
-                sign_rho_theta_phi is None or c.sign_rho_theta_phi == sign_rho_theta_phi,
+                c.exp_Bp == exp_Bp,
+                c.sign_Bp == sign_Bp,
+                c.sign_R_phi_Z == sign_R_phi_Z,
+                c.sign_rho_theta_phi == sign_rho_theta_phi,
             ]
         )
 
-    return list(filter(_match_cocos, all_conventions()))
+    # there will only be one
+    return list(filter(_match_cocos, all_conventions()))[0]
 
 
 def identify_eqdsk(
     eqdsk: EQDSKInterface,
-    # is the direction of the toroidal B field
-    # (the toroidal magnetic field) clockwise?
     clockwise_phi: Optional[bool] = None,
     volt_seconds_per_radian: Optional[bool] = None,
-    flux_surfaces_minor_radius: Optional[np.ndarray] = None,
 ) -> list[COCOSConvention]:
-    sign_Ip = np.sign(eqdsk.cplasma)
-    sign_B0 = np.sign(eqdsk.bcentre)
+    if eqdsk.qpsi is None:
+        raise ValueError("qpsi is not defined in the eqdsk file.")
 
-    # todo: what if qpsi is None??
-    sign_q = np.sign(eqdsk.qpsi)
-    if sign_q.min() != sign_q.max():
-        raise ValueError("The sign of qpsi is not consistent across the flux surfaces.")
-    sign_q = sign_q.max()
+    conventions = []
+    for cw_phi in [True, False] if clockwise_phi is None else [clockwise_phi]:
+        for vs_pr in (
+            [True, False]
+            if volt_seconds_per_radian is None
+            else [volt_seconds_per_radian]
+        ):
+            conventions.append(
+                identify_cocos(
+                    plasma_current=eqdsk.cplasma,
+                    b_center=eqdsk.bcentre,
+                    psi_at_boundary=eqdsk.psibdry,
+                    psi_at_mag_axis=eqdsk.psimag,
+                    q_psi=eqdsk.qpsi,
+                    phi_clockwise_from_top=cw_phi,
+                    volt_seconds_per_radian=vs_pr,
+                )
+            )
+    # return sort asc by cc_index
+    conventions.sort(key=lambda x: x.cc_index)
+    return conventions
 
-    sign_d_psi_towards_boundary = np.sign(eqdsk.psibdry - eqdsk.psimag)
 
-    sign_Bp = sign_Ip * sign_d_psi_towards_boundary
-    sign_rho_theta_phi = sign_Ip * sign_B0 * sign_q
-
-    if clockwise_phi is None:
-        sign_R_phi_Z = None
-    elif clockwise_phi:
+def identify_cocos(
+    plasma_current: float,
+    b_center: float,
+    psi_at_boundary: float,
+    psi_at_mag_axis: float,
+    q_psi: np.ndarray,
+    phi_clockwise_from_top: bool,
+    volt_seconds_per_radian: bool,
+) -> COCOSConvention:
+    if phi_clockwise_from_top:
         sign_R_phi_Z = Sign.N
     else:
         sign_R_phi_Z = Sign.P
 
-    # not sure if this is needed
-    # in the utf8 code they do it, in omas they don't
-    # if sign_R_phi_Z is not None:
-    #     sign_rho_theta_phi *= sign_R_phi_Z.value
+    if volt_seconds_per_radian:
+        exp_Bp = ZeroOne.ONE
+    else:
+        exp_Bp = ZeroOne.ZERO
+
+    sign_Ip = np.sign(plasma_current)
+    sign_B0 = np.sign(b_center)
+
+    sign_q = np.sign(q_psi)
+    if sign_q.min() != sign_q.max():
+        raise ValueError("The sign of qpsi is not consistent across the flux surfaces.")
+    sign_q = sign_q.max()
+
+    sign_d_psi_towards_boundary = np.sign(psi_at_boundary - psi_at_mag_axis)
+
+    sign_Bp = sign_Ip * sign_d_psi_towards_boundary
+    sign_rho_theta_phi = sign_Ip * sign_B0 * sign_q * sign_R_phi_Z.value
 
     sign_Bp = Sign(sign_Bp)
     sign_rho_theta_phi = Sign(sign_rho_theta_phi)
 
-    exp_Bp = None
-    if volt_seconds_per_radian is not None:
-        if volt_seconds_per_radian:
-            exp_Bp = ZeroOne.ONE
-        else:
-            exp_Bp = ZeroOne.ZERO
-    elif flux_surfaces_minor_radius is not None:
-        a = flux_surfaces_minor_radius
-
-        # from OMAS
-        # https://gafusion.github.io/omas/_modules/omas/omas_physics.html
-
-        # idx of min q, not sure why yet
-        index = np.argmin(np.abs(eqdsk.qpsi))
-        if index == 0:
-            index = 1
-
-        q_estimate = np.abs(
-            (np.pi * eqdsk.bcentre * (a[index] - a[0]) ** 2)
-            / (
-                # todo: this won't work because psi is a 2d grid?
-                eqdsk.psi[index]
-                - eqdsk.psi[0]
-            )
-        )
-        q_actual = np.abs(eqdsk.qpsi[index])
-
-        if abs(q_estimate - q_actual) < abs(q_estimate / (2 * np.pi) - q_actual):
-            exp_Bp = ZeroOne.ONE
-        else:
-            exp_Bp = ZeroOne.ZERO
-
-    return matching_conventions(
+    return matching_convention(
         exp_Bp=exp_Bp,
         sign_Bp=sign_Bp,
         sign_R_phi_Z=sign_R_phi_Z,
@@ -311,11 +309,12 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     tgt_eqdsk.ffprime = eff_bp * eff_R_phi_Z * pi_factor * org_eqdsk.ffprime
 
     if org_eqdsk.qpsi is not None:
-        # there isn't much agreement on this one
         tgt_eqdsk.qpsi = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.qpsi
 
+    # not sure if this should be done here, but kinda makes sense
+    # because you have the tgt_cocos
     tgt_eqdsk.identify(
-        clockwise_phi=tgt_cocos.sign_R_phi_Z == Sign.P,
+        clockwise_phi=tgt_cocos.sign_R_phi_Z == Sign.N,
         volt_seconds_per_radian=tgt_cocos.exp_Bp == ZeroOne.ONE,
     )
 
