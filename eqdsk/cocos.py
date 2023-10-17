@@ -191,8 +191,7 @@ def matching_convention(
             ]
         )
 
-    # there will only be one
-    return list(filter(_match_cocos, all_conventions()))[0]
+    return next(filter(_match_cocos, all_conventions()))
 
 
 def identify_eqdsk(
