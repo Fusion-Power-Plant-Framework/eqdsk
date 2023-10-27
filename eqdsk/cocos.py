@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, unique
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
@@ -17,12 +17,12 @@ class ZeroOne(Enum):
 
 
 class Sign(Enum):
-    P = 1
-    N = -1
+    POSITIVE = 1
+    NEGATIVE = -1
 
 
 @dataclass(frozen=True)
-class COCOSConvention:
+class COCOSValues:
     cc_index: int
     exp_Bp: ZeroOne  # 0 -> ψ/2pi^(1-0) i.e. ψ/2pi, 1 -> ψ/2pi^(1-1) i.e. just ψ
     sign_Bp: Sign  # ψ (P -> increasing)/(N -> decreasing) from the magnetic axis
@@ -30,175 +30,164 @@ class COCOSConvention:
     sign_rho_theta_phi: Sign  # P -> (ρ, θ, ϕ), N -> (ρ, ϕ, θ)
 
 
-C1 = COCOSConvention(
-    cc_index=1,
-    exp_Bp=ZeroOne.ZERO,
-    sign_Bp=Sign.P,
-    sign_R_phi_Z=Sign.P,
-    sign_rho_theta_phi=Sign.P,
-)
-C11 = COCOSConvention(
-    cc_index=11,
-    exp_Bp=ZeroOne.ONE,
-    sign_Bp=Sign.P,
-    sign_R_phi_Z=Sign.P,
-    sign_rho_theta_phi=Sign.P,
-)
-C2 = COCOSConvention(
-    cc_index=2,
-    exp_Bp=ZeroOne.ZERO,
-    sign_Bp=Sign.P,
-    sign_R_phi_Z=Sign.N,
-    sign_rho_theta_phi=Sign.P,
-)
-C12 = COCOSConvention(
-    cc_index=12,
-    exp_Bp=ZeroOne.ONE,
-    sign_Bp=Sign.P,
-    sign_R_phi_Z=Sign.N,
-    sign_rho_theta_phi=Sign.P,
-)
-C3 = COCOSConvention(
-    cc_index=3,
-    exp_Bp=ZeroOne.ZERO,
-    sign_Bp=Sign.N,
-    sign_R_phi_Z=Sign.P,
-    sign_rho_theta_phi=Sign.N,
-)
-C13 = COCOSConvention(
-    cc_index=13,
-    exp_Bp=ZeroOne.ONE,
-    sign_Bp=Sign.N,
-    sign_R_phi_Z=Sign.P,
-    sign_rho_theta_phi=Sign.N,
-)
-C4 = COCOSConvention(
-    cc_index=4,
-    exp_Bp=ZeroOne.ZERO,
-    sign_Bp=Sign.N,
-    sign_R_phi_Z=Sign.N,
-    sign_rho_theta_phi=Sign.N,
-)
-C14 = COCOSConvention(
-    cc_index=14,
-    exp_Bp=ZeroOne.ONE,
-    sign_Bp=Sign.N,
-    sign_R_phi_Z=Sign.N,
-    sign_rho_theta_phi=Sign.N,
-)
-C5 = COCOSConvention(
-    cc_index=5,
-    exp_Bp=ZeroOne.ZERO,
-    sign_Bp=Sign.P,
-    sign_R_phi_Z=Sign.P,
-    sign_rho_theta_phi=Sign.N,
-)
-C15 = COCOSConvention(
-    cc_index=15,
-    exp_Bp=ZeroOne.ONE,
-    sign_Bp=Sign.P,
-    sign_R_phi_Z=Sign.P,
-    sign_rho_theta_phi=Sign.N,
-)
-C6 = COCOSConvention(
-    cc_index=6,
-    exp_Bp=ZeroOne.ZERO,
-    sign_Bp=Sign.P,
-    sign_R_phi_Z=Sign.N,
-    sign_rho_theta_phi=Sign.N,
-)
-C16 = COCOSConvention(
-    cc_index=16,
-    exp_Bp=ZeroOne.ONE,
-    sign_Bp=Sign.P,
-    sign_R_phi_Z=Sign.N,
-    sign_rho_theta_phi=Sign.N,
-)
-C7 = COCOSConvention(
-    cc_index=7,
-    exp_Bp=ZeroOne.ZERO,
-    sign_Bp=Sign.N,
-    sign_R_phi_Z=Sign.P,
-    sign_rho_theta_phi=Sign.P,
-)
-C17 = COCOSConvention(
-    cc_index=17,
-    exp_Bp=ZeroOne.ONE,
-    sign_Bp=Sign.N,
-    sign_R_phi_Z=Sign.P,
-    sign_rho_theta_phi=Sign.P,
-)
-C8 = COCOSConvention(
-    cc_index=8,
-    exp_Bp=ZeroOne.ZERO,
-    sign_Bp=Sign.N,
-    sign_R_phi_Z=Sign.N,
-    sign_rho_theta_phi=Sign.P,
-)
-C18 = COCOSConvention(
-    cc_index=18,
-    exp_Bp=ZeroOne.ONE,
-    sign_Bp=Sign.N,
-    sign_R_phi_Z=Sign.N,
-    sign_rho_theta_phi=Sign.P,
-)
-
-
-def get_convention(cocos_index: int) -> COCOSConvention:
-    if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
-        raise ValueError(
-            f"Convention number {cocos_index} is not valid. "
-            "Must be between 1 and 8 or 11 and 18."
-        )
-    # gets first matching index
-    return next(x for x in all_conventions() if x.cc_index == cocos_index)
-
-
-def all_conventions() -> tuple[COCOSConvention, ...]:
-    return (
-        C1,
-        C2,
-        C3,
-        C4,
-        C5,
-        C6,
-        C7,
-        C8,
-        C11,
-        C12,
-        C13,
-        C14,
-        C15,
-        C16,
-        C17,
-        C18,
+@unique
+class COCOS(Enum):
+    C1 = COCOSValues(
+        cc_index=1,
+        exp_Bp=ZeroOne.ZERO,
+        sign_Bp=Sign.POSITIVE,
+        sign_R_phi_Z=Sign.POSITIVE,
+        sign_rho_theta_phi=Sign.POSITIVE,
+    )
+    C11 = COCOSValues(
+        cc_index=11,
+        exp_Bp=ZeroOne.ONE,
+        sign_Bp=Sign.POSITIVE,
+        sign_R_phi_Z=Sign.POSITIVE,
+        sign_rho_theta_phi=Sign.POSITIVE,
+    )
+    C2 = COCOSValues(
+        cc_index=2,
+        exp_Bp=ZeroOne.ZERO,
+        sign_Bp=Sign.POSITIVE,
+        sign_R_phi_Z=Sign.NEGATIVE,
+        sign_rho_theta_phi=Sign.POSITIVE,
+    )
+    C12 = COCOSValues(
+        cc_index=12,
+        exp_Bp=ZeroOne.ONE,
+        sign_Bp=Sign.POSITIVE,
+        sign_R_phi_Z=Sign.NEGATIVE,
+        sign_rho_theta_phi=Sign.POSITIVE,
+    )
+    C3 = COCOSValues(
+        cc_index=3,
+        exp_Bp=ZeroOne.ZERO,
+        sign_Bp=Sign.NEGATIVE,
+        sign_R_phi_Z=Sign.POSITIVE,
+        sign_rho_theta_phi=Sign.NEGATIVE,
+    )
+    C13 = COCOSValues(
+        cc_index=13,
+        exp_Bp=ZeroOne.ONE,
+        sign_Bp=Sign.NEGATIVE,
+        sign_R_phi_Z=Sign.POSITIVE,
+        sign_rho_theta_phi=Sign.NEGATIVE,
+    )
+    C4 = COCOSValues(
+        cc_index=4,
+        exp_Bp=ZeroOne.ZERO,
+        sign_Bp=Sign.NEGATIVE,
+        sign_R_phi_Z=Sign.NEGATIVE,
+        sign_rho_theta_phi=Sign.NEGATIVE,
+    )
+    C14 = COCOSValues(
+        cc_index=14,
+        exp_Bp=ZeroOne.ONE,
+        sign_Bp=Sign.NEGATIVE,
+        sign_R_phi_Z=Sign.NEGATIVE,
+        sign_rho_theta_phi=Sign.NEGATIVE,
+    )
+    C5 = COCOSValues(
+        cc_index=5,
+        exp_Bp=ZeroOne.ZERO,
+        sign_Bp=Sign.POSITIVE,
+        sign_R_phi_Z=Sign.POSITIVE,
+        sign_rho_theta_phi=Sign.NEGATIVE,
+    )
+    C15 = COCOSValues(
+        cc_index=15,
+        exp_Bp=ZeroOne.ONE,
+        sign_Bp=Sign.POSITIVE,
+        sign_R_phi_Z=Sign.POSITIVE,
+        sign_rho_theta_phi=Sign.NEGATIVE,
+    )
+    C6 = COCOSValues(
+        cc_index=6,
+        exp_Bp=ZeroOne.ZERO,
+        sign_Bp=Sign.POSITIVE,
+        sign_R_phi_Z=Sign.NEGATIVE,
+        sign_rho_theta_phi=Sign.NEGATIVE,
+    )
+    C16 = COCOSValues(
+        cc_index=16,
+        exp_Bp=ZeroOne.ONE,
+        sign_Bp=Sign.POSITIVE,
+        sign_R_phi_Z=Sign.NEGATIVE,
+        sign_rho_theta_phi=Sign.NEGATIVE,
+    )
+    C7 = COCOSValues(
+        cc_index=7,
+        exp_Bp=ZeroOne.ZERO,
+        sign_Bp=Sign.NEGATIVE,
+        sign_R_phi_Z=Sign.POSITIVE,
+        sign_rho_theta_phi=Sign.POSITIVE,
+    )
+    C17 = COCOSValues(
+        cc_index=17,
+        exp_Bp=ZeroOne.ONE,
+        sign_Bp=Sign.NEGATIVE,
+        sign_R_phi_Z=Sign.POSITIVE,
+        sign_rho_theta_phi=Sign.POSITIVE,
+    )
+    C8 = COCOSValues(
+        cc_index=8,
+        exp_Bp=ZeroOne.ZERO,
+        sign_Bp=Sign.NEGATIVE,
+        sign_R_phi_Z=Sign.NEGATIVE,
+        sign_rho_theta_phi=Sign.POSITIVE,
+    )
+    C18 = COCOSValues(
+        cc_index=18,
+        exp_Bp=ZeroOne.ONE,
+        sign_Bp=Sign.NEGATIVE,
+        sign_R_phi_Z=Sign.NEGATIVE,
+        sign_rho_theta_phi=Sign.POSITIVE,
     )
 
+    def __init__(self, c: COCOSValues):
+        # shortcuts .value access
+        self.cc_index = c.cc_index
+        self.exp_Bp = c.exp_Bp
+        self.sign_Bp = c.sign_Bp
+        self.sign_R_phi_Z = c.sign_R_phi_Z
+        self.sign_rho_theta_phi = c.sign_rho_theta_phi
 
-def matching_convention(
-    exp_Bp: ZeroOne,
-    sign_Bp: Sign,
-    sign_R_phi_Z: Sign,
-    sign_rho_theta_phi: Sign,
-) -> COCOSConvention:
-    def _match_cocos(c: COCOSConvention) -> bool:
-        return all(
-            [
-                c.exp_Bp == exp_Bp,
-                c.sign_Bp == sign_Bp,
-                c.sign_R_phi_Z == sign_R_phi_Z,
-                c.sign_rho_theta_phi == sign_rho_theta_phi,
-            ]
-        )
+    @classmethod
+    def with_index(cls, cocos_index: int) -> COCOSValues:
+        if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
+            raise ValueError(
+                f"Convention number {cocos_index} is not valid. "
+                "Must be between 1 and 8 or 11 and 18."
+            )
+        return next(x for x in cls if x.cc_index == cocos_index)
 
-    return next(filter(_match_cocos, all_conventions()))
+    @classmethod
+    def matching_convention(
+        cls,
+        exp_Bp: ZeroOne,
+        sign_Bp: Sign,
+        sign_R_phi_Z: Sign,
+        sign_rho_theta_phi: Sign,
+    ) -> COCOSValues:
+        def _match_cocos(c: COCOS) -> bool:
+            return all(
+                [
+                    c.exp_Bp == exp_Bp,
+                    c.sign_Bp == sign_Bp,
+                    c.sign_R_phi_Z == sign_R_phi_Z,
+                    c.sign_rho_theta_phi == sign_rho_theta_phi,
+                ]
+            )
+
+        return next(filter(_match_cocos, cls))
 
 
 def identify_eqdsk(
     eqdsk: EQDSKInterface,
     clockwise_phi: Optional[bool] = None,
     volt_seconds_per_radian: Optional[bool] = None,
-) -> list[COCOSConvention]:
+) -> list[COCOS]:
     if eqdsk.qpsi is None:
         raise ValueError("qpsi is not defined in the eqdsk file.")
 
@@ -233,11 +222,11 @@ def identify_cocos(
     q_psi: np.ndarray,
     phi_clockwise_from_top: bool,
     volt_seconds_per_radian: bool,
-) -> COCOSConvention:
+) -> COCOS:
     if phi_clockwise_from_top:
-        sign_R_phi_Z = Sign.N
+        sign_R_phi_Z = Sign.NEGATIVE
     else:
-        sign_R_phi_Z = Sign.P
+        sign_R_phi_Z = Sign.POSITIVE
 
     if volt_seconds_per_radian:
         exp_Bp = ZeroOne.ONE
@@ -260,7 +249,7 @@ def identify_cocos(
     sign_Bp = Sign(sign_Bp)
     sign_rho_theta_phi = Sign(sign_rho_theta_phi)
 
-    return matching_convention(
+    return COCOS.matching_convention(
         exp_Bp=exp_Bp,
         sign_Bp=sign_Bp,
         sign_R_phi_Z=sign_R_phi_Z,
@@ -269,15 +258,14 @@ def identify_cocos(
 
 
 def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
-    org_cocos = eqdsk.cocos_convention
-
-    if org_cocos.cc_index == to_cocos_index:
-        return eqdsk
-
-    tgt_cocos = get_convention(to_cocos_index)
+    org_cocos = eqdsk.cocos
+    tgt_cocos = COCOS.with_index(to_cocos_index)
 
     org_eqdsk = eqdsk
     tgt_eqdsk = deepcopy(eqdsk)
+
+    if org_cocos.cc_index == tgt_cocos.cc_index:
+        return tgt_eqdsk
 
     eff_bp = tgt_cocos.sign_Bp.value * org_cocos.sign_Bp.value
     eff_R_phi_Z = tgt_cocos.sign_R_phi_Z.value * org_cocos.sign_R_phi_Z.value
@@ -313,7 +301,7 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     # not sure if this should be done here, but kinda makes sense
     # because you have the tgt_cocos
     tgt_eqdsk.identify(
-        clockwise_phi=tgt_cocos.sign_R_phi_Z == Sign.N,
+        clockwise_phi=tgt_cocos.sign_R_phi_Z == Sign.NEGATIVE,
         volt_seconds_per_radian=tgt_cocos.exp_Bp == ZeroOne.ONE,
     )
 

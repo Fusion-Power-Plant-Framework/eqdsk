@@ -31,14 +31,14 @@ from typing import Any, Dict, List, Optional
 import fortranformat as ff
 import numpy as np
 
-from eqdsk.cocos import COCOSConvention, convert_eqdsk, identify_eqdsk
+from eqdsk.cocos import COCOS, convert_eqdsk, identify_eqdsk
 from eqdsk.log import eqdsk_warn
 from eqdsk.tools import is_num, json_writer
 
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
 
 
-# repr = False to avoid printing the data in the repr
+# repr = False to avoid printing the data in __repr__
 @dataclass(repr=False)
 class EQDSKInterface:
     """
@@ -61,7 +61,7 @@ class EQDSKInterface:
     Plasma current direction is not enforced here!
     """
 
-    DEFAULT_COCOS_CONVENTION = 2
+    DEFAULT_COCOS_INDEX = 11
 
     bcentre: float
     """Vacuum toroidal Magnetic field at the reference radius [T]."""
@@ -144,7 +144,7 @@ class EQDSKInterface:
             self.z = _derive_z(self.zmid, self.zdim, self.nz)
         if self.psinorm is None:
             self.psinorm = _derive_psinorm(self.fpol)
-        self._cocos_convention = None
+        self._cocos = None
 
     @classmethod
     def from_file(
@@ -152,6 +152,8 @@ class EQDSKInterface:
         file_path: str,
         clockwise_phi: Optional[bool] = None,
         volt_seconds_per_radian: Optional[bool] = None,
+        from_cocos_index: Optional[int] = None,
+        to_cocos_index: Optional[int] = None,
         raw: bool = False,
     ):
         """
@@ -181,48 +183,78 @@ class EQDSKInterface:
             raise ValueError(f"Unrecognised file format '{file_extension}'.")
 
         if not raw:
-            inst.identify(clockwise_phi, volt_seconds_per_radian)
-            inst = inst.as_normalised_cocos()
+            inst.identify(
+                clockwise_phi, volt_seconds_per_radian, as_cocos_index=from_cocos_index
+            )
+            if to_cocos_index is None:
+                inst = inst.as_default_cocos()
+            else:
+                inst = inst.as_cocos(to_cocos_index)
 
         return inst
 
     @property
-    def cocos_convention(self) -> COCOSConvention:
-        if self._cocos_convention is None:
+    def cocos(self) -> COCOS:
+        if self._cocos is None:
             raise ValueError(
-                "The COCOS convention has not been identified. The 'identify' method"
-                "must be called first."
+                "The COCOS for this eqdsk has not yet been identified. "
+                "The 'identify' method must be called first "
+                "before the COCOS can be returned."
             )
-        return self._cocos_convention
+        return self._cocos
 
     def identify(
         self,
         clockwise_phi: Optional[bool] = None,
         volt_seconds_per_radian: Optional[bool] = None,
+        as_cocos_index: Optional[int] = None,
     ):
         conventions = identify_eqdsk(self, clockwise_phi, volt_seconds_per_radian)
+
+        if as_cocos_index is not None:
+            matching_conv = [c for c in conventions if c.cc_index == as_cocos_index]
+            if not matching_conv:
+                raise ValueError(
+                    f"No convention found that matches "
+                    f"the given COCOS index {as_cocos_index}, "
+                    f"from the possible ({', '.join([str(c.cc_index) for c in conventions])})."
+                )
+            conventions = matching_conv
+
         conv = conventions[0]
         if len(conventions) != 1:
             eqdsk_warn(
-                f"A single COCOS convention could not be determined, "
+                f"A single COCOS could not be determined, "
                 f"found conventions ({', '.join([str(c.cc_index) for c in conventions])}) "  # noqa: E501
-                f"for the EQDSK file. Choosing convention {conv.cc_index}."
+                f"for the EQDSK file. Choosing COCOS {conv.cc_index}."
             )
-        self._cocos_convention = conv
+        self._cocos = conv
 
-    def as_normalised_cocos(self) -> "EQDSKInterface":
+    def as_default_cocos(self) -> "EQDSKInterface":
         """
-        Return a copy of this object with the COCOS convention set to
-        the normalised convention.
+        Return a copy of this object with the COCOS set to
+        the default COCOS.
         """
         # checks the cocos convention has been set
-        if self.cocos_convention.cc_index != EQDSKInterface.DEFAULT_COCOS_CONVENTION:
+        if self.cocos.cc_index != EQDSKInterface.DEFAULT_COCOS_INDEX:
             eqdsk_warn(
-                "Converting EQDSK to normalised COCOS convention "
-                f"{EQDSKInterface.DEFAULT_COCOS_CONVENTION}, from "
-                f"convention {self.cocos_convention.cc_index}."
+                "Converting EQDSK to the default COCOS "
+                f"{EQDSKInterface.DEFAULT_COCOS_INDEX}, "
+                f"from COCOS {self.cocos.cc_index}."
             )
-        return convert_eqdsk(self, EQDSKInterface.DEFAULT_COCOS_CONVENTION)
+        return convert_eqdsk(self, EQDSKInterface.DEFAULT_COCOS_INDEX)
+
+    def as_cocos(self, cocos_index: int) -> "EQDSKInterface":
+        """
+        Return a copy of this object with the COCOS set to
+        the given COCOS index.
+        """
+        if self.cocos.cc_index != cocos_index:
+            eqdsk_warn(
+                f"Converting EQDSK to COCOS {cocos_index}, "
+                f"from COCOS {self.cocos.cc_index}."
+            )
+        return convert_eqdsk(self, cocos_index)
 
     def to_dict(self) -> Dict:
         """Return a dictionary of the EQDSK data."""
