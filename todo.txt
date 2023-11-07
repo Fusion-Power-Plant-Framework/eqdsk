@@ -1,0 +1,10 @@
+tests for cocos -> bluemira private tests
+
+KREATE, JETTO
+
+LICENSE
+
+CI
+
+Attributions
+

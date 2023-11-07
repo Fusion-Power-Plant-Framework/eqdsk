@@ -214,6 +214,7 @@ def identify_eqdsk(
     return conventions
 
 
+@dataclass
 def identify_cocos(
     plasma_current: float,
     b_center: float,
@@ -262,7 +263,7 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     tgt_cocos = COCOS.with_index(to_cocos_index)
 
     org_eqdsk = eqdsk
-    tgt_eqdsk = deepcopy(eqdsk)
+    tgt_eqdsk = deepcopy(org_eqdsk)
 
     if org_cocos.cc_index == tgt_cocos.cc_index:
         return tgt_eqdsk
