@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "eqdsk"
 dynamic = ['version']
-authors = [{ name = "The Bluemira team" }]
+authors = [{ name = "The Bluemira Team" }]
 description = """A reader, writer and converter for the eqdsk format"""
 readme = "README.md"
 license = "LGPL-2.1-or-later"
@@ -26,7 +26,15 @@ dependencies = ["fortranformat", "numpy"]
 
 [project.optional-dependencies]
 dev = ["pre-commit", "hatch"]
-
+test = [
+  "pytest",
+  "coverage[toml]",
+  "pytest-html",
+  "pytest-metadata",
+  "pytest-json-report",
+]
+docs = ["sphinx", "sphinx-autoapi", "sphinx-rtd-theme"]
+lint = ["black", "ruff", "mypy"]
 [project.urls]
 Source = "https://github.com/Fusion-Power-Plant-Framework/eqdsk"
 Documentation = "https://github.com/Fusion-Power-Plant-Framework/eqdsk#readme"
@@ -37,15 +45,13 @@ source = "vcs"
 [tool.hatch.build.hooks.vcs]
 version-file = "eqdsk/_version.py"
 
+# env: default
+[tool.hatch.envs.default]
+features = ["test"]
+
 # env: test
 [tool.hatch.envs.test]
-dependencies = [
-  "coverage[toml]",
-  "pytest",
-  "pytest-html",
-  "pytest-metadata",
-  "pytest-json-report",
-]
+features = ["test"]
 [[tool.hatch.envs.test.matrix]]
 python = ["3.8", "3.10"]
 [tool.hatch.envs.test.scripts]
@@ -56,14 +62,14 @@ cov-all = ["test-cov", "cov-report"]
 
 # env: docs
 [tool.hatch.envs.docs]
-dependencies = ["sphinx", "sphinx-autoapi", "sphinx-rtd-theme"]
+features = ["docs"]
 [tool.hatch.envs.docs.scripts]
 docs = "sphinx-build -b html docs docs/_build"
 
 # env: lint
 [tool.hatch.envs.lint]
 detached = true
-dependencies = ["black", "ruff", "mypy"]
+features = ["lint"]
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/eqdsk tests}"
 style = ["ruff {args:.}", "black --check --diff {args:.}"]
@@ -72,7 +78,7 @@ all = ["style", "typing"]
 
 # tool: ruff
 [tool.ruff]
-line-length = 120
+line-length = 80
 preview = true
 exclude = [
   ".git",
@@ -91,9 +97,15 @@ ignore = [
   "D100",
   "ANN206",
   "ANN201",
+  "ANN204",
   "ANN102",
   "ANN101",
   "T201",
+  "N803",
+  "N806",
+  "N815",
+  "TRY003",
+  "EM101",
   # Allow non-abstract empty methods in abstract base classes
   "B027",
   # Allow boolean positional values in function calls, like `dict.get(... True)`
@@ -133,11 +145,27 @@ convention = "numpy"
 "__init__.py" = ["F401", "F403"]
 
 [tool.black]
-line-length = 120
+line-length = 80
+
+# [tool.coverage.report]
+# "exclude_lines" = ["if __name__ == .__main__.:"]
+# "omit" = ["eqdsk/_version.py"]
+
+
+[tool.coverage.run]
+source_pkgs = ["eqdsk", "tests"]
+branch = true
+parallel = true
+omit = ["eqdsk/_version.py"]
+
+[tool.coverage.paths]
+eqdsk = ["eqdsk", "*/eqdsk"]
+tests = ["tests", "*/eqdsk/tests"]
 
 [tool.coverage.report]
-"exclude_lines" = ["if __name__ == .__main__.:"]
-"omit" = ["eqdsk/_version.py"]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
-[tool.pytest.ini_options]
-filterwarnings = ['ignore:Matplotlib is currently using agg:UserWarning']
+
+# [tool.pytest.ini_options]
+# addopts = "--html=report.html --self-contained-html --strict-markers -r fEX"
+# filterwarnings = ['ignore:Matplotlib is currently using agg:UserWarning']

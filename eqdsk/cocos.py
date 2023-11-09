@@ -28,10 +28,10 @@ class Sign(Enum):
 @dataclass(frozen=True)
 class COCOSValues:
     cc_index: int
-    exp_Bp: ZeroOne  # 0 -> ψ/2pi^(1-0) i.e. ψ/2pi, 1 -> ψ/2pi^(1-1) i.e. just ψ
-    sign_Bp: Sign  # ψ (P -> increasing)/(N -> decreasing) from the magnetic axis
-    sign_R_phi_Z: Sign  # P -> (R, ϕ, Z) ϕ cnt-clockwise, N -> (R, Z, ϕ) ϕ clockwise
-    sign_rho_theta_phi: Sign  # P -> (ρ, θ, ϕ), N -> (ρ, ϕ, θ)
+    exp_Bp: ZeroOne
+    sign_Bp: Sign
+    sign_R_phi_Z: Sign
+    sign_rho_theta_phi: Sign
 
 
 @unique
@@ -160,7 +160,9 @@ class COCOS(Enum):
     @classmethod
     def with_index(cls, cocos_index: int) -> COCOSValues:
         if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
-            raise ValueError(f"Convention number {cocos_index} is not valid. " "Must be between 1 and 8 or 11 and 18.")
+            msg = f"Convention number {cocos_index} is not valid. "
+            "Must be between 1 and 8 or 11 and 18."
+            raise ValueError(msg)
         return next(x for x in cls if x.cc_index == cocos_index)
 
     @classmethod
@@ -194,7 +196,11 @@ def identify_eqdsk(
 
     conventions = []
     for cw_phi in [True, False] if clockwise_phi is None else [clockwise_phi]:
-        for vs_pr in [True, False] if volt_seconds_per_radian is None else [volt_seconds_per_radian]:
+        for vs_pr in (
+            [True, False]
+            if volt_seconds_per_radian is None
+            else [volt_seconds_per_radian]
+        ):
             conventions.append(
                 identify_cocos(
                     plasma_current=eqdsk.cplasma,
@@ -217,25 +223,22 @@ def identify_cocos(
     psi_at_boundary: float,
     psi_at_mag_axis: float,
     q_psi: np.ndarray,
+    *,
     phi_clockwise_from_top: bool,
     volt_seconds_per_radian: bool,
 ) -> COCOS:
-    if phi_clockwise_from_top:
-        sign_R_phi_Z = Sign.NEGATIVE
-    else:
-        sign_R_phi_Z = Sign.POSITIVE
+    sign_R_phi_Z = Sign.NEGATIVE if phi_clockwise_from_top else Sign.POSITIVE
 
-    if volt_seconds_per_radian:
-        exp_Bp = ZeroOne.ONE
-    else:
-        exp_Bp = ZeroOne.ZERO
+    exp_Bp = ZeroOne.ONE if volt_seconds_per_radian else ZeroOne.ZERO
 
     sign_Ip = np.sign(plasma_current)
     sign_B0 = np.sign(b_center)
 
     sign_q = np.sign(q_psi)
     if sign_q.min() != sign_q.max():
-        raise ValueError("The sign of qpsi is not consistent across the flux surfaces.")
+        raise ValueError(
+            "The sign of qpsi is not consistent across the flux surfaces."
+        )
     sign_q = sign_q.max()
 
     sign_d_psi_towards_boundary = np.sign(psi_at_boundary - psi_at_mag_axis)
@@ -266,7 +269,9 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
 
     eff_bp = tgt_cocos.sign_Bp.value * org_cocos.sign_Bp.value
     eff_R_phi_Z = tgt_cocos.sign_R_phi_Z.value * org_cocos.sign_R_phi_Z.value
-    eff_rho_theta_phi = tgt_cocos.sign_rho_theta_phi.value * org_cocos.sign_rho_theta_phi.value
+    eff_rho_theta_phi = (
+        tgt_cocos.sign_rho_theta_phi.value * org_cocos.sign_rho_theta_phi.value
+    )
     eff_exp_bp = tgt_cocos.exp_Bp.value - org_cocos.exp_Bp.value
 
     # when eff_exp_bp is -1, it means org is vs/rad and tgt isn't,
@@ -284,7 +289,9 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     tgt_eqdsk.fpol = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.fpol
 
     tgt_eqdsk.psi = eff_bp * eff_R_phi_Z * (1 / pi_factor) * org_eqdsk.psi
-    tgt_eqdsk.psibdry = eff_bp * eff_R_phi_Z * (1 / pi_factor) * org_eqdsk.psibdry
+    tgt_eqdsk.psibdry = (
+        eff_bp * eff_R_phi_Z * (1 / pi_factor) * org_eqdsk.psibdry
+    )
     tgt_eqdsk.psimag = eff_bp * eff_R_phi_Z * (1 / pi_factor) * org_eqdsk.psimag
 
     tgt_eqdsk.pprime = eff_bp * eff_R_phi_Z * pi_factor * org_eqdsk.pprime
