@@ -6,11 +6,11 @@ build-backend = "hatchling.build"
 name = "eqdsk"
 dynamic = ['version']
 authors = [{ name = "The Bluemira team" }]
-description = """A reader writer and converter for the eqdsk format"""
+description = """A reader, writer and converter for the eqdsk format"""
 readme = "README.md"
-license = "LGPL-2.1"
+license = "LGPL-2.1-or-later"
 requires-python = ">=3.8"
-keywords = []
+keywords = ["tokamak", "cocos", "eqdsk", "GEQDSK"]
 classifiers = [
   "Programming Language :: Python",
   "Development Status :: 3 - Alpha",
@@ -86,6 +86,14 @@ exclude = [
 select = ["ALL"]
 extend-select = ["E241", "CPY001", "PLR0904"]
 ignore = [
+  "CPY001",
+  "D104",
+  "D100",
+  "ANN206",
+  "ANN201",
+  "ANN102",
+  "ANN101",
+  "T201",
   # Allow non-abstract empty methods in abstract base classes
   "B027",
   # Allow boolean positional values in function calls, like `dict.get(... True)`
@@ -132,5 +140,4 @@ line-length = 120
 "omit" = ["eqdsk/_version.py"]
 
 [tool.pytest.ini_options]
-addopts = "--html=report.html --self-contained-html --strict-markers"
 filterwarnings = ['ignore:Matplotlib is currently using agg:UserWarning']

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-present The Bluemira Developers <https://github.com/Fusion-Power-Plant-Framework/bluemira>
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -156,10 +160,7 @@ class COCOS(Enum):
     @classmethod
     def with_index(cls, cocos_index: int) -> COCOSValues:
         if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
-            raise ValueError(
-                f"Convention number {cocos_index} is not valid. "
-                "Must be between 1 and 8 or 11 and 18."
-            )
+            raise ValueError(f"Convention number {cocos_index} is not valid. " "Must be between 1 and 8 or 11 and 18.")
         return next(x for x in cls if x.cc_index == cocos_index)
 
     @classmethod
@@ -193,11 +194,7 @@ def identify_eqdsk(
 
     conventions = []
     for cw_phi in [True, False] if clockwise_phi is None else [clockwise_phi]:
-        for vs_pr in (
-            [True, False]
-            if volt_seconds_per_radian is None
-            else [volt_seconds_per_radian]
-        ):
+        for vs_pr in [True, False] if volt_seconds_per_radian is None else [volt_seconds_per_radian]:
             conventions.append(
                 identify_cocos(
                     plasma_current=eqdsk.cplasma,
@@ -214,7 +211,6 @@ def identify_eqdsk(
     return conventions
 
 
-@dataclass
 def identify_cocos(
     plasma_current: float,
     b_center: float,
@@ -270,17 +266,15 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
 
     eff_bp = tgt_cocos.sign_Bp.value * org_cocos.sign_Bp.value
     eff_R_phi_Z = tgt_cocos.sign_R_phi_Z.value * org_cocos.sign_R_phi_Z.value
-    eff_rho_theta_phi = (
-        tgt_cocos.sign_rho_theta_phi.value * org_cocos.sign_rho_theta_phi.value
-    )
+    eff_rho_theta_phi = tgt_cocos.sign_rho_theta_phi.value * org_cocos.sign_rho_theta_phi.value
     eff_exp_bp = tgt_cocos.exp_Bp.value - org_cocos.exp_Bp.value
 
-    # when eff_exp_bp is -1, it means org is vs/rad and trg isn't,
+    # when eff_exp_bp is -1, it means org is vs/rad and tgt isn't,
     # thus this is 1/2pi.
     # Meaning for tgt_psi, we'll effectively multiply org_psi by 2pi
     # getting rid of the /rad factor.
     # pprime and ffprime go with 1/psi thus are the opposite.
-    pi_factor = 2 * np.pi**eff_exp_bp
+    pi_factor = (2 * np.pi) ** eff_exp_bp
 
     tgt_eqdsk.cplasma = eff_R_phi_Z * org_eqdsk.cplasma
     tgt_eqdsk.bcentre = eff_R_phi_Z * org_eqdsk.bcentre
