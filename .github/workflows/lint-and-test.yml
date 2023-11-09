@@ -2,12 +2,7 @@ name: Lint and Test EQDSk
 on: [push]
 jobs:
   lint-with-hatch:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: "ubuntu-latest"
 
     steps:
       - uses: actions/checkout@v4
