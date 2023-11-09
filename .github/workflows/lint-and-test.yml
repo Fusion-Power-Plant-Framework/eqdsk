@@ -1,7 +1,7 @@
 name: Lint and Test EQDSk
 on: [push]
 jobs:
-  lint-with-hatch:
+  lint:
     runs-on: "ubuntu-latest"
 
     steps:
@@ -22,7 +22,7 @@ jobs:
       - name: Lint with ruff
         run: hatch run lint:all
 
-  test-with-hatch:
+  test:
     strategy:
       fail-fast: false
       matrix:

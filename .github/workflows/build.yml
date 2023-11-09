@@ -7,7 +7,7 @@ on:
   schedule:
     - cron: "0 0 * * *" # every day at midnight
 jobs:
-  build-with-hatch:
+  build:
     strategy:
       fail-fast: false
       matrix:
