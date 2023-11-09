@@ -180,7 +180,7 @@ class COCOS(Enum):
                     c.sign_Bp == sign_Bp,
                     c.sign_R_phi_Z == sign_R_phi_Z,
                     c.sign_rho_theta_phi == sign_rho_theta_phi,
-                ]
+                ],
             )
 
         return next(filter(_match_cocos, cls))
@@ -210,7 +210,7 @@ def identify_eqdsk(
                     q_psi=eqdsk.qpsi,
                     phi_clockwise_from_top=cw_phi,
                     volt_seconds_per_radian=vs_pr,
-                )
+                ),
             )
     # return sort asc by cc_index
     conventions.sort(key=lambda x: x.cc_index)
@@ -237,7 +237,7 @@ def identify_cocos(
     sign_q = np.sign(q_psi)
     if sign_q.min() != sign_q.max():
         raise ValueError(
-            "The sign of qpsi is not consistent across the flux surfaces."
+            "The sign of qpsi is not consistent across the flux surfaces.",
         )
     sign_q = sign_q.max()
 
@@ -274,17 +274,12 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     )
     eff_exp_bp = tgt_cocos.exp_Bp.value - org_cocos.exp_Bp.value
 
-    # when eff_exp_bp is -1, it means org is vs/rad and tgt isn't,
-    # thus this is 1/2pi.
-    # Meaning for tgt_psi, we'll effectively multiply org_psi by 2pi
-    # getting rid of the /rad factor.
-    # pprime and ffprime go with 1/psi thus are the opposite.
     pi_factor = (2 * np.pi) ** eff_exp_bp
 
     tgt_eqdsk.cplasma = eff_R_phi_Z * org_eqdsk.cplasma
     tgt_eqdsk.bcentre = eff_R_phi_Z * org_eqdsk.bcentre
 
-    # todo: not sure about these, but this make sense to me
+    # TODO: not sure about these, but this make sense to me
     tgt_eqdsk.Ic = eff_R_phi_Z * org_eqdsk.Ic
     tgt_eqdsk.fpol = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.fpol
 
@@ -300,8 +295,6 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     if org_eqdsk.qpsi is not None:
         tgt_eqdsk.qpsi = eff_R_phi_Z * eff_rho_theta_phi * org_eqdsk.qpsi
 
-    # not sure if this should be done here, but kinda makes sense
-    # because you have the tgt_cocos
     tgt_eqdsk.identify(
         clockwise_phi=tgt_cocos.sign_R_phi_Z == Sign.NEGATIVE,
         volt_seconds_per_radian=tgt_cocos.exp_Bp == ZeroOne.ONE,

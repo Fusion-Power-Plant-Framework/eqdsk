@@ -34,7 +34,9 @@ class NumpyJSONEncoder(JSONEncoder):
         return super().default(obj)
 
 
-def json_writer(data, file=None, return_output=False, *, cls=NumpyJSONEncoder, **kwargs):
+def json_writer(
+    data, file=None, return_output=False, *, cls=NumpyJSONEncoder, **kwargs,
+):
     """
     Write json in the bluemria style.
 
@@ -54,7 +56,7 @@ def json_writer(data, file=None, return_output=False, *, cls=NumpyJSONEncoder, *
     """
     if file is None and not return_output:
         eqdsk_warn("No json action to take")
-        return
+        return None
 
     if "indent" not in kwargs:
         kwargs["indent"] = 4
@@ -70,7 +72,9 @@ def json_writer(data, file=None, return_output=False, *, cls=NumpyJSONEncoder, *
         return the_json
 
 
-def compare_dicts(d1, d2, almost_equal=False, verbose=True, rtol=1e-5, atol=1e-8):
+def compare_dicts(
+    d1, d2, almost_equal=False, verbose=True, rtol=1e-5, atol=1e-8,
+):
     """
     Compares two dictionaries. Will print information about the differences
     between the two to the console. Dictionaries are compared by length, keys,
@@ -107,7 +111,9 @@ def compare_dicts(d1, d2, almost_equal=False, verbose=True, rtol=1e-5, atol=1e-8
     # Define functions to use for comparison in either the array, dict, or
     # numeric cases.
     def dict_eq(value_1, value_2):
-        return compare_dicts(value_1, value_2, almost_equal, verbose, rtol, atol)
+        return compare_dicts(
+            value_1, value_2, almost_equal, verbose, rtol, atol,
+        )
 
     def array_almost_eq(val1, val2):
         return np.allclose(val1, val2, rtol, atol)
@@ -165,7 +171,12 @@ def compare_dicts(d1, d2, almost_equal=False, verbose=True, rtol=1e-5, atol=1e-8
         result += "the following shared keys have different values:\n"
         different = ["\t" + str(i) for i in different]
         result += "\n".join(different) + "\n"
-    if nkey_diff == 0 and new_diff == set() and old_diff == set() and different == []:
+    if (
+        nkey_diff == 0
+        and new_diff == set()
+        and old_diff == set()
+        and different == []
+    ):
         the_same = True
     else:
         result += "==========================================================="

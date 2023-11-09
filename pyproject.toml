@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "eqdsk"
 dynamic = ['version']
-authors = [{ name = "The Bluemira Team" }]
+authors = [{ name = "The Bluemira Developers" }]
 description = """A reader, writer and converter for the eqdsk format"""
 readme = "README.md"
 license = "LGPL-2.1-or-later"
@@ -68,8 +68,8 @@ docs = "sphinx-build -b html docs docs/_build"
 
 # env: lint
 [tool.hatch.envs.lint]
-detached = true
-features = ["lint"]
+detached = true                          # Don't inherit from default (does not download dependencies)
+dependencies = ["black", "ruff", "mypy"]
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/eqdsk tests}"
 style = ["ruff {args:.}", "black --check --diff {args:.}"]

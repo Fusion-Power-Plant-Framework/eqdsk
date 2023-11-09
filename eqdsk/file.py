@@ -167,7 +167,9 @@ class EQDSKInterface:
 
         if not raw:
             inst.identify(
-                clockwise_phi, volt_seconds_per_radian, as_cocos_index=from_cocos_index
+                clockwise_phi,
+                volt_seconds_per_radian,
+                as_cocos_index=from_cocos_index,
             )
             if to_cocos_index is None:
                 inst = inst.as_default_cocos()
@@ -182,7 +184,7 @@ class EQDSKInterface:
             raise ValueError(
                 "The COCOS for this eqdsk has not yet been identified. "
                 "The 'identify' method must be called first "
-                "before the COCOS can be returned."
+                "before the COCOS can be returned.",
             )
         return self._cocos
 
@@ -192,15 +194,19 @@ class EQDSKInterface:
         volt_seconds_per_radian: Optional[bool] = None,
         as_cocos_index: Optional[int] = None,
     ):
-        conventions = identify_eqdsk(self, clockwise_phi, volt_seconds_per_radian)
+        conventions = identify_eqdsk(
+            self, clockwise_phi, volt_seconds_per_radian,
+        )
 
         if as_cocos_index is not None:
-            matching_conv = [c for c in conventions if c.cc_index == as_cocos_index]
+            matching_conv = [
+                c for c in conventions if c.cc_index == as_cocos_index
+            ]
             if not matching_conv:
                 raise ValueError(
                     f"No convention found that matches "
                     f"the given COCOS index {as_cocos_index}, "
-                    f"from the possible ({', '.join([str(c.cc_index) for c in conventions])})."
+                    f"from the possible ({', '.join([str(c.cc_index) for c in conventions])}).",
                 )
             conventions = matching_conv
 
@@ -209,7 +215,7 @@ class EQDSKInterface:
             eqdsk_warn(
                 f"A single COCOS could not be determined, "
                 f"found conventions ({', '.join([str(c.cc_index) for c in conventions])}) "  # noqa: E501
-                f"for the EQDSK file. Choosing COCOS {conv.cc_index}."
+                f"for the EQDSK file. Choosing COCOS {conv.cc_index}.",
             )
         self._cocos = conv
 
@@ -223,7 +229,7 @@ class EQDSKInterface:
             eqdsk_warn(
                 "Converting EQDSK to the default COCOS "
                 f"{EQDSKInterface.DEFAULT_COCOS_INDEX}, "
-                f"from COCOS {self.cocos.cc_index}."
+                f"from COCOS {self.cocos.cc_index}.",
             )
         return convert_eqdsk(self, EQDSKInterface.DEFAULT_COCOS_INDEX)
 
@@ -235,7 +241,7 @@ class EQDSKInterface:
         if self.cocos.cc_index != cocos_index:
             eqdsk_warn(
                 f"Converting EQDSK to COCOS {cocos_index}, "
-                f"from COCOS {self.cocos.cc_index}."
+                f"from COCOS {self.cocos.cc_index}.",
             )
         return convert_eqdsk(self, cocos_index)
 
@@ -247,7 +253,10 @@ class EQDSKInterface:
         return d
 
     def write(
-        self, file_path: str, format: str = "json", json_kwargs: Optional[Dict] = None
+        self,
+        file_path: str,
+        format: str = "json",
+        json_kwargs: Optional[Dict] = None,
     ):
         """
         Write the EQDSK data to file in the given format.
@@ -269,7 +278,7 @@ class EQDSKInterface:
         elif format in ["eqdsk", "geqdsk"]:
             eqdsk_warn(
                 "You are in the 21st century. "
-                "Are you sure you want to be making an EDQSK in this day and age?"
+                "Are you sure you want to be making an EDQSK in this day and age?",
             )
             _write_eqdsk(file_path, self.to_dict())
 
@@ -293,13 +302,13 @@ class EQDSKInterface:
                 setattr(self, key, value)
             else:
                 raise ValueError(
-                    f"Cannot update EQDSKInterface from dict. Unrecognised key '{key}'."
+                    f"Cannot update EQDSKInterface from dict. Unrecognised key '{key}'.",
                 )
 
 
 def _read_json(file) -> Dict[str, Any]:
     if isinstance(file, str):
-        with open(file, "r") as f_h:
+        with open(file) as f_h:
             return _read_json(f_h)
 
     data = json.load(file)
@@ -375,12 +384,12 @@ def _eqdsk_generator(file):
 
 def _read_eqdsk(file) -> Dict:
     if isinstance(file, str):
-        with open(file, "r") as f_handle:
+        with open(file) as f_handle:
             return _read_eqdsk(f_handle)
 
     description = file.readline()
     if not description:
-        raise IOError(f"Could not read the file '{file}'.")
+        raise OSError(f"Could not read the file '{file}'.")
     description = description.split()
 
     ints = []
@@ -388,8 +397,9 @@ def _read_eqdsk(file) -> Dict:
         if is_num(value):
             ints.append(value)
     if len(ints) < 3:
-        raise IOError(
-            "Should be at least 3 numbers in the first line " f"of the EQDSK {file}."
+        raise OSError(
+            "Should be at least 3 numbers in the first line "
+            f"of the EQDSK {file}.",
         )
 
     data = {}
@@ -513,7 +523,9 @@ def _write_eqdsk(file: str, data: Dict):
             return _write_eqdsk(f_handle, data)
 
     def write_header(
-        fortran_format: ff.FortranRecordWriter, id_string: str, var_list: List[str]
+        fortran_format: ff.FortranRecordWriter,
+        id_string: str,
+        var_list: List[str],
     ):
         """
         Writes G-EQDSK header out to file.
@@ -580,7 +592,7 @@ def _write_eqdsk(file: str, data: Dict):
     # Create id string for file comprising of timestamp and trimmed filename
     # that fits the 48 character limit of strings in EQDSK headers.
     timestamp = time.strftime("%d%m%Y")
-    trimmed_name = data["name"][0 : 48 - len(timestamp) - 1]
+    trimmed_name = data["name"][0: 48 - len(timestamp) - 1]
     file_id_string = "_".join([trimmed_name, timestamp])
 
     # Define dummy data for qpsi if it has not been previously defined.
