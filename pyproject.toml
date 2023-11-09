@@ -8,7 +8,7 @@ dynamic = ['version']
 authors = [{ name = "The Bluemira team" }]
 description = """A reader writer and converter for the eqdsk format"""
 readme = "README.md"
-license = "LICENSE"
+license = "LGPL-2.1"
 requires-python = ">=3.8"
 keywords = []
 classifiers = [
@@ -52,7 +52,7 @@ python = ["3.8", "3.10"]
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
 cov-report = ["- coverage combine", "coverage report"]
-cov = ["test-cov", "cov-report"]
+cov-all = ["test-cov", "cov-report"]
 
 # env: docs
 [tool.hatch.envs.docs]

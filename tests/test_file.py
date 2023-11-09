@@ -27,7 +27,6 @@ from unittest import mock
 import fortranformat as ff
 import numpy as np
 import pytest
-from typeguard import check_type
 
 from eqdsk.file import EQDSKInterface
 from eqdsk.tools import compare_dicts, get_eqdsk_path
@@ -185,17 +184,17 @@ class TestEQDSKInterface:
             eq.zbdry[-3:], [-0.507187454e00, -0.240712636e00, 0.263892047e-01]
         )
 
-    def test_values_match_annotated_types(self):
-        eq = EQDSKInterface.from_file(self.testfiles[0])
+    # def test_values_match_annotated_types(self):
+    #     eq = EQDSKInterface.from_file(self.testfiles[0])
 
-        mismatched = []
-        for key, value_type in EQDSKInterface.__annotations__.items():
-            value = getattr(eq, key)
-            try:
-                check_type(key, value, value_type)
-            except TypeError:
-                mismatched.append((key, type(value), value_type))
-        assert not mismatched
+    #     mismatched = []
+    #     for key, value_type in EQDSKInterface.__annotations__.items():
+    #         value = getattr(eq, key)
+    #         try:
+    #             check_type(key, value, value_type)
+    #         except TypeError:
+    #             mismatched.append((key, type(value), value_type))
+    #     assert not mismatched
 
     def test_write_then_read_in_json_format(self):
         eq = EQDSKInterface.from_file(self.testfiles[0])

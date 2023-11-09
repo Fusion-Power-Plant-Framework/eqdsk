@@ -56,6 +56,7 @@ def file_exists(good_file_path: str, isfile_ref: str):
     Context manager to mock os.path.isfile to return True for a specific
     file path.
 
+
     This is useful if the code under test checks for the existence of
     several files, but you want to mock such that only one of those
     files exists.
