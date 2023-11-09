@@ -23,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install hatch
 
-      - name: Build package
+      - name: Lint with ruff
         run: hatch run lint:all
 
   test-with-hatch:
@@ -48,5 +48,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install hatch
 
-      - name: Build package
-        run: hatch run test:all
+      - name: Run all tests with coverage
+        run: hatch run test:cov-all

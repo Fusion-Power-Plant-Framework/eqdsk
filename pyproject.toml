@@ -63,9 +63,9 @@ docs = "sphinx-build -b html docs docs/_build"
 # env: lint
 [tool.hatch.envs.lint]
 detached = true
-dependencies = ["black", "ruff"]
+dependencies = ["black", "ruff", "mypy"]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/eqdsk_test tests}"
+typing = "mypy --install-types --non-interactive {args:src/eqdsk tests}"
 style = ["ruff {args:.}", "black --check --diff {args:.}"]
 fmt = ["black {args:.}", "ruff --fix {args:.}", "style"]
 all = ["style", "typing"]
