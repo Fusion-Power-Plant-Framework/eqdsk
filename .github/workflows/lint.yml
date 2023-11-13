@@ -9,15 +9,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-          cache: "pip"
-
-      - name: Install build dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install hatch
+      - name: Setup python and Hatch
+        uses: "./.github/actions/setup-hatch"
 
       - name: Lint with ruff
         run: hatch run lint:all
