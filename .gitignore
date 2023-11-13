@@ -198,3 +198,4 @@ pyrightconfig.json
 test_eqdsks
 report.html
 .hatch
+eqdsk/_version.py
