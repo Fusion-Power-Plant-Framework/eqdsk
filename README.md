@@ -15,9 +15,15 @@ This project uses [Hatch](https://hatch.pypa.io/latest/).
 
 Although any python environment manager can be used, we recommend using the default eniornment setup by Hatch.
 
+-- add install for non hatch
+
+```bash
+
+```
+
 To start using Hatch, it must be installed and accessible from the command line. See the Hatch [installation](https://hatch.pypa.io/latest/install/) for more.
 
-A simple way to install hatch is to run:
+A simple way to install Hatch is to run:
 
 ```bash
 pip install -g hatch
