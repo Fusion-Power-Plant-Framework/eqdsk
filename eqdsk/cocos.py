@@ -27,7 +27,7 @@ class Sign(Enum):
 
 @dataclass(frozen=True)
 class COCOSValues:
-    cc_index: int
+    index: int
     exp_Bp: ZeroOne
     sign_Bp: Sign
     sign_R_phi_Z: Sign
@@ -37,112 +37,112 @@ class COCOSValues:
 @unique
 class COCOS(Enum):
     C1 = COCOSValues(
-        cc_index=1,
+        index=1,
         exp_Bp=ZeroOne.ZERO,
         sign_Bp=Sign.POSITIVE,
         sign_R_phi_Z=Sign.POSITIVE,
         sign_rho_theta_phi=Sign.POSITIVE,
     )
     C11 = COCOSValues(
-        cc_index=11,
+        index=11,
         exp_Bp=ZeroOne.ONE,
         sign_Bp=Sign.POSITIVE,
         sign_R_phi_Z=Sign.POSITIVE,
         sign_rho_theta_phi=Sign.POSITIVE,
     )
     C2 = COCOSValues(
-        cc_index=2,
+        index=2,
         exp_Bp=ZeroOne.ZERO,
         sign_Bp=Sign.POSITIVE,
         sign_R_phi_Z=Sign.NEGATIVE,
         sign_rho_theta_phi=Sign.POSITIVE,
     )
     C12 = COCOSValues(
-        cc_index=12,
+        index=12,
         exp_Bp=ZeroOne.ONE,
         sign_Bp=Sign.POSITIVE,
         sign_R_phi_Z=Sign.NEGATIVE,
         sign_rho_theta_phi=Sign.POSITIVE,
     )
     C3 = COCOSValues(
-        cc_index=3,
+        index=3,
         exp_Bp=ZeroOne.ZERO,
         sign_Bp=Sign.NEGATIVE,
         sign_R_phi_Z=Sign.POSITIVE,
         sign_rho_theta_phi=Sign.NEGATIVE,
     )
     C13 = COCOSValues(
-        cc_index=13,
+        index=13,
         exp_Bp=ZeroOne.ONE,
         sign_Bp=Sign.NEGATIVE,
         sign_R_phi_Z=Sign.POSITIVE,
         sign_rho_theta_phi=Sign.NEGATIVE,
     )
     C4 = COCOSValues(
-        cc_index=4,
+        index=4,
         exp_Bp=ZeroOne.ZERO,
         sign_Bp=Sign.NEGATIVE,
         sign_R_phi_Z=Sign.NEGATIVE,
         sign_rho_theta_phi=Sign.NEGATIVE,
     )
     C14 = COCOSValues(
-        cc_index=14,
+        index=14,
         exp_Bp=ZeroOne.ONE,
         sign_Bp=Sign.NEGATIVE,
         sign_R_phi_Z=Sign.NEGATIVE,
         sign_rho_theta_phi=Sign.NEGATIVE,
     )
     C5 = COCOSValues(
-        cc_index=5,
+        index=5,
         exp_Bp=ZeroOne.ZERO,
         sign_Bp=Sign.POSITIVE,
         sign_R_phi_Z=Sign.POSITIVE,
         sign_rho_theta_phi=Sign.NEGATIVE,
     )
     C15 = COCOSValues(
-        cc_index=15,
+        index=15,
         exp_Bp=ZeroOne.ONE,
         sign_Bp=Sign.POSITIVE,
         sign_R_phi_Z=Sign.POSITIVE,
         sign_rho_theta_phi=Sign.NEGATIVE,
     )
     C6 = COCOSValues(
-        cc_index=6,
+        index=6,
         exp_Bp=ZeroOne.ZERO,
         sign_Bp=Sign.POSITIVE,
         sign_R_phi_Z=Sign.NEGATIVE,
         sign_rho_theta_phi=Sign.NEGATIVE,
     )
     C16 = COCOSValues(
-        cc_index=16,
+        index=16,
         exp_Bp=ZeroOne.ONE,
         sign_Bp=Sign.POSITIVE,
         sign_R_phi_Z=Sign.NEGATIVE,
         sign_rho_theta_phi=Sign.NEGATIVE,
     )
     C7 = COCOSValues(
-        cc_index=7,
+        index=7,
         exp_Bp=ZeroOne.ZERO,
         sign_Bp=Sign.NEGATIVE,
         sign_R_phi_Z=Sign.POSITIVE,
         sign_rho_theta_phi=Sign.POSITIVE,
     )
     C17 = COCOSValues(
-        cc_index=17,
+        index=17,
         exp_Bp=ZeroOne.ONE,
         sign_Bp=Sign.NEGATIVE,
         sign_R_phi_Z=Sign.POSITIVE,
         sign_rho_theta_phi=Sign.POSITIVE,
     )
     C8 = COCOSValues(
-        cc_index=8,
+        index=8,
         exp_Bp=ZeroOne.ZERO,
         sign_Bp=Sign.NEGATIVE,
         sign_R_phi_Z=Sign.NEGATIVE,
         sign_rho_theta_phi=Sign.POSITIVE,
     )
     C18 = COCOSValues(
-        cc_index=18,
+        index=18,
         exp_Bp=ZeroOne.ONE,
         sign_Bp=Sign.NEGATIVE,
         sign_R_phi_Z=Sign.NEGATIVE,
@@ -151,7 +151,7 @@ class COCOS(Enum):
 
     def __init__(self, c: COCOSValues):
         # shortcuts .value access
-        self.cc_index = c.cc_index
+        self.index = c.index
         self.exp_Bp = c.exp_Bp
         self.sign_Bp = c.sign_Bp
         self.sign_R_phi_Z = c.sign_R_phi_Z
@@ -163,7 +163,7 @@ class COCOS(Enum):
             msg = f"Convention number {cocos_index} is not valid. "
             "Must be between 1 and 8 or 11 and 18."
             raise ValueError(msg)
-        return next(x for x in cls if x.cc_index == cocos_index)
+        return next(x for x in cls if x.index == cocos_index)
 
     @classmethod
     def matching_convention(
@@ -194,26 +194,28 @@ def identify_eqdsk(
     if eqdsk.qpsi is None:
         raise ValueError("qpsi is not defined in the eqdsk file.")
 
-    conventions = []
-    for cw_phi in [True, False] if clockwise_phi is None else [clockwise_phi]:
-        for vs_pr in (
-            [True, False]
-            if volt_seconds_per_radian is None
-            else [volt_seconds_per_radian]
-        ):
-            conventions.append(
-                identify_cocos(
-                    plasma_current=eqdsk.cplasma,
-                    b_center=eqdsk.bcentre,
-                    psi_at_boundary=eqdsk.psibdry,
-                    psi_at_mag_axis=eqdsk.psimag,
-                    q_psi=eqdsk.qpsi,
-                    phi_clockwise_from_top=cw_phi,
-                    volt_seconds_per_radian=vs_pr,
-                ),
-            )
-    # return sort asc by cc_index
-    conventions.sort(key=lambda x: x.cc_index)
+    cw_phis = [True, False] if clockwise_phi is None else [clockwise_phi]
+    vs_prs = (
+        [True, False]
+        if volt_seconds_per_radian is None
+        else [volt_seconds_per_radian]
+    )
+
+    conventions = [
+        identify_cocos(
+            plasma_current=eqdsk.cplasma,
+            b_center=eqdsk.bcentre,
+            psi_at_boundary=eqdsk.psibdry,
+            psi_at_mag_axis=eqdsk.psimag,
+            q_psi=eqdsk.qpsi,
+            phi_clockwise_from_top=cw_phi,
+            volt_seconds_per_radian=vs_pr,
+        )
+        for cw_phi in cw_phis
+        for vs_pr in vs_prs
+    ]
+    # return sort asc by index
+    conventions.sort(key=lambda x: x.index)
     return conventions
 
 
@@ -264,7 +266,7 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     org_eqdsk = eqdsk
     tgt_eqdsk = deepcopy(org_eqdsk)
 
-    if org_cocos.cc_index == tgt_cocos.cc_index:
+    if org_cocos.index == tgt_cocos.index:
         return tgt_eqdsk
 
     eff_bp = tgt_cocos.sign_Bp.value * org_cocos.sign_Bp.value

@@ -1,5 +1,12 @@
 name: Test EQDSk
-on: [push]
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+
 jobs:
   test:
     strategy:
@@ -15,6 +22,20 @@ jobs:
 
       - name: Setup python and Hatch
         uses: "./.github/actions/setup-hatch"
+
+      - name: Checkout bluemira-private-data
+        uses: actions/checkout@v4
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        with:
+          repository: "Fusion-Power-Plant-Framework/bluemira-private-data"
+          ssh-key: ${{ secrets.BLUEMIRA_PRIVATE_DATA_DEPLOY_KEY }}
+          path: "./tests/test_data"
+
+      # - name: Move bluemira-private-data
+      #   working-directory: "/home/runner/work/"
+      #   if: ${{ !github.event.pull_request.head.repo.fork }}
+      #   run: |
+      #     mv ~/work/eqdsk/eqdsk/bluemira-private-data ~/work/eqdsk/bluemira-private-data
 
       - name: Run all tests with coverage
         run: hatch run test:cov-all

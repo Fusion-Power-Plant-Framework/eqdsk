@@ -5,6 +5,8 @@
 Input and output file interface. EQDSK and json. NOTE: jsons are better :)
 """
 
+from __future__ import annotations
+
 import json
 import os
 import time
@@ -136,7 +138,8 @@ class EQDSKInterface:
         clockwise_phi: Optional[bool] = None,
         volt_seconds_per_radian: Optional[bool] = None,
         from_cocos_index: Optional[int] = None,
-        to_cocos_index: Optional[int] = None,
+        to_cocos_index: Optional[int] = DEFAULT_COCOS_INDEX,
+        *,
         raw: bool = False,
     ):
         """
@@ -171,15 +174,14 @@ class EQDSKInterface:
                 volt_seconds_per_radian,
                 as_cocos_index=from_cocos_index,
             )
-            if to_cocos_index is None:
-                inst = inst.as_default_cocos()
-            else:
+            if to_cocos_index is not None:
                 inst = inst.as_cocos(to_cocos_index)
 
         return inst
 
     @property
     def cocos(self) -> COCOS:
+        """Return the COCOS for this eqdsk."""
         if self._cocos is None:
             raise ValueError(
                 "The COCOS for this eqdsk has not yet been identified. "
@@ -194,19 +196,22 @@ class EQDSKInterface:
         volt_seconds_per_radian: Optional[bool] = None,
         as_cocos_index: Optional[int] = None,
     ):
+        """Identify the COCOS of this eqdsk."""
         conventions = identify_eqdsk(
-            self, clockwise_phi, volt_seconds_per_radian,
+            self,
+            clockwise_phi,
+            volt_seconds_per_radian,
         )
 
         if as_cocos_index is not None:
             matching_conv = [
-                c for c in conventions if c.cc_index == as_cocos_index
+                c for c in conventions if c.index == as_cocos_index
             ]
             if not matching_conv:
                 raise ValueError(
                     f"No convention found that matches "
                     f"the given COCOS index {as_cocos_index}, "
-                    f"from the possible ({', '.join([str(c.cc_index) for c in conventions])}).",
+                    f"from the possible ({', '.join([str(c.index) for c in conventions])}).",
                 )
             conventions = matching_conv
 
@@ -214,38 +219,21 @@ class EQDSKInterface:
         if len(conventions) != 1:
             eqdsk_warn(
                 f"A single COCOS could not be determined, "
-                f"found conventions ({', '.join([str(c.cc_index) for c in conventions])}) "  # noqa: E501
-                f"for the EQDSK file. Choosing COCOS {conv.cc_index}.",
+                f"found conventions ({', '.join([str(c.index) for c in conventions])}) "  # noqa: E501
+                f"for the EQDSK file. Choosing COCOS {conv.index}.",
             )
         self._cocos = conv
 
-    def as_default_cocos(self) -> "EQDSKInterface":
-        """
-        Return a copy of this object with the COCOS set to
-        the default COCOS.
-        """
-        # checks the cocos convention has been set
-        if self.cocos.cc_index != EQDSKInterface.DEFAULT_COCOS_INDEX:
-            eqdsk_warn(
-                "Converting EQDSK to the default COCOS "
-                f"{EQDSKInterface.DEFAULT_COCOS_INDEX}, "
-                f"from COCOS {self.cocos.cc_index}.",
-            )
-        return convert_eqdsk(self, EQDSKInterface.DEFAULT_COCOS_INDEX)
-
-    def as_cocos(self, cocos_index: int) -> "EQDSKInterface":
-        """
-        Return a copy of this object with the COCOS set to
-        the given COCOS index.
-        """
-        if self.cocos.cc_index != cocos_index:
+    def as_cocos(self, cocos_index: int) -> EQDSKInterface:
+        """Return a copy of this eqdsk converted to the given COCOS."""
+        if self.cocos.index != cocos_index:
             eqdsk_warn(
                 f"Converting EQDSK to COCOS {cocos_index}, "
-                f"from COCOS {self.cocos.cc_index}.",
+                f"from COCOS {self.cocos.index}.",
             )
         return convert_eqdsk(self, cocos_index)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Return a dictionary of the EQDSK data."""
         d = asdict(self)
         # Remove the file name as this is metadata, not EQDSK data
@@ -256,7 +244,7 @@ class EQDSKInterface:
         self,
         file_path: str,
         format: str = "json",
-        json_kwargs: Optional[Dict] = None,
+        json_kwargs: Optional[dict] = None,
     ):
         """
         Write the EQDSK data to file in the given format.
@@ -282,7 +270,7 @@ class EQDSKInterface:
             )
             _write_eqdsk(file_path, self.to_dict())
 
-    def update(self, eqdsk_data: Dict[str, Any]):
+    def update(self, eqdsk_data: dict[str, Any]):
         """
         Update this object's data with values from a dictionary.
 
@@ -306,7 +294,7 @@ class EQDSKInterface:
                 )
 
 
-def _read_json(file) -> Dict[str, Any]:
+def _read_json(file) -> dict[str, Any]:
     if isinstance(file, str):
         with open(file) as f_h:
             return _read_json(f_h)
@@ -382,7 +370,7 @@ def _eqdsk_generator(file):
             yield obj
 
 
-def _read_eqdsk(file) -> Dict:
+def _read_eqdsk(file) -> dict:
     if isinstance(file, str):
         with open(file) as f_handle:
             return _read_eqdsk(f_handle)
@@ -505,7 +493,7 @@ def _derive_psinorm(fpol):
     return np.linspace(0, 1, len(fpol))
 
 
-def _write_eqdsk(file: str, data: Dict):
+def _write_eqdsk(file: str, data: dict):
     """
     Writes data out to a text file in G-EQDSK format.
 
@@ -525,7 +513,7 @@ def _write_eqdsk(file: str, data: Dict):
     def write_header(
         fortran_format: ff.FortranRecordWriter,
         id_string: str,
-        var_list: List[str],
+        var_list: list[str],
     ):
         """
         Writes G-EQDSK header out to file.
@@ -550,7 +538,7 @@ def _write_eqdsk(file: str, data: Dict):
         file.write(fortran_format.write(line))
         file.write("\n")
 
-    def write_line(fortran_format: ff.FortranRecordWriter, var_list: List[str]):
+    def write_line(fortran_format: ff.FortranRecordWriter, var_list: list[str]):
         """
         Writes a line of variable values out to a G-EQDSK file.
 
@@ -592,7 +580,7 @@ def _write_eqdsk(file: str, data: Dict):
     # Create id string for file comprising of timestamp and trimmed filename
     # that fits the 48 character limit of strings in EQDSK headers.
     timestamp = time.strftime("%d%m%Y")
-    trimmed_name = data["name"][0: 48 - len(timestamp) - 1]
+    trimmed_name = data["name"][0 : 48 - len(timestamp) - 1]
     file_id_string = "_".join([trimmed_name, timestamp])
 
     # Define dummy data for qpsi if it has not been previously defined.

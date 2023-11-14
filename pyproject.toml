@@ -25,7 +25,7 @@ classifiers = [
 dependencies = ["fortranformat", "numpy"]
 
 [project.optional-dependencies]
-dev = ["pre-commit", "hatch"]
+dev = ["pre-commit"]
 test = [
   "pytest",
   "coverage[toml]",
@@ -34,7 +34,7 @@ test = [
   "pytest-json-report",
 ]
 docs = ["sphinx", "sphinx-autoapi", "sphinx-rtd-theme"]
-lint = ["black", "ruff", "mypy"]
+lint = ["ruff", "mypy"]
 [project.urls]
 Source = "https://github.com/Fusion-Power-Plant-Framework/eqdsk"
 Documentation = "https://github.com/Fusion-Power-Plant-Framework/eqdsk#readme"
@@ -47,7 +47,7 @@ version-file = "eqdsk/_version.py"
 
 # env: default
 [tool.hatch.envs.default]
-features = ["test"]
+features = ["dev", "test", "docs", "lint"]
 
 # env: test
 [tool.hatch.envs.test]
@@ -55,10 +55,10 @@ features = ["test"]
 [[tool.hatch.envs.test.matrix]]
 python = ["3.8", "3.10"]
 [tool.hatch.envs.test.scripts]
-test = "pytest {args:tests}"
-test-cov = "coverage run -m pytest {args:tests}"
+tests = "pytest {args:tests}"
+tests-cov = "coverage run -m pytest {args:tests}"
 cov-report = ["- coverage combine", "coverage report"]
-cov-all = ["test-cov", "cov-report"]
+cov-all = ["tests-cov", "cov-report"]
 
 # env: docs
 [tool.hatch.envs.docs]
@@ -68,12 +68,12 @@ docs = "sphinx-build -b html docs docs/_build"
 
 # env: lint
 [tool.hatch.envs.lint]
-detached = true                          # Don't inherit from default (does not download dependencies)
-dependencies = ["black", "ruff", "mypy"]
+detached = true                               # Don't inherit from default (does not download project dependencies)
+dependencies = ["ruff", "mypy", "pre-commit"]
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:src/eqdsk tests}"
-style = ["ruff {args:.}", "black --check --diff {args:.}"]
-fmt = ["black {args:.}", "ruff --fix {args:.}", "style"]
+style = ["ruff {args:.}"]
+fmt = ["pre-commit run --all-files --hook-stage manual"]
 all = ["style", "typing"]
 
 # tool: ruff
@@ -92,6 +92,8 @@ exclude = [
 select = ["ALL"]
 extend-select = ["E241", "CPY001", "PLR0904"]
 ignore = [
+  "COM812",
+  "ISC001",
   "CPY001",
   "D104",
   "D100",
@@ -106,6 +108,7 @@ ignore = [
   "N815",
   "TRY003",
   "EM101",
+  "EM102",
   # Allow non-abstract empty methods in abstract base classes
   "B027",
   # Allow boolean positional values in function calls, like `dict.get(... True)`
@@ -144,14 +147,6 @@ convention = "numpy"
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 "__init__.py" = ["F401", "F403"]
 
-[tool.black]
-line-length = 80
-
-# [tool.coverage.report]
-# "exclude_lines" = ["if __name__ == .__main__.:"]
-# "omit" = ["eqdsk/_version.py"]
-
-
 [tool.coverage.run]
 source_pkgs = ["eqdsk", "tests"]
 branch = true
@@ -164,7 +159,7 @@ tests = ["tests", "*/eqdsk/tests"]
 
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
-
+"omit" = ["eqdsk/_version.py"]
 
 # [tool.pytest.ini_options]
 # addopts = "--html=report.html --self-contained-html --strict-markers -r fEX"

@@ -35,7 +35,12 @@ class NumpyJSONEncoder(JSONEncoder):
 
 
 def json_writer(
-    data, file=None, return_output=False, *, cls=NumpyJSONEncoder, **kwargs,
+    data,
+    file=None,
+    return_output=False,
+    *,
+    cls=NumpyJSONEncoder,
+    **kwargs,
 ):
     """
     Write json in the bluemria style.
@@ -73,7 +78,12 @@ def json_writer(
 
 
 def compare_dicts(
-    d1, d2, almost_equal=False, verbose=True, rtol=1e-5, atol=1e-8,
+    d1,
+    d2,
+    almost_equal=False,
+    verbose=True,
+    rtol=1e-5,
+    atol=1e-8,
 ):
     """
     Compares two dictionaries. Will print information about the differences
@@ -112,7 +122,12 @@ def compare_dicts(
     # numeric cases.
     def dict_eq(value_1, value_2):
         return compare_dicts(
-            value_1, value_2, almost_equal, verbose, rtol, atol,
+            value_1,
+            value_2,
+            almost_equal,
+            verbose,
+            rtol,
+            atol,
         )
 
     def array_almost_eq(val1, val2):

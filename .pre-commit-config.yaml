@@ -1,39 +1,29 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
     hooks:
-    - id: trailing-whitespace
-      exclude: test_data
-    - id: check-merge-conflict
-    - id: end-of-file-fixer
-      exclude: test_data
-    - id: mixed-line-ending
-      args: [--fix=lf]
-      exclude: test_data
+      - id: trailing-whitespace
+        exclude: test_data
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+        exclude: test_data
+      - id: mixed-line-ending
+        args: [--fix=lf]
+        exclude: test_data
 
--   repo: https://github.com/pycqa/isort
-    rev: 5.11.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.1.5
     hooks:
-    - id: isort
+      # Run the linter.
+      - id: ruff
+        args: [--fix]
+      # Run the formatter.
+      - id: ruff-format
 
--   repo: https://github.com/psf/black
-    rev: 22.12.0
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.5.1
     hooks:
-    - id: black
-      language_version: python3.10
-
--   repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
-    hooks:
-    - id: flake8
-      verbose: True
-      additional_dependencies: [flake8-docstrings,  pep8-naming, flake8-bandit]
-      args: [--exit-zero]
-
--   repo: local
-    hooks:
-    - id: update_copyright
-      name: update_copyright
-      entry: python scripts/copyright_update.py
-      language: system
-      types: [python]
+      - id: prettier
+        types_or: [json]
+        args: [--tab-width=2]

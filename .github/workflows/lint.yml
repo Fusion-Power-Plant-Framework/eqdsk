@@ -12,5 +12,8 @@ jobs:
       - name: Setup python and Hatch
         uses: "./.github/actions/setup-hatch"
 
-      - name: Lint with ruff
+      - name: Run linting
         run: hatch run lint:all
+
+      - name: Run formatting (pre-commit)
+        run: hatch run lint:fmt
