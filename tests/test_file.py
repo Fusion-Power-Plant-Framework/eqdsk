@@ -14,12 +14,12 @@ class TestEQDSKInterface:
         """Read and return the COCOS for the eqdsk."""
         eqd = EQDSKInterface.from_file(
             str(
-                self.data_dir
-                / "equilibria/EUROfusion_DEMO_2015_equilibria"
-                / "Random_Equil_COCOS11.eqdsk",
+                self.data_dir / "equilibria/EUROfusion_DEMO_2015_equilibria"
+                # / "jetto.eqdsk_out",
             ),
             volt_seconds_per_radian=True,
             clockwise_phi=True,
+            # to_cocos_index=None,
         )
 
         assert eqd.cocos.index == 11

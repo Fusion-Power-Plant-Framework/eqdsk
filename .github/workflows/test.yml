@@ -12,7 +12,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # use when open source
+        # os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -30,12 +32,6 @@ jobs:
           repository: "Fusion-Power-Plant-Framework/bluemira-private-data"
           ssh-key: ${{ secrets.BLUEMIRA_PRIVATE_DATA_DEPLOY_KEY }}
           path: "./tests/test_data"
-
-      # - name: Move bluemira-private-data
-      #   working-directory: "/home/runner/work/"
-      #   if: ${{ !github.event.pull_request.head.repo.fork }}
-      #   run: |
-      #     mv ~/work/eqdsk/eqdsk/bluemira-private-data ~/work/eqdsk/bluemira-private-data
 
       - name: Run all tests with coverage
         run: hatch run test:cov-all

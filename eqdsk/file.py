@@ -1,9 +1,7 @@
 # SPDX-FileCopyrightText: 2023-present The Bluemira Developers <https://github.com/Fusion-Power-Plant-Framework/bluemira>
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
-"""
-Input and output file interface. EQDSK and json. NOTE: jsons are better :)
-"""
+
 
 from __future__ import annotations
 
