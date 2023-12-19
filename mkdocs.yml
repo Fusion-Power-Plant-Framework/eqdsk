@@ -1,0 +1,19 @@
+site_name: EQDSK Documentation
+site_description: EQDSK, a python package for reading and writing eqdsk files
+site_url: https://idk.com/
+repo_name: Fusion-Power-Plant-Framework/eqdsk
+repo_url: https://github.com/Fusion-Power-Plant-Framework/eqdsk
+theme:
+  name: material
+watch:
+  - eqdsk
+plugins:
+  - mkdocstrings
+  - search
+  - autorefs
+nav:
+  - index.md
+  - examples.md
+  - Code Reference:
+      - file.py: reference/file.py.md
+      - cocos.py: reference/cocos.py.md

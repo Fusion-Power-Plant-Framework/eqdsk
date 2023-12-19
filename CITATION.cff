@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+authors:
+  - family-names: Coleman
+    given-names: M.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+    affiliation: EUROfusion Consortium, Boltzmannstr.2, Garching, 85748, Germany
+
+  - family-names: Cook
+    given-names: J. E.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+
+  - family-names: Funk
+    given-names: O.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+
+  - family-names: Saunders
+    given-names: H.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+
+title: "eqdsk"
+license: LGPL-2.1-or-later
+repository-code: "https://github.com/Fusion-Power-Plant-Framework/eqdsk"
+website: ""

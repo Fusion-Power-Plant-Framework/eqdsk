@@ -33,7 +33,7 @@ test = [
   "pytest-metadata",
   "pytest-json-report",
 ]
-docs = ["sphinx", "sphinx-autoapi", "sphinx-rtd-theme"]
+docs = ["mkdocs-material", "mkdocstrings[python]"]
 lint = ["ruff", "mypy"]
 [project.urls]
 Source = "https://github.com/Fusion-Power-Plant-Framework/eqdsk"
@@ -92,6 +92,7 @@ exclude = [
 select = ["ALL"]
 extend-select = ["E241", "CPY001", "PLR0904"]
 ignore = [
+  "TD003",
   "COM812",
   "ISC001",
   "CPY001",
@@ -140,7 +141,7 @@ ban-relative-imports = "all"
 max-complexity = 20
 
 [tool.ruff.pydocstyle]
-convention = "numpy"
+convention = "google"
 
 [tool.ruff.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports

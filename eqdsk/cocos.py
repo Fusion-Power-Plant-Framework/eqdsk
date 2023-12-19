@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-"""Definitions for the COCOS system."""
+"""Definitions for the COCOS specification."""
 
 from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum, unique
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -18,12 +18,17 @@ if TYPE_CHECKING:
 
 
 class ZeroOne(Enum):
-    """An enum representing the values 0 and 1 of the exponent for Bp."""
+    """An enum representing the values 0 and 1 for the 2pi exponent of Bp."""
 
     ZERO = 0
     ONE = 1
 
     def __sub__(self, other: Any) -> ZeroOne:  # noqa: ANN401
+        """Return the difference between the value and the other value.
+
+        - If it is another ZeroOne, return the difference of the values.
+        - Raise a `TypeError` otherwise.
+        """
         if type(other) is ZeroOne:
             return ZeroOne(self.value - other.value)
         raise TypeError(
@@ -32,15 +37,19 @@ class ZeroOne(Enum):
 
 
 class Sign(Enum):
-    """
-    An enum representing the
-    positive or negative sign for a COCOS parameter.
+    """An enum representing the positive or negative sign of
+    a COCOS parameter.
     """
 
     POSITIVE = 1
     NEGATIVE = -1
 
     def __mul__(self, other: Any):  # noqa: ANN401
+        """Return the product of the sign with the other value.
+
+        - If it is another Sign, return the product of the values.
+        - If it is a number, return the product of the value and the number.
+        """
         if type(other) is Sign:
             return Sign(self.value * other.value)
         return self.value * other
@@ -51,10 +60,17 @@ class COCOSParams:
     """The parameters for a single COCOS definition."""
 
     index: int
+    """The COCOS index"""
     exp_Bp: ZeroOne
+    """The exponent for Bp, 0 if the poloidal flux is V.s/2pi, 1 otherwise."""
     sign_Bp: Sign
+    """The sign of Bp, depends on the sign of Ip and the gradient of psi."""
     sign_R_phi_Z: Sign
+    """The sign of (R, phi, Z), positive if theta and phi have
+    opposite directions, negative if the same."""
     sign_rho_theta_phi: Sign
+    """The sign of (rho, theta, phi), positive if phi (toroidal)
+    is CW from the top."""
 
 
 @unique
@@ -175,6 +191,7 @@ class COCOS(Enum):
     )
 
     def __init__(self, c: COCOSParams):
+        """Initialise the COCOS enum."""
         # shortcuts .value access
         self.index = c.index
         self.exp_Bp = c.exp_Bp
@@ -184,7 +201,7 @@ class COCOS(Enum):
 
     @classmethod
     def with_index(cls, cocos_index: int) -> COCOS:
-        """Return the COCOS with the given index."""
+        """Return the COCOS of the given index."""
         if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
             msg = f"Convention number {cocos_index} is not valid. "
             "Must be between 1 and 8 or 11 and 18."
@@ -231,6 +248,53 @@ class COCOSTransform:
     q: float
 
 
+def identify_eqdsk(
+    eqdsk: EQDSKInterface,
+    clockwise_phi: bool | None = None,
+    volt_seconds_per_radian: bool | None = None,
+) -> list[COCOS]:
+    """Identify the COCOS for the given
+    [EQDSKInterface][eqdsk.file.EQDSKInterface].
+
+    Args:
+        eqdsk: The eqdsk file to identify the COCOS for.
+        clockwise_phi: Whether phi is clockwise from the top, by default None
+            which means either.
+        volt_seconds_per_radian: Whether the flux is in volt seconds per radian,
+            by default None which means either.
+
+    Returns:
+        A list of the identified COCOS definitions.
+    """
+    if eqdsk.qpsi is None:
+        raise ValueError("qpsi is not defined in the eqdsk file.")
+
+    cw_phis = [True, False] if clockwise_phi is None else [clockwise_phi]
+    vs_prs = (
+        [True, False]
+        if volt_seconds_per_radian is None
+        else [volt_seconds_per_radian]
+    )
+
+    definitions = [
+        identify_cocos(
+            plasma_current=eqdsk.cplasma,
+            b_toroidal=eqdsk.bcentre,
+            psi_at_boundary=eqdsk.psibdry,
+            psi_at_mag_axis=eqdsk.psimag,
+            q_psi=eqdsk.qpsi,
+            phi_clockwise_from_top=cw_phi,
+            volt_seconds_per_radian=vs_pr,
+        )
+        for cw_phi in cw_phis
+        for vs_pr in vs_prs
+    ]
+
+    # return sort asc by index
+    definitions.sort(key=lambda x: x.index)
+    return definitions
+
+
 def identify_cocos(
     plasma_current: float,
     b_toroidal: float,
@@ -241,28 +305,26 @@ def identify_cocos(
     phi_clockwise_from_top: bool,
     volt_seconds_per_radian: bool,
 ) -> COCOS:
-    """
-    Identify the COCOS for the given values from an eqdsk file.
+    """Identify the COCOS for the given values.
 
-    Parameters
-    ----------
-    plasma_current :
-        The plasma current.
-    b_toroidal :
-        The toroidal magnetic field.
-    psi_at_boundary :
-        The psi value at the boundary.
-    psi_at_mag_axis :
-        The psi value at the magnetic axis.
-    q_psi :
-        The psi q (safety factor) values.
-    phi_clockwise_from_top :
-        Whether phi is clockwise from the top.
-    volt_seconds_per_radian :
-        Whether the flux is in volt seconds per radian.
+    Args:
+        plasma_current: The plasma current.
+        b_toroidal: The toroidal magnetic field.
+        psi_at_boundary: The psi value at the plasma boundary.
+        psi_at_mag_axis: The psi value at the magnetic axis.
+        q_psi: The psi q (safety factor) values.
+        phi_clockwise_from_top: Whether phi is clockwise from the top.
+        volt_seconds_per_radian: Whether the flux is in volt seconds per radian.
+
+    Returns:
+        The identified COCOS convention.
+
+    Raises:
+        ValueError: If the sign of qpsi is not consistent across the flux
+            surfaces.
     """
     sign_R_phi_Z = Sign.NEGATIVE if phi_clockwise_from_top else Sign.POSITIVE
-    exp_Bp = ZeroOne.ONE if volt_seconds_per_radian else ZeroOne.ZERO
+    exp_Bp = ZeroOne.ZERO if volt_seconds_per_radian else ZeroOne.ONE
 
     sign_Ip = Sign(np.sign(plasma_current))
     sign_B0 = Sign(np.sign(b_toroidal))
@@ -278,7 +340,7 @@ def identify_cocos(
     sign_q = Sign(sign_q.max())
 
     sign_Bp = sign_Ip * sign_psi_inc_towards_boundary
-    sign_rho_theta_phi = sign_Ip * sign_B0 * sign_q * sign_R_phi_Z
+    sign_rho_theta_phi = sign_Ip * sign_B0 * sign_q
 
     return COCOS.matching_convention(
         exp_Bp=exp_Bp,
@@ -288,58 +350,12 @@ def identify_cocos(
     )
 
 
-def identify_eqdsk(
-    eqdsk: EQDSKInterface,
-    clockwise_phi: Optional[bool] = None,
-    volt_seconds_per_radian: Optional[bool] = None,
-) -> list[COCOS]:
-    """
-    Identify the COCOS for the given eqdsk file.
-
-    Parameters
-    ----------
-    eqdsk :
-        The eqdsk file to identify the COCOS for.
-    clockwise_phi :
-        Whether phi is clockwise from the top,
-        by default None which means either.
-    volt_seconds_per_radian :
-        Whether the flux is in volt seconds per radian,
-        by default None which means either.
-    """
-    if eqdsk.qpsi is None:
-        raise ValueError("qpsi is not defined in the eqdsk file.")
-
-    cw_phis = [True, False] if clockwise_phi is None else [clockwise_phi]
-    vs_prs = (
-        [True, False]
-        if volt_seconds_per_radian is None
-        else [volt_seconds_per_radian]
-    )
-
-    conventions = [
-        identify_cocos(
-            plasma_current=eqdsk.cplasma,
-            b_toroidal=eqdsk.bcentre,
-            psi_at_boundary=eqdsk.psibdry,
-            psi_at_mag_axis=eqdsk.psimag,
-            q_psi=eqdsk.qpsi,
-            phi_clockwise_from_top=cw_phi,
-            volt_seconds_per_radian=vs_pr,
-        )
-        for cw_phi in cw_phis
-        for vs_pr in vs_prs
-    ]
-
-    # return sort asc by index
-    conventions.sort(key=lambda x: x.index)
-    return conventions
-
-
 def transform_cocos(
     from_cocos_index: int, to_cocos_index: int
 ) -> COCOSTransform:
-    """Return a transformation needed to transform from one COCOS to another."""
+    """Return the transformation needed to transform from one COCOS
+    to another.
+    """
     in_cocos = COCOS.with_index(from_cocos_index)
     out_cocos = COCOS.with_index(to_cocos_index)
 
@@ -362,7 +378,7 @@ def transform_cocos(
         psi=eff_bp * eff_R_phi_Z * (1 / pi_factor),
         pprime=eff_bp * eff_R_phi_Z * pi_factor,
         ffprime=eff_bp * eff_R_phi_Z * pi_factor,
-        q=eff_R_phi_Z * eff_rho_theta_phi,
+        q=eff_rho_theta_phi,
     )
 
 
@@ -402,7 +418,7 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     # reidentify the eqdsk
     out_eqdsk.identify(
         clockwise_phi=transform.out_cocos.sign_R_phi_Z == Sign.NEGATIVE,
-        volt_seconds_per_radian=transform.out_cocos.exp_Bp == ZeroOne.ONE,
+        volt_seconds_per_radian=transform.out_cocos.exp_Bp == ZeroOne.ZERO,
     )
     if out_eqdsk.cocos.index != to_cocos_index:
         raise RuntimeError(
