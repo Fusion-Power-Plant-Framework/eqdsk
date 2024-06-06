@@ -192,7 +192,7 @@ class COCOS(Enum):
 
     def __init__(self, c: COCOSParams):
         """Initialise the COCOS enum."""
-        # shortcuts .value access
+        # shortcuts COCOCS instance .value access
         self.index = c.index
         self.exp_Bp = c.exp_Bp
         self.sign_Bp = c.sign_Bp
@@ -250,6 +250,7 @@ class COCOSTransform:
 
 def identify_eqdsk(
     eqdsk: EQDSKInterface,
+    *,
     clockwise_phi: bool | None = None,
     volt_seconds_per_radian: bool | None = None,
 ) -> list[COCOS]:
@@ -267,10 +268,11 @@ def identify_eqdsk(
         A list of the identified COCOS definitions.
     """
     if eqdsk.qpsi is None:
-        raise ValueError("qpsi is not defined in the eqdsk file.")
+        print("WARNING: qpsi is not defined in the eqdsk file. Setting to 1")
+        eqdsk.qpsi = np.array([1])
 
-    cw_phis = [True, False] if clockwise_phi is None else [clockwise_phi]
-    vs_prs = (
+    cw_phi_l = [True, False] if clockwise_phi is None else [clockwise_phi]
+    vs_pr_l = (
         [True, False]
         if volt_seconds_per_radian is None
         else [volt_seconds_per_radian]
@@ -286,8 +288,8 @@ def identify_eqdsk(
             phi_clockwise_from_top=cw_phi,
             volt_seconds_per_radian=vs_pr,
         )
-        for cw_phi in cw_phis
-        for vs_pr in vs_prs
+        for cw_phi in cw_phi_l
+        for vs_pr in vs_pr_l
     ]
 
     # return sort asc by index

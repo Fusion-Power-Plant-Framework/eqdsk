@@ -1,4 +1,4 @@
-name: "Setup Hatch"
+name: setup-hatch
 description: "Sets up Hatch for use in the current workflow, supports pip caching and py3.8, 3.9, 3.10"
 runs:
   using: "composite"
@@ -6,9 +6,9 @@ runs:
     - uses: actions/setup-python@v4
       with:
         python-version: |
-          3.8
-          3.9
           3.10
+          3.11
+          3.12
         cache: "pip"
     - name: Install build dependencies
       shell: bash

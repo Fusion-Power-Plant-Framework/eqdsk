@@ -49,8 +49,6 @@ class EQDSKInterface:
 
     DEFAULT_COCOS_INDEX = 11
 
-    # TODO(oliverfunk): what should happen to the units of psi now with COCOS?
-
     bcentre: float
     """Vacuum toroidal Magnetic field at the reference radius [T]."""
     cplasma: float
@@ -82,7 +80,8 @@ class EQDSKInterface:
     pressure: np.ndarray
     """Plasma pressure function on 1-D flux grid [N/m^2]."""
     psi: np.ndarray
-    """Poloidal magnetic flux on the 2-D grid [V.s/rad]."""
+    """Poloidal magnetic flux on the 2-D grid
+    [V.s/rad (COCOS 1-8) or V.s (COCOS 11-18)]."""
     psibdry: float
     """Poloidal flux at the magnetic axis [V.s/rad]."""
     psimag: float
@@ -137,14 +136,14 @@ class EQDSKInterface:
     @classmethod
     def from_file(
         cls,
-        file_path: str,
-        clockwise_phi: bool | None = None,
-        volt_seconds_per_radian: bool | None = None,
+        file_path: str | Path,
         from_cocos_index: int | None = None,
         to_cocos_index: int | None = DEFAULT_COCOS_INDEX,
         *,
-        raw: bool = False,
-    ):
+        clockwise_phi: bool | None = None,
+        volt_seconds_per_radian: bool | None = None,
+        no_cocos: bool = False,
+    ) -> EQDSKInterface:
         """Create an EQDSKInterface object from a file.
 
         Args:
@@ -160,19 +159,20 @@ class EQDSKInterface:
                 Whether the EQDSK file's psi is in volt seconds per radian.
             from_cocos_index:
                 The COCOS index of the EQDSK file. Used when the determined
-                COCOS is ambiguous. Will raise if given and not the same
-                as the determined COCOS index.
+                COCOS is ambiguous. Will raise if given and not one of
+                the determined COCOS indices.
             to_cocos_index:
                 The COCOS index to convert the EQDSK file to.
-            raw:
-                Whether to return the EQDSK data without identifying the
-                COCOS or converting it to a different COCOS.
+            no_cocos:
+                Whether to return the EQDSK data without identifying
+                and converting to `to_cocos_index` COCOS index.
 
         Returns:
             An instance of this class containing the EQDSK file's data.
         """
-        _, file_extension = os.path.splitext(file_path)
-        file_name = Path(file_path).name
+        file_path = Path(file_path)
+        file_extension = file_path.suffix
+        file_name = file_path.name
         if file_extension.lower() in EQDSK_EXTENSIONS:
             inst = cls(file_name=file_name, **_read_eqdsk(file_path))
         elif file_extension.lower() == ".json":
@@ -180,14 +180,16 @@ class EQDSKInterface:
         else:
             raise ValueError(f"Unrecognised file format '{file_extension}'.")
 
-        if not raw:
-            inst.identify(
-                clockwise_phi,
-                volt_seconds_per_radian,
-                as_cocos_index=from_cocos_index,
-            )
-            if to_cocos_index is not None:
-                inst = inst.as_cocos(to_cocos_index)
+        if no_cocos:
+            return inst
+
+        inst.identify(
+            as_cocos_index=from_cocos_index,
+            clockwise_phi=clockwise_phi,
+            volt_seconds_per_radian=volt_seconds_per_radian,
+        )
+        if to_cocos_index is not None:
+            inst = inst.as_cocos(to_cocos_index)
 
         return inst
 
@@ -204,9 +206,10 @@ class EQDSKInterface:
 
     def identify(
         self,
+        as_cocos_index: int | None = None,
+        *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
-        as_cocos_index: int | None = None,
     ):
         """Identify the COCOS of this eqdsk and set the COCOS attribute.
 
@@ -221,13 +224,16 @@ class EQDSKInterface:
 
         Raises:
             ValueError:
+                If as_cocos_index is given but does not match any
+                identified COCOS index.
+            ValueError:
                 If no COCOS can be identified.
 
         """
         conventions = identify_eqdsk(
             self,
-            clockwise_phi,
-            volt_seconds_per_radian,
+            clockwise_phi=clockwise_phi,
+            volt_seconds_per_radian=volt_seconds_per_radian,
         )
 
         if as_cocos_index is not None:
@@ -249,15 +255,14 @@ class EQDSKInterface:
                 f"found conventions ({', '.join([str(c.index) for c in conventions])}) "  # noqa: E501
                 f"for the EQDSK file. Choosing COCOS {conv.index}.",
             )
+        eqdsk_warn(f"EQDSK identified as COCOS {conv.index}.")
         self._cocos = conv
 
     def as_cocos(self, cocos_index: int) -> EQDSKInterface:
         """Return a copy of this eqdsk converted to the given COCOS."""
-        if self.cocos.index != cocos_index:
-            eqdsk_warn(
-                f"Converting EQDSK to COCOS {cocos_index}, "
-                f"from COCOS {self.cocos.index}.",
-            )
+        if self.cocos.index == cocos_index:
+            return self
+        eqdsk_warn(f"Converting EQDSK to COCOS {cocos_index}")
         return convert_eqdsk(self, cocos_index)
 
     def to_dict(self) -> dict:
@@ -299,7 +304,7 @@ class EQDSKInterface:
                 A dict containing the new eqdsk data.
 
         Raises:
-            ValueError
+            ValueError:
                 If a key in `eqdsk_data` does not correspond to an
                 attribute of this class.
         """
@@ -313,8 +318,8 @@ class EQDSKInterface:
                 )
 
 
-def _read_json(file_path: str) -> dict[str, Any]:
-    with Path(file_path).open() as file:
+def _read_json(file_path: Path) -> dict[str, Any]:
+    with file_path.open() as file:
         data = json.load(file)
         data_has_pnorm = False
         data_has_psinorm = False
@@ -381,8 +386,8 @@ def _eqdsk_generator(file: TextIOWrapper):
         yield from generator_list
 
 
-def _read_eqdsk(file_path: str) -> dict:
-    with Path(file_path).open("r") as file:
+def _read_eqdsk(file_path: Path) -> dict:
+    with file_path.open("r") as file:
         description = file.readline()
         if not description:
             raise OSError(f"Could not read the file '{file}'.")
