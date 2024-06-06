@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import json
-import os
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -37,7 +36,8 @@ class EQDSKInterface:
     The G-EQDSK file format is described here:
         https://fusion.gat.com/conferences/snowmass/working/mfe/physics/p3/equilibria/g_eqdsk_s.pdf
 
-    Notes:
+    Notes
+    -----
         G-EQDSK is from the 1980's and EQDSK files should generally only be
         read and not written. New equilibria should really just be saved as
         JSON files.
@@ -146,7 +146,8 @@ class EQDSKInterface:
     ) -> EQDSKInterface:
         """Create an EQDSKInterface object from a file.
 
-        Args:
+        Parameters
+        ----------
             file_path:
                 Path to a file of one of the following formats:
                     - JSON
@@ -167,7 +168,8 @@ class EQDSKInterface:
                 Whether to return the EQDSK data without identifying
                 and converting to `to_cocos_index` COCOS index.
 
-        Returns:
+        Returns
+        -------
             An instance of this class containing the EQDSK file's data.
         """
         file_path = Path(file_path)
@@ -213,7 +215,8 @@ class EQDSKInterface:
     ):
         """Identify the COCOS of this eqdsk and set the COCOS attribute.
 
-        Args:
+        Parameters
+        ----------
             clockwise_phi:
                 Whether the EQDSK file's phi is clockwise or not.
             volt_seconds_per_radian:
@@ -222,7 +225,8 @@ class EQDSKInterface:
                 The COCOS index to convert the EQDSK file to. If given,
                 the COCOS will be converted to this COCOS index.
 
-        Raises:
+        Raises
+        ------
             ValueError:
                 If as_cocos_index is given but does not match any
                 identified COCOS index.
@@ -280,7 +284,8 @@ class EQDSKInterface:
     ):
         """Write the EQDSK data to file in the given format.
 
-        Args:
+        Parameters
+        ----------
             file_path:
                 Path to where the file should be written.
             file_format:
@@ -299,11 +304,13 @@ class EQDSKInterface:
     def update(self, eqdsk_data: dict[str, Any]):
         """Update this object's data with values from a dictionary.
 
-        Args:
+        Parameters
+        ----------
             eqdsk_data:
                 A dict containing the new eqdsk data.
 
-        Raises:
+        Raises
+        ------
             ValueError:
                 If a key in `eqdsk_data` does not correspond to an
                 attribute of this class.
@@ -360,11 +367,13 @@ def _eqdsk_generator(file: TextIOWrapper):
     """Transform a file object into a generator, following G-EQDSK number
     conventions.
 
-    Args:
+    Parameters
+    ----------
         file:
             The file to read
 
-    Returns:
+    Returns
+    -------
         The generator of the file handle being read
     """
     while True:
@@ -504,7 +513,7 @@ def _derive_psinorm(fpol) -> np.ndarray:
     return np.linspace(0, 1, len(fpol))
 
 
-def _write_eqdsk(file_path: str, data: dict) -> None:
+def _write_eqdsk(file_path: str | Path, data: dict):
     """Write data out to a text file in G-EQDSK format.
 
     Parameters
@@ -514,8 +523,9 @@ def _write_eqdsk(file_path: str, data: dict) -> None:
     data:
         Dictionary of EQDSK data.
     """
-    if not any(file_path.endswith(ext) for ext in EQDSK_EXTENSIONS):
-        file_path = os.path.splitext(file_path)[0] + ".eqdsk"
+    file_path = Path(file_path)
+    if file_path.suffix not in EQDSK_EXTENSIONS:
+        file_path = Path(file_path).with_suffix("").with_suffix(".eqdsk")
 
     with Path(file_path).open("w") as file:
 
@@ -526,10 +536,11 @@ def _write_eqdsk(file_path: str, data: dict) -> None:
         ) -> None:
             """Write a G-EQDSK header out to file.
 
-            Args:
+            Parameters
+            ----------
                 fortran_format:
-                    FortranRecordWriter object for Fortran format edit descriptor
-                    to be used for header output.
+                    FortranRecordWriter object for Fortran format edit
+                    descriptor to be used for header output.
                 id_string:
                     String containing name of file to be used as identification
                     string. Will be trimmed if length exceeds 39 characters,
@@ -541,7 +552,7 @@ def _write_eqdsk(file_path: str, data: dict) -> None:
                     Empty strings will be recorded as 0.
             """
             line = [id_string]
-            line += [data[v] if v != "" else 0 for v in var_list]
+            line += [data[v] if not v else 0 for v in var_list]
             file.write(fortran_format.write(line))
             file.write("\n")
 
@@ -550,16 +561,17 @@ def _write_eqdsk(file_path: str, data: dict) -> None:
         ) -> None:
             """Write a line of variable values out to a G-EQDSK file.
 
-            Args:
+            Parameters
+            ----------
                 fortran_format:
-                    FortranRecordWriter object for Fortran format edit descriptor
-                    to be used for the format of the line output.
+                    FortranRecordWriter object for Fortran format edit
+                    descriptor to be used for the format of the line output.
                 var_list:
                     List of names of keys in EQDSKInterface.data identifying
                     variables to added to the current line.
                     Empty strings will be recorded as 0.
             """
-            line = [data[v] if v != "" else 0 for v in var_list]
+            line = [data[v] if not v else 0 for v in var_list]
             file.write(fortran_format.write(line))
             file.write("\n")
 
@@ -568,10 +580,11 @@ def _write_eqdsk(file_path: str, data: dict) -> None:
         ) -> None:
             """Write a numpy array out to a G-EQDSK file.
 
-            Args:
+            Parameters
+            ----------
                 fortran_format:
-                    FortranRecordWriter object for Fortran format edit descriptor
-                    to be used for the format of the line output.
+                    FortranRecordWriter object for Fortran format edit
+                    descriptor to be used for the format of the line output.
                 array:
                     Numpy array of variables to be written to file.
                     Array will be flattened in column-major (Fortran)

@@ -1,10 +1,12 @@
 # SPDX-FileCopyrightText: 2023-present The Bluemira Developers <https://github.com/Fusion-Power-Plant-Framework/bluemira>
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
+"""Eqdsk tools"""
 
 from json import JSONEncoder, dumps
 
 import numpy as np
+import numpy.typing as npt
 
 from eqdsk.log import eqdsk_warn
 
@@ -24,8 +26,8 @@ class NumpyJSONEncoder(JSONEncoder):
 def json_writer(
     data,
     file=None,
-    return_output=False,
     *,
+    return_output=False,
     cls=NumpyJSONEncoder,
     **kwargs,
 ):
@@ -72,17 +74,37 @@ def is_num(thing):
     thing: unknown type
         The input which we need to determine is a number or not
 
-    Returns:
+    Returns
     -------
     num: bool
         Whether or not the input is a number
     """
     if thing is True or thing is False:
         return False
-    if thing is np.nan:
-        return False
     try:
-        float(thing)
-        return True
+        thing = floatify(thing)
     except (ValueError, TypeError):
         return False
+    else:
+        return not np.isnan(thing)
+
+
+def floatify(x: npt.ArrayLike) -> float:
+    """Converts the np array or float into a float by returning
+    the first element or the element itself.
+
+    Notes
+    -----
+    This function aims to avoid numpy warnings for float(x) for >0 rank scalars
+    it emulates the functionality of float conversion
+
+    Raises
+    ------
+    ValueError
+        If array like object has more than 1 element
+    TypeError
+        If object is None
+    """
+    if x is None:
+        raise TypeError("The argument cannot be None")
+    return np.asarray(x, dtype=float).item()

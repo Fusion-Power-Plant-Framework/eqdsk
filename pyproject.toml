@@ -132,12 +132,25 @@ ban-relative-imports = "all"
 max-complexity = 20
 
 [tool.ruff.lint.pydocstyle]
-convention = "google"
+convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
-"tests/**/*"  = ["PLR2004", "S101", "TID252"]
+"tests/**"  = ["INP001", "D100","D102","D104","ERA001","PLR2004", "S101", "TID252"]
 "__init__.py" = ["F401", "F403"]
+
+[tool.ruff.lint.pep8-naming]
+ignore-names = ["*Bp*","*R_phi_Z*", "*B0*", "*Ip*", "*CSTM"]
+
+[tool.ruff.lint.pylint]
+# These should be made stricter
+max-args = 7
+max-statements = 61
+max-locals = 18
+
+
+[tool.ruff.lint.flake8-copyright]
+notice-rgx = "(?i)# SPDX-FileCopyrightText:\\s\\d{4}(-(\\d{4}|present))*"
 
 [tool.coverage.run]
 source_pkgs = ["eqdsk", "tests"]

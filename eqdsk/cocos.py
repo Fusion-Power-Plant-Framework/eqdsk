@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
+from eqdsk.log import eqdsk_warn
+
 if TYPE_CHECKING:
     from eqdsk.file import EQDSKInterface
 
@@ -264,11 +266,14 @@ def identify_eqdsk(
         volt_seconds_per_radian: Whether the flux is in volt seconds per radian,
             by default None which means either.
 
-    Returns:
+    Returns
+    -------
         A list of the identified COCOS definitions.
     """
     if eqdsk.qpsi is None:
-        print("WARNING: qpsi is not defined in the eqdsk file. Setting to 1")
+        eqdsk_warn(
+            "WARNING: qpsi is not defined in the eqdsk file. Setting to 1"
+        )
         eqdsk.qpsi = np.array([1])
 
     cw_phi_l = [True, False] if clockwise_phi is None else [clockwise_phi]
@@ -318,10 +323,12 @@ def identify_cocos(
         phi_clockwise_from_top: Whether phi is clockwise from the top.
         volt_seconds_per_radian: Whether the flux is in volt seconds per radian.
 
-    Returns:
+    Returns
+    -------
         The identified COCOS convention.
 
-    Raises:
+    Raises
+    ------
         ValueError: If the sign of qpsi is not consistent across the flux
             surfaces.
     """
