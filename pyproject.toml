@@ -40,7 +40,7 @@ Issues        = "https://github.com/Fusion-Power-Plant-Framework/eqdsk/issues"
 dev = ["pre-commit"]
 test = [
   "pytest",
-  "coverage[toml]",
+  "pytest-cov",
   "pytest-html",
   "pytest-metadata",
   "pytest-json-report",
@@ -59,9 +59,7 @@ features = ["test"]
 python = ["3.10", "3.11", "3.12"]
 [tool.hatch.envs.test.scripts]
 tests      = "pytest {args:tests}"
-tests-cov  = "coverage run -m pytest {args:tests}"
-cov-report = ["- coverage combine", "coverage report"]
-cov-all    = ["tests-cov", "cov-report"]
+tests-cov  = "pytest --cov eqdsk  --cov-report html:htmlcov_eqdsk --cov-report xml {args:tests}"
 
 # env: docs
 [tool.hatch.envs.docs]
@@ -160,16 +158,6 @@ max-locals     = 18
 
 [tool.ruff.lint.flake8-copyright]
 notice-rgx = "(?i)# SPDX-FileCopyrightText:\\s\\d{4}(-(\\d{4}|present))*"
-
-[tool.coverage.run]
-source_pkgs = ["eqdsk", "tests"]
-branch      = true
-parallel    = true
-omit        = ["eqdsk/_version.py"]
-
-[tool.coverage.paths]
-eqdsk = ["eqdsk", "*/eqdsk"]
-tests = ["tests", "*/eqdsk/tests"]
 
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
