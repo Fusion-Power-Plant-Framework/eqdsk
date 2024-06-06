@@ -81,6 +81,7 @@ all    = ["style", "typing"]
 
 # tool: ruff
 [tool.ruff]
+target-version = "py310"
 line-length = 80
 exclude = [
   ".git",
@@ -91,59 +92,49 @@ exclude = [
   ".pytest_cache",
   "htmlcov",
 ]
+
+[tool.ruff.format]
+preview = true
+
+[tool.ruff.lint]
+preview = true
 select = ["ALL"]
 ignore = [
-  "D100",
-  "TD003",
-  "COM812",
-  "ISC001",
-  "CPY001",
-  "D104",
-  "D205",
-  "ANN206",
-  "ANN201",
-  "ANN204",
-  "ANN102",
-  "ANN101",
-  "T201",
-  "N803",
-  "N806",
-  "N815",
-  "TRY003",
-  "EM101",
-  "EM102",
-  # Allow non-abstract empty methods in abstract base classes
-  "B027",
-  # Ignore checks for possible passwords
-  "S105",
-  "S106",
-  "S107",
-  # Ignore complexity
-  "C901",
-  "PLR0911",
-  "PLR0912",
-  "PLR0913",
-  "PLR0915",
-]
-unfixable = [
-  # Don't touch unused imports
-  "F401",
+    "ANN",     # type annotations
+    "EM",      # string in error messages
+    "PD",      # Pandas
+    "B019",    # using cache memory leaks
+    "COM812",  # enforce trailing comma, disagrees with black/ruff format
+    "D200",    # docs stuff
+    "D203",
+    "D205",
+    "D301",
+    "D400",
+    "D401",
+    "DTZ005",  # datetime timezone arg
+    "E203",    # black/ruff format conflicts
+    "FIX002",  # Line contains todo
+    "ISC001",  # ruff format conflict
+    "PLW1514", # Specify file open encoding
+    "PTH123",  # use Path.open
+    "TRY003",  # put error messages in error class
+    "FURB152",  # 3.14 != pi
+    "PIE790",  # TMP for false positive ...
 ]
 
-
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["eqdsk"]
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 20
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*"  = ["PLR2004", "S101", "TID252"]
 "__init__.py" = ["F401", "F403"]

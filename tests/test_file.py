@@ -12,7 +12,7 @@ class TestEQDSKInterface:
 
     def test_read_strict_geqdsk(self):
         """Read and return the COCOS for the eqdsk."""
-        eqd = EQDSKInterface.from_file(
+        EQDSKInterface.from_file(
             self.data_dir / "jetto.eqdsk_out",
             # volt_seconds_per_radian=True,
             # clockwise_phi=True,

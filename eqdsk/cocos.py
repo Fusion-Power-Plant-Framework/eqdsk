@@ -23,7 +23,7 @@ class ZeroOne(Enum):
     ZERO = 0
     ONE = 1
 
-    def __sub__(self, other: Any) -> ZeroOne:  # noqa: ANN401
+    def __sub__(self, other: Any) -> ZeroOne:
         """Return the difference between the value and the other value.
 
         - If it is another ZeroOne, return the difference of the values.
@@ -44,7 +44,7 @@ class Sign(Enum):
     POSITIVE = 1
     NEGATIVE = -1
 
-    def __mul__(self, other: Any):  # noqa: ANN401
+    def __mul__(self, other: Any):
         """Return the product of the sign with the other value.
 
         - If it is another Sign, return the product of the values.

@@ -61,6 +61,7 @@ def json_writer(
 
     if return_output:
         return the_json
+    return None
 
 
 def is_num(thing):
