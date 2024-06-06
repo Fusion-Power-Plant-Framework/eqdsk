@@ -3,6 +3,8 @@
 
 .vscode
 
+node_modules
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
