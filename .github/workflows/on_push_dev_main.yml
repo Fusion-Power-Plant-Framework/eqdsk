@@ -1,12 +1,8 @@
-name: FusRR - On push to develop/main
+name: eqdsk - On push to develop/main
 
 on:
   push:
     branches: [develop, main]
-
-env:
-  IMAGE_NAME_W_SHA: fusrr/fusrr:${{ github.sha }}
-  IMAGE_NAME_LATEST: fusrr/fusrr:latest
 
 permissions:
   contents: write
