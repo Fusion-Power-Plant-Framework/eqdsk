@@ -37,7 +37,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup python and Hatch
-        uses: "./.github/actions/setup-hatch"
+        uses: "./.github/workflows/actions/setup-hatch"
 
       - name: Checkout bluemira-private-data
         uses: actions/checkout@v4
