@@ -1,0 +1,10 @@
+name: hatch-lint
+description: Runs the lint:fmt Hatch task, requires Hatch to be setup already
+runs:
+  using: "composite"
+  steps:
+    - name: Run formatting (pre-commit)
+      shell: bash
+      run: |
+        hatch run lint:fmt
+        exit 0

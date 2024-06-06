@@ -1,0 +1,71 @@
+name: eqdsk - On push to develop/main
+
+on:
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: write
+
+jobs:
+  lint:
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup python and Hatch
+        uses: ./.github/workflows/actions/setup-hatch
+
+      - name: Run Hatch linting tasks
+        uses: ./.github/workflows/actions/hatch-lint
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        # use when open source
+        # os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup python and Hatch
+        uses: "./.github/workflows/actions/setup-hatch"
+
+      - name: Checkout bluemira-private-data
+        uses: actions/checkout@v4
+        with:
+          repository: "Fusion-Power-Plant-Framework/bluemira-private-data"
+          ssh-key: ${{ secrets.BLUEMIRA_PRIVATE_DATA_DEPLOY_KEY }}
+          path: "./tests/test_data/private"
+
+      - name: Run all tests with coverage
+        run: hatch run test:tests-cov
+
+  # docs:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Configure Git Credentials
+  #       run: |
+  #         git config user.name github-actions[bot]
+  #         git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.x
+  #     - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+  #     - uses: actions/cache@v3
+  #       with:
+  #         key: mkdocs-material-${{ env.cache_id }}
+  #         path: .cache
+  #         restore-keys: |
+  #           mkdocs-material-
+  #     - run: pip install mkdocs-material
+  #     - run: mkdocs gh-deploy --force

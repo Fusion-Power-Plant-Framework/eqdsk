@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+authors:
+  - family-names: Coleman
+    given-names: M.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom; EUROfusion Consortium, Boltzmannstr.2, Garching, 85748, Germany
+
+  - family-names: Cook
+    given-names: J. E.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+
+  - family-names: Franza
+    given-names: F.
+    affiliation: Karlsruher Institut f&uuml;r Technologie, Hermann-von-Helmholtz-Platz 1, 76344 Eggenstein-Leopoldshafen, Germany
+
+  - family-names: Maione
+    given-names: I. A.
+    affiliation: Karlsruher Institut f&uuml;r Technologie, Hermann-von-Helmholtz-Platz 1, 76344 Eggenstein-Leopoldshafen, Germany
+
+  - family-names: McIntosh
+    given-names: S.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom; ITER Organization, Route de Vinon-sur-Verdon, CS 90 046, 13067 St Paul Lez Durance Cedex, France
+
+  - family-names: Morris
+    given-names: J.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+
+  - family-names: Short
+    given-names: D.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+
+  - family-names: Blair
+    given-names: A. I.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+
+  - family-names: Funk
+    given-names: O.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+
+  - family-names: Saunders
+    given-names: H.
+    affiliation: United Kingdom Atomic Energy Authority, Culham Science Centre, Abingdon, Oxfordshire OX14 3DB, United Kingdom
+
+title: "eqdsk"
+license: LGPL-2.1-or-later
+repository-code: "https://github.com/Fusion-Power-Plant-Framework/eqdsk"
+website: ""
