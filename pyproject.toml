@@ -100,26 +100,26 @@ preview = true
 preview = true
 select = ["ALL"]
 ignore = [
-    "ANN",     # type annotations
-    "EM",      # string in error messages
-    "PD",      # Pandas
-    "B019",    # using cache memory leaks
-    "COM812",  # enforce trailing comma, disagrees with black/ruff format
-    "D200",    # docs stuff
-    "D203",
-    "D205",
-    "D301",
-    "D400",
-    "D401",
-    "DTZ005",  # datetime timezone arg
-    "E203",    # black/ruff format conflicts
-    "FIX002",  # Line contains todo
-    "ISC001",  # ruff format conflict
-    "PLW1514", # Specify file open encoding
-    "PTH123",  # use Path.open
-    "TRY003",  # put error messages in error class
-    "FURB152",  # 3.14 != pi
-    "PIE790",  # TMP for false positive ...
+  "ANN",     # type annotations
+  "EM",      # string in error messages
+  "PD",      # Pandas
+  "B019",    # using cache memory leaks
+  "COM812",  # enforce trailing comma, disagrees with black/ruff format
+  "D200",    # docs stuff
+  "D203",
+  "D205",
+  "D301",
+  "D400",
+  "D401",
+  "DTZ005",  # datetime timezone arg
+  "E203",    # black/ruff format conflicts
+  "FIX002",  # Line contains todo
+  "ISC001",  # ruff format conflict
+  "PLW1514", # Specify file open encoding
+  "PTH123",  # use Path.open
+  "TRY003",  # put error messages in error class
+  "FURB152", # 3.14 != pi
+  "PIE790",  # TMP for false positive ...
 ]
 
 [tool.ruff.lint.isort]
@@ -136,17 +136,26 @@ convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
-"tests/**"  = ["INP001", "D100","D102","D104","ERA001","PLR2004", "S101", "TID252"]
+"tests/**" = [
+  "INP001",
+  "D100",
+  "D102",
+  "D104",
+  "ERA001",
+  "PLR2004",
+  "S101",
+  "TID252",
+]
 "__init__.py" = ["F401", "F403"]
 
 [tool.ruff.lint.pep8-naming]
-ignore-names = ["*Bp*","*R_phi_Z*", "*B0*", "*Ip*", "*CSTM"]
+ignore-names = ["*Bp*", "*R_phi_Z*", "*B0*", "*Ip*", "*CSTM"]
 
 [tool.ruff.lint.pylint]
 # These should be made stricter
-max-args = 7
+max-args       = 7
 max-statements = 61
-max-locals = 18
+max-locals     = 18
 
 
 [tool.ruff.lint.flake8-copyright]
@@ -166,6 +175,8 @@ tests = ["tests", "*/eqdsk/tests"]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 "omit"        = ["eqdsk/_version.py"]
 
-# [tool.pytest.ini_options]
-# addopts = "--html=report.html --self-contained-html --strict-markers -r fEX"
-# filterwarnings = ['ignore:Matplotlib is currently using agg:UserWarning']
+[tool.pytest.ini_options]
+addopts        = "--html=report.html --self-contained-html --strict-markers -r fEX"
+log_cli        = true
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s"
+log_cli_level  = "INFO"
