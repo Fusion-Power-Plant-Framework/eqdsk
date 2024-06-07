@@ -1,4 +1,4 @@
-name: eqdsk - publish
+name: Publish
 
 on:
   release:

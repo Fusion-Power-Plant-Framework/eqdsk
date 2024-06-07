@@ -1,4 +1,4 @@
-name: eqdsk - release
+name: Release
 
 on:
   workflow_dispatch:
