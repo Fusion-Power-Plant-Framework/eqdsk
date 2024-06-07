@@ -1,0 +1,5 @@
+# eqdsk codeowners file
+
+# All PRs need to be approved by at least 1 member of eqdsk
+
+*       @Fusion-Power-Plant-Framework/eqdsk

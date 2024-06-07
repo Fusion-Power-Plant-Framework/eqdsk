@@ -16,7 +16,7 @@ import fortranformat as ff
 import numpy as np
 
 from eqdsk.cocos import COCOS, convert_eqdsk, identify_eqdsk
-from eqdsk.log import eqdsk_warn
+from eqdsk.log import eqdsk_print, eqdsk_warn
 from eqdsk.tools import is_num, json_writer
 
 if TYPE_CHECKING:
@@ -259,14 +259,14 @@ class EQDSKInterface:
                 f"found conventions ({', '.join([str(c.index) for c in conventions])}) "  # noqa: E501
                 f"for the EQDSK file. Choosing COCOS {conv.index}.",
             )
-        eqdsk_warn(f"EQDSK identified as COCOS {conv.index}.")
+        eqdsk_print(f"EQDSK identified as COCOS {conv.index}.")
         self._cocos = conv
 
     def as_cocos(self, cocos_index: int) -> EQDSKInterface:
         """Return a copy of this eqdsk converted to the given COCOS."""
         if self.cocos.index == cocos_index:
             return self
-        eqdsk_warn(f"Converting EQDSK to COCOS {cocos_index}")
+        eqdsk_print(f"Converting EQDSK to COCOS {cocos_index}")
         return convert_eqdsk(self, cocos_index)
 
     def to_dict(self) -> dict:
