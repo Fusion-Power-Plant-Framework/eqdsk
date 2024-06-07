@@ -24,5 +24,4 @@ or for the most recent commit
 pip install git+https://github.com/Fusion-Power-Plant-Framework/eqdsk.git
 ```
 
-
 For a developer setup please see [CONTRIBUTING.md](CONTRIBUTING.md#setup-with-hatch)
