@@ -38,13 +38,13 @@ class EQDSKInterface:
 
     Notes
     -----
-        G-EQDSK is from the 1980's and EQDSK files should generally only be
-        read and not written. New equilibria should really just be saved as
-        JSON files.
+    G-EQDSK is from the 1980's and EQDSK files should generally only be
+    read and not written. New equilibria should really just be saved as
+    JSON files.
 
-        Poloidal magnetic flux units not enforced here!
+    Poloidal magnetic flux units not enforced here!
 
-        Plasma current direction is not enforced here!
+    Plasma current direction is not enforced here!
     """
 
     DEFAULT_COCOS_INDEX = 11
@@ -148,25 +148,25 @@ class EQDSKInterface:
 
         Parameters
         ----------
-            file_path:
-                Path to a file of one of the following formats:
-                    - JSON
-                    - eqdsk
-                    - eqdsk_out
-                    - geqdsk
-            clockwise_phi:
-                Whether the EQDSK file's phi is clockwise or not.
-            volt_seconds_per_radian:
-                Whether the EQDSK file's psi is in volt seconds per radian.
-            from_cocos_index:
-                The COCOS index of the EQDSK file. Used when the determined
-                COCOS is ambiguous. Will raise if given and not one of
-                the determined COCOS indices.
-            to_cocos_index:
-                The COCOS index to convert the EQDSK file to.
-            no_cocos:
-                Whether to return the EQDSK data without identifying
-                and converting to `to_cocos_index` COCOS index.
+        file_path:
+            Path to a file of one of the following formats:
+                - JSON
+                - eqdsk
+                - eqdsk_out
+                - geqdsk
+        clockwise_phi:
+            Whether the EQDSK file's phi is clockwise or not.
+        volt_seconds_per_radian:
+            Whether the EQDSK file's psi is in volt seconds per radian.
+        from_cocos_index:
+            The COCOS index of the EQDSK file. Used when the determined
+            COCOS is ambiguous. Will raise if given and not one of
+            the determined COCOS indices.
+        to_cocos_index:
+            The COCOS index to convert the EQDSK file to.
+        no_cocos:
+            Whether to return the EQDSK data without identifying
+            and converting to `to_cocos_index` COCOS index.
 
         Returns
         -------
@@ -217,21 +217,21 @@ class EQDSKInterface:
 
         Parameters
         ----------
-            clockwise_phi:
-                Whether the EQDSK file's phi is clockwise or not.
-            volt_seconds_per_radian:
-                Whether the EQDSK file's psi is in volt seconds per radian.
-            as_cocos_index:
-                The COCOS index to convert the EQDSK file to. If given,
-                the COCOS will be converted to this COCOS index.
+        clockwise_phi:
+            Whether the EQDSK file's phi is clockwise or not.
+        volt_seconds_per_radian:
+            Whether the EQDSK file's psi is in volt seconds per radian.
+        as_cocos_index:
+            The COCOS index to convert the EQDSK file to. If given,
+            the COCOS will be converted to this COCOS index.
 
         Raises
         ------
-            ValueError:
-                If as_cocos_index is given but does not match any
-                identified COCOS index.
-            ValueError:
-                If no COCOS can be identified.
+        ValueError:
+            If as_cocos_index is given but does not match any
+            identified COCOS index.
+        ValueError:
+            If no COCOS can be identified.
 
         """
         conventions = identify_eqdsk(
@@ -286,14 +286,14 @@ class EQDSKInterface:
 
         Parameters
         ----------
-            file_path:
-                Path to where the file should be written.
-            file_format:
-                The format to save the file in. One of 'json', 'eqdsk', or
-                'geqdsk'.
-            json_kwargs:
-                Key word arguments to pass to the ``json.dump`` call. Only
-                used if ``format`` is 'json'.
+        file_path:
+            Path to where the file should be written.
+        file_format:
+            The format to save the file in. One of 'json', 'eqdsk', or
+            'geqdsk'.
+        json_kwargs:
+            Key word arguments to pass to the ``json.dump`` call. Only
+            used if ``format`` is 'json'.
         """
         if file_format == "json":
             json_kwargs = {} if json_kwargs is None else json_kwargs
@@ -306,14 +306,14 @@ class EQDSKInterface:
 
         Parameters
         ----------
-            eqdsk_data:
-                A dict containing the new eqdsk data.
+        eqdsk_data:
+            A dict containing the new eqdsk data.
 
         Raises
         ------
-            ValueError:
-                If a key in `eqdsk_data` does not correspond to an
-                attribute of this class.
+         ValueError:
+            If a key in `eqdsk_data` does not correspond to an
+            attribute of this class.
         """
         for key, value in eqdsk_data.items():
             if hasattr(self, key):
@@ -328,21 +328,9 @@ class EQDSKInterface:
 def _read_json(file_path: Path) -> dict[str, Any]:
     with file_path.open() as file:
         data = json.load(file)
-        data_has_pnorm = False
-        data_has_psinorm = False
         for k, value in data.items():
             if isinstance(value, list):
                 data[k] = np.asarray(value)
-            data_has_pnorm |= k == "pnorm"
-            data_has_psinorm |= k == "psinorm"
-
-        # For backward compatibility where 'psinorm' was sometimes 'pnorm'
-        if data_has_pnorm:
-            if data_has_psinorm:
-                del data["pnorm"]
-            else:
-                data["psinorm"] = data.pop("pnorm")
-
     return data
 
 
@@ -359,7 +347,7 @@ def _read_array(tokens, n, name="Unknown") -> np.ndarray:
 def _read_2d_array(tokens, n_x, n_y, name="Unknown") -> np.ndarray:
     data = np.zeros([n_y, n_x])
     for i in np.arange(n_y):
-        data[i, :] = _read_array(tokens, n_x, name + "[" + str(i) + "]")
+        data[i, :] = _read_array(tokens, n_x, f"{name}[{i!s}]]")
     return np.transpose(data)
 
 
@@ -369,8 +357,8 @@ def _eqdsk_generator(file: TextIOWrapper):
 
     Parameters
     ----------
-        file:
-            The file to read
+    file:
+        The file to read
 
     Returns
     -------
@@ -533,23 +521,23 @@ def _write_eqdsk(file_path: str | Path, data: dict):
             fortran_format: ff.FortranRecordWriter,
             id_string: str,
             var_list: list[str],
-        ) -> None:
+        ):
             """Write a G-EQDSK header out to file.
 
             Parameters
             ----------
-                fortran_format:
-                    FortranRecordWriter object for Fortran format edit
-                    descriptor to be used for header output.
-                id_string:
-                    String containing name of file to be used as identification
-                    string. Will be trimmed if length exceeds 39 characters,
-                    so it will fit within the permitted header length of the
-                    GEQDSK specification when a timestamp is added.
-                var_list:
-                    List of names of keys in EQDSKInterface.data identifying
-                    variables to add to the header following the id_string.
-                    Empty strings will be recorded as 0.
+            fortran_format:
+                FortranRecordWriter object for Fortran format edit
+                descriptor to be used for header output.
+            id_string:
+                String containing name of file to be used as identification
+                string. Will be trimmed if length exceeds 39 characters,
+                so it will fit within the permitted header length of the
+                GEQDSK specification when a timestamp is added.
+            var_list:
+                List of names of keys in EQDSKInterface.data identifying
+                variables to add to the header following the id_string.
+                Empty strings will be recorded as 0.
             """
             line = [id_string]
             line += [data[v] if not v else 0 for v in var_list]
@@ -558,18 +546,18 @@ def _write_eqdsk(file_path: str | Path, data: dict):
 
         def write_line(
             fortran_format: ff.FortranRecordWriter, var_list: list[str]
-        ) -> None:
+        ):
             """Write a line of variable values out to a G-EQDSK file.
 
             Parameters
             ----------
-                fortran_format:
-                    FortranRecordWriter object for Fortran format edit
-                    descriptor to be used for the format of the line output.
-                var_list:
-                    List of names of keys in EQDSKInterface.data identifying
-                    variables to added to the current line.
-                    Empty strings will be recorded as 0.
+            fortran_format:
+                FortranRecordWriter object for Fortran format edit
+                descriptor to be used for the format of the line output.
+            var_list:
+                List of names of keys in EQDSKInterface.data identifying
+                variables to added to the current line.
+                Empty strings will be recorded as 0.
             """
             line = [data[v] if not v else 0 for v in var_list]
             file.write(fortran_format.write(line))
@@ -577,18 +565,18 @@ def _write_eqdsk(file_path: str | Path, data: dict):
 
         def write_array(
             fortran_format: ff.FortranRecordWriter, array: np.ndarray
-        ) -> None:
+        ):
             """Write a numpy array out to a G-EQDSK file.
 
             Parameters
             ----------
-                fortran_format:
-                    FortranRecordWriter object for Fortran format edit
-                    descriptor to be used for the format of the line output.
-                array:
-                    Numpy array of variables to be written to file.
-                    Array will be flattened in column-major (Fortran)
-                    order if is more than one-dimensional.
+            fortran_format:
+                FortranRecordWriter object for Fortran format edit
+                descriptor to be used for the format of the line output.
+            array:
+                Numpy array of variables to be written to file.
+                Array will be flattened in column-major (Fortran)
+                order if is more than one-dimensional.
             """
             if array.ndim > 1:
                 flat_array = array.flatten(order="F")

@@ -1,6 +1,11 @@
-name: eqdsk - On PR
+name: Test
 
-on: [pull_request]
+on:
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: write
 
 jobs:
   lint:
@@ -36,7 +41,6 @@ jobs:
 
       - name: Checkout bluemira-private-data
         uses: actions/checkout@v4
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           repository: "Fusion-Power-Plant-Framework/bluemira-private-data"
           ssh-key: ${{ secrets.BLUEMIRA_PRIVATE_DATA_DEPLOY_KEY }}
@@ -44,3 +48,24 @@ jobs:
 
       - name: Run all tests with coverage
         run: hatch run test:tests-cov
+
+  # docs:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Configure Git Credentials
+  #       run: |
+  #         git config user.name github-actions[bot]
+  #         git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.x
+  #     - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+  #     - uses: actions/cache@v3
+  #       with:
+  #         key: mkdocs-material-${{ env.cache_id }}
+  #         path: .cache
+  #         restore-keys: |
+  #           mkdocs-material-
+  #     - run: pip install mkdocs-material
+  #     - run: mkdocs gh-deploy --force
