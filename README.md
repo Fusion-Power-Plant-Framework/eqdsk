@@ -20,7 +20,7 @@ pip install eqdsk
 
 or for the most recent commit
 
-```
+```bash
 pip install git+https://github.com/Fusion-Power-Plant-Framework/eqdsk.git
 ```
 
