@@ -1,4 +1,4 @@
-name: Publish to PyPI
+name: Publish
 
 on:
   release:
@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  pypi:
     runs-on: ubuntu-latest
 
     environment: release
