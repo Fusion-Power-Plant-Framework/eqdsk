@@ -12,10 +12,17 @@ We have extended the EQDSK standard to optionally allow for the definition of a 
 
 ## Setup
 
-We are pip installable therefore:
+We are pip installable therefore for the most recent release:
 
 ```bash
+pip install eqdsk
+```
+
+or for the most recent commit
+
+```
 pip install git+https://github.com/Fusion-Power-Plant-Framework/eqdsk.git
 ```
+
 
 For a developer setup please see [CONTRIBUTING.md](CONTRIBUTING.md#setup-with-hatch)
