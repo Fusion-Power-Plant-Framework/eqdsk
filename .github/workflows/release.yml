@@ -1,4 +1,4 @@
-name: eqdsk - On push to main
+name: Release
 
 on:
   push:
