@@ -10,3 +10,7 @@ Module contents:
 - `cocos`: The eqdsk coordinate system conversion functions.
 
 """
+
+from eqdsk.file import EQDSKInterface
+
+__all__ = ["EQDSKInterface"]

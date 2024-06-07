@@ -259,12 +259,16 @@ def identify_eqdsk(
     """Identify the COCOS for the given
     [EQDSKInterface][eqdsk.file.EQDSKInterface].
 
-    Args:
-        eqdsk: The eqdsk file to identify the COCOS for.
-        clockwise_phi: Whether phi is clockwise from the top, by default None
-            which means either.
-        volt_seconds_per_radian: Whether the flux is in volt seconds per radian,
-            by default None which means either.
+    Parameters
+    ----------
+    eqdsk:
+        The eqdsk file to identify the COCOS for.
+    clockwise_phi:
+        Whether phi is clockwise from the top, by default None
+        which means either.
+    volt_seconds_per_radian:
+        Whether the flux is in volt seconds per radian,
+        by default None which means either.
 
     Returns
     -------
@@ -314,14 +318,22 @@ def identify_cocos(
 ) -> COCOS:
     """Identify the COCOS for the given values.
 
-    Args:
-        plasma_current: The plasma current.
-        b_toroidal: The toroidal magnetic field.
-        psi_at_boundary: The psi value at the plasma boundary.
-        psi_at_mag_axis: The psi value at the magnetic axis.
-        q_psi: The psi q (safety factor) values.
-        phi_clockwise_from_top: Whether phi is clockwise from the top.
-        volt_seconds_per_radian: Whether the flux is in volt seconds per radian.
+    Parameters
+    ----------
+    plasma_current:
+        The plasma current.
+    b_toroidal:
+        The toroidal magnetic field.
+    psi_at_boundary:
+        The psi value at the plasma boundary.
+    psi_at_mag_axis:
+        The psi value at the magnetic axis.
+    q_psi:
+        The psi q (safety factor) values.
+    phi_clockwise_from_top:
+        Whether phi is clockwise from the top.
+    volt_seconds_per_radian:
+        Whether the flux is in volt seconds per radian.
 
     Returns
     -------

@@ -24,26 +24,26 @@ class NumpyJSONEncoder(JSONEncoder):
 
 
 def json_writer(
-    data,
-    file=None,
+    data: dict,
+    file: str | None = None,
     *,
-    return_output=False,
+    return_output: bool = False,
     cls=NumpyJSONEncoder,
     **kwargs,
-):
+) -> str | None:
     """Write json in the bluemria style.
 
     Parameters
     ----------
-    data: dict
+    data:
         dictionary to write to json
-    filename: str
+    file:
         filename to write to
-    return_output:bool
+    return_output:
         return the json as a string
-    cls: JsonEncoder
+    cls:
         json encoder child class
-    kwargs: dict
+    kwargs:
         all further kwargs passed to the json writer
 
     """
@@ -66,17 +66,17 @@ def json_writer(
     return None
 
 
-def is_num(thing):
+def is_num(thing) -> bool:
     """Determine whether or not the input is a number.
 
     Parameters
     ----------
-    thing: unknown type
+    thing:
         The input which we need to determine is a number or not
 
     Returns
     -------
-    num: bool
+    num:
         Whether or not the input is a number
     """
     if thing is True or thing is False:
