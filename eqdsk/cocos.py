@@ -275,16 +275,12 @@ def identify_eqdsk(
         A list of the identified COCOS definitions.
     """
     if eqdsk.qpsi is None:
-        eqdsk_warn(
-            "WARNING: qpsi is not defined in the eqdsk file. Setting to 1"
-        )
+        eqdsk_warn("WARNING: qpsi is not defined in the eqdsk file. Setting to 1")
         eqdsk.qpsi = np.array([1])
 
     cw_phi_l = [True, False] if clockwise_phi is None else [clockwise_phi]
     vs_pr_l = (
-        [True, False]
-        if volt_seconds_per_radian is None
-        else [volt_seconds_per_radian]
+        [True, False] if volt_seconds_per_radian is None else [volt_seconds_per_radian]
     )
 
     definitions = [
@@ -349,9 +345,7 @@ def identify_cocos(
 
     sign_Ip = Sign(np.sign(plasma_current))
     sign_B0 = Sign(np.sign(b_toroidal))
-    sign_psi_inc_towards_boundary = Sign(
-        np.sign(psi_at_boundary - psi_at_mag_axis)
-    )
+    sign_psi_inc_towards_boundary = Sign(np.sign(psi_at_boundary - psi_at_mag_axis))
 
     sign_q = np.sign(q_psi)
     if sign_q.min() != sign_q.max():
@@ -371,9 +365,7 @@ def identify_cocos(
     )
 
 
-def transform_cocos(
-    from_cocos_index: int, to_cocos_index: int
-) -> COCOSTransform:
+def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransform:
     """Return the transformation needed to transform from one COCOS
     to another.
     """
