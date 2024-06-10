@@ -241,9 +241,7 @@ class EQDSKInterface:
         )
 
         if as_cocos_index is not None:
-            matching_conv = [
-                c for c in conventions if c.index == as_cocos_index
-            ]
+            matching_conv = [c for c in conventions if c.index == as_cocos_index]
             if not matching_conv:
                 raise ValueError(
                     f"No convention found that matches "
@@ -256,7 +254,7 @@ class EQDSKInterface:
         if len(conventions) != 1:
             eqdsk_warn(
                 f"A single COCOS could not be determined, "
-                f"found conventions ({', '.join([str(c.index) for c in conventions])}) "  # noqa: E501
+                f"found conventions ({', '.join([str(c.index) for c in conventions])}) "
                 f"for the EQDSK file. Choosing COCOS {conv.index}.",
             )
         eqdsk_print(f"EQDSK identified as COCOS {conv.index}.")
@@ -266,7 +264,7 @@ class EQDSKInterface:
         """Return a copy of this eqdsk converted to the given COCOS."""
         if self.cocos.index == cocos_index:
             return self
-        eqdsk_print(f"Converting EQDSK to COCOS {cocos_index}")
+        eqdsk_print(f"Converting EQDSK to COCOS {cocos_index}.")
         return convert_eqdsk(self, cocos_index)
 
     def to_dict(self) -> dict:
@@ -328,9 +326,18 @@ class EQDSKInterface:
 def _read_json(file_path: Path) -> dict[str, Any]:
     with file_path.open() as file:
         data = json.load(file)
-        for k, value in data.items():
-            if isinstance(value, list):
-                data[k] = np.asarray(value)
+
+    for k, value in data.items():
+        if isinstance(value, list):
+            data[k] = np.asarray(value)
+
+    # For backward compatibility where 'psinorm' was sometimes 'pnorm'
+    if "pnorm" in data:
+        if "psinorm" in data:
+            del data["pnorm"]
+        else:
+            data["psinorm"] = data.pop("pnorm")
+
     return data
 
 
@@ -513,7 +520,7 @@ def _write_eqdsk(file_path: str | Path, data: dict):
     """
     file_path = Path(file_path)
     if file_path.suffix not in EQDSK_EXTENSIONS:
-        file_path = Path(file_path).with_suffix("").with_suffix(".eqdsk")
+        file_path = Path(file_path).with_suffix(".eqdsk")
 
     with Path(file_path).open("w") as file:
 
@@ -540,13 +547,11 @@ def _write_eqdsk(file_path: str | Path, data: dict):
                 Empty strings will be recorded as 0.
             """
             line = [id_string]
-            line += [data[v] if not v else 0 for v in var_list]
+            line += [data[v] if v else 0 for v in var_list]
             file.write(fortran_format.write(line))
             file.write("\n")
 
-        def write_line(
-            fortran_format: ff.FortranRecordWriter, var_list: list[str]
-        ):
+        def write_line(fortran_format: ff.FortranRecordWriter, var_list: list[str]):
             """Write a line of variable values out to a G-EQDSK file.
 
             Parameters
@@ -559,13 +564,11 @@ def _write_eqdsk(file_path: str | Path, data: dict):
                 variables to added to the current line.
                 Empty strings will be recorded as 0.
             """
-            line = [data[v] if not v else 0 for v in var_list]
+            line = [data[v] if v else 0 for v in var_list]
             file.write(fortran_format.write(line))
             file.write("\n")
 
-        def write_array(
-            fortran_format: ff.FortranRecordWriter, array: np.ndarray
-        ):
+        def write_array(fortran_format: ff.FortranRecordWriter, array: np.ndarray):
             """Write a numpy array out to a G-EQDSK file.
 
             Parameters

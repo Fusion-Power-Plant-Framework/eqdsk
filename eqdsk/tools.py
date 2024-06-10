@@ -4,6 +4,7 @@
 """Eqdsk tools"""
 
 from json import JSONEncoder, dumps
+from pathlib import Path
 
 import numpy as np
 import numpy.typing as npt
@@ -25,7 +26,7 @@ class NumpyJSONEncoder(JSONEncoder):
 
 def json_writer(
     data: dict,
-    file: str | None = None,
+    file: str | Path | None = None,
     *,
     return_output: bool = False,
     cls=NumpyJSONEncoder,
@@ -57,6 +58,10 @@ def json_writer(
     the_json = dumps(data, cls=cls, **kwargs)
 
     if file is not None:
+        file = Path(file)
+        if file.suffix != ".json":
+            file = Path(file).with_suffix(".json")
+
         with open(file, "w") as fh:
             fh.write(the_json)
             fh.write("\n")
