@@ -526,7 +526,7 @@ def _write_eqdsk(file_path: str | Path, data: dict):
     """
     file_path = Path(file_path)
     if file_path.suffix not in EQDSK_EXTENSIONS:
-        file_path = Path(file_path).with_suffix(".eqdsk")
+        file_path = file_path.with_suffix(".eqdsk")
 
     with Path(file_path).open("w") as file:
 

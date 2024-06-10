@@ -60,7 +60,7 @@ def json_writer(
     if file is not None:
         file = Path(file)
         if file.suffix != ".json":
-            file = Path(file).with_suffix(".json")
+            file = file.with_suffix(".json")
 
         with open(file, "w") as fh:
             fh.write(the_json)
