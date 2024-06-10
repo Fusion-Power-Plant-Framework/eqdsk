@@ -134,28 +134,17 @@ class TestEQDSKInterface:
         assert compare_dicts(d1, d3, verbose=True)
         assert compare_dicts(d2, d3, verbose=True)
 
-    def test_read_strict_with_padding(self, tmp_path, caplog):
+    def test_write_with_wrong_length_qsi_raises_ValueError(self, tmp_path):
         file = self.data_dir / "DN-DEMO_eqref.json"
         # Create EQDSK file interface and read data to a dict
 
         eqdsk = EQDSKInterface.from_file(file, from_cocos_index=17, to_cocos_index=11)
         eqdsk.qpsi = np.ones(2)
 
-        # Write data read in from test file into a new EQDSK
-        # file, with the suffix "_temp"
-        name = Path(file).stem + "_temp"
-        fname = Path(tmp_path, f"{name}.eqdsk")
-
-        caplog.clear()
-        eqdsk.write(fname, file_format="eqdsk")
-        lg = caplog.records[-1]
-        assert lg.levelname == "WARNING"
-        assert "qpsi length not equal to nx" in lg.message
-
-        # Check eqdsk is readable by Fortran readers.
-        # This demands stricter adherence to the G-EQDSK
-        # format than eqdsk's main reader.
-        read_strict_geqdsk(fname)
+        with pytest.raises(ValueError, match="the length"):
+            eqdsk.write(
+                Path(tmp_path, f"{Path(file).stem}_temp.eqdsk"), file_format="eqdsk"
+            )
 
     @staticmethod
     @pytest.mark.private()

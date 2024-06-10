@@ -602,14 +602,15 @@ def _write_eqdsk(file_path: str | Path, data: dict):
 
         # Define dummy data for qpsi if it has not been previously defined.
         qpsi = (
-            np.zeros(data["nx"]) if data["qpsi"] is None else np.atleast_1d(data["qpsi"])
+            np.ones(data["nx"]) if data["qpsi"] is None else np.atleast_1d(data["qpsi"])
         )
 
         if len(qpsi) == 1:
             qpsi = np.full(data["nx"], qpsi)
         elif len(qpsi) != data["nx"]:
-            eqdsk_warn("qpsi length not equal to nx, padding with 0")
-            qpsi = np.pad(qpsi, (0, data["nx"] - len(qpsi)))
+            raise ValueError(
+                "the length of qpsi should be 1 or the number of x grid points"
+            )
 
         # Create array containing coilset information.
         coil = np.zeros(5 * data["ncoil"])
