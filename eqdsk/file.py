@@ -48,7 +48,6 @@ class EQDSKInterface:
     """
 
     DEFAULT_COCOS_INDEX = 11
-    suggestion = False
 
     bcentre: float
     """Vacuum toroidal Magnetic field at the reference radius [T]."""
@@ -298,11 +297,10 @@ class EQDSKInterface:
             json_kwargs = {} if json_kwargs is None else json_kwargs
             json_writer(self.to_dict(), file_path, **json_kwargs)
         elif file_format in {"eqdsk", "geqdsk"}:
-            if self.suggestion:
-                eqdsk_warn(
-                    "You are in the 21st century. "
-                    "Are you sure you want to be making an EDQSK in this day and age?"
-                )
+            eqdsk_warn(
+                "You are in the 21st century. "
+                "Are you sure you want to be making an EDQSK in this day and age?"
+            )
             _write_eqdsk(file_path, self.to_dict())
 
     def update(self, eqdsk_data: dict[str, Any]):
