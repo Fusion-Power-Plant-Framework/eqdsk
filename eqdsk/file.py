@@ -48,6 +48,7 @@ class EQDSKInterface:
     """
 
     DEFAULT_COCOS_INDEX = 11
+    suggestion = False
 
     bcentre: float
     """Vacuum toroidal Magnetic field at the reference radius [T]."""
@@ -297,6 +298,11 @@ class EQDSKInterface:
             json_kwargs = {} if json_kwargs is None else json_kwargs
             json_writer(self.to_dict(), file_path, **json_kwargs)
         elif file_format in {"eqdsk", "geqdsk"}:
+            if self.suggestion:
+                eqdsk_warn(
+                    "You are in the 21st century. "
+                    "Are you sure you want to be making an EDQSK in this day and age?"
+                )
             _write_eqdsk(file_path, self.to_dict())
 
     def update(self, eqdsk_data: dict[str, Any]):
@@ -595,7 +601,15 @@ def _write_eqdsk(file_path: str | Path, data: dict):
         file_id_string = f"{trimmed_name}_{timestamp}"
 
         # Define dummy data for qpsi if it has not been previously defined.
-        qpsi = np.zeros(data["nx"]) if data["qpsi"] is None else data["qpsi"]
+        qpsi = (
+            np.zeros(data["nx"]) if data["qpsi"] is None else np.atleast_1d(data["qpsi"])
+        )
+
+        if len(qpsi) == 1:
+            qpsi = np.full(data["nx"], qpsi)
+        elif len(qpsi) != data["nx"]:
+            eqdsk_warn("qpsi length not equal to nx, padding with 0")
+            qpsi = np.pad(qpsi, (0, data["nx"] - len(qpsi)))
 
         # Create array containing coilset information.
         coil = np.zeros(5 * data["ncoil"])

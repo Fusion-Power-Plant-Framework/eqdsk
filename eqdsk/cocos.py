@@ -345,9 +345,7 @@ def identify_cocos(
 
     sign_Ip = Sign(np.sign(plasma_current))
     sign_B0 = Sign(np.sign(b_toroidal))
-    sign_psi_inc_towards_boundary = Sign(
-        np.sign(psi_at_boundary - psi_at_mag_axis)
-    )
+    sign_psi_inc_towards_boundary = Sign(np.sign(psi_at_boundary - psi_at_mag_axis))
 
     sign_q = np.sign(q_psi)
     if sign_q.min() != sign_q.max():

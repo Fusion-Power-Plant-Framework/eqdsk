@@ -60,6 +60,7 @@ python = ["3.10", "3.11", "3.12"]
 [tool.hatch.envs.test.scripts]
 tests      = "pytest {args:tests}"
 tests-cov  = "pytest --cov eqdsk  --cov-report html:htmlcov_eqdsk --cov-report xml {args:tests}"
+tests-cov-private  = "pytest --private --cov eqdsk --cov-report html:htmlcov --cov-report xml {args:tests}"
 
 # env: docs
 [tool.hatch.envs.docs]
@@ -117,7 +118,6 @@ ignore = [
   "PTH123",  # use Path.open
   "TRY003",  # put error messages in error class
   "FURB152", # 3.14 != pi
-  "PIE790",  # TMP for false positive ...
 ]
 
 [tool.ruff.lint.isort]
@@ -141,6 +141,9 @@ convention = "numpy"
   "D104",
   "ERA001",
   "PLR2004",
+  "PLR0912",
+  "PLR0914",
+  "N802",
   "S101",
   "TID252",
 ]
@@ -168,3 +171,4 @@ addopts        = "--html=report.html --self-contained-html --strict-markers -r f
 log_cli        = true
 log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s"
 log_cli_level  = "INFO"
+markers = ["private: Tests using private data"]

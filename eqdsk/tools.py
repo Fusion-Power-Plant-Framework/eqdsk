@@ -84,7 +84,7 @@ def is_num(thing) -> bool:
     num:
         Whether or not the input is a number
     """
-    if thing is True or thing is False:
+    if thing in {True, False}:
         return False
     try:
         thing = floatify(thing)
