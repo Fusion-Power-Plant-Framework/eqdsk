@@ -17,7 +17,10 @@ from tests._helpers import compare_dicts, get_private_dir, read_strict_geqdsk
 
 def private_files():
     """Get private files"""
-    file_path = get_private_dir() / "equilibria"
+    if (pdir := get_private_dir()) is None:
+        return []
+
+    file_path = pdir / "equilibria"
 
     def _cocos(pth):
         pth = pth.as_posix()
