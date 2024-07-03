@@ -41,7 +41,7 @@ def read_strict_geqdsk(file_path):
     # Create FortranRecordReader objects with the Fortran format
     # edit descriptors to be used to parse the G-EQDSK input.
     f2000 = ff.FortranRecordReader("a48,3i4")
-    f2020 = ff.FortranRecordReader("5ES23.16e2")
+    f2020 = ff.FortranRecordReader("5e16.9")
     f2022 = ff.FortranRecordReader("2i5")
     fCSTM = ff.FortranRecordReader("i5")
 
