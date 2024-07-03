@@ -122,6 +122,10 @@ class EQDSKInterface:
     """Safety factor values on the 1-D flux grid [dimensionless]."""
     file_name: str | None = None
     """The EQDSK file the data originates from."""
+    coil_names: list[str] | None = None
+    """Name of the coils"""
+    coil_types: list[str] | None = None
+    """Type of the coils"""
 
     def __post_init__(self):
         """Calculate derived parameters if they're not given."""
@@ -332,7 +336,7 @@ def _read_json(file_path: Path) -> dict[str, Any]:
         data = json.load(file)
 
     for k, value in data.items():
-        if isinstance(value, list):
+        if isinstance(value, list) and k not in {"coil_type", "coil_names"}:
             data[k] = np.asarray(value)
 
     # For backward compatibility where 'psinorm' was sometimes 'pnorm'

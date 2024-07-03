@@ -352,7 +352,7 @@ def identify_cocos(
         raise ValueError(
             "The sign of qpsi is not consistent across the flux surfaces.",
         )
-    sign_q = Sign(sign_q.max())
+    sign_q = Sign(int(sign_q.max()) or 1)
 
     sign_Bp = sign_Ip * sign_psi_inc_towards_boundary
     sign_rho_theta_phi = sign_Ip * sign_B0 * sign_q

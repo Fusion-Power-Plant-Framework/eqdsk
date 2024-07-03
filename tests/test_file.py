@@ -86,6 +86,7 @@ class TestEQDSKInterface:
             ("jetto.eqdsk_out", "eqdsk", 11),
             ("DN-DEMO_eqref.json", "json", 17),
             ("eqref_OOB.json", "json", 17),
+            ("DN-DEMO_eqref_withCoilNames.json", "json", 17),
         ],
     )
     def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path):
