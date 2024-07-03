@@ -622,7 +622,7 @@ def _write_eqdsk(file_path: str | Path, data: dict):
         # Create FortranRecordWriter objects with the Fortran format
         # edit descriptors to be used in the G-EQDSK output.
         f2000 = ff.FortranRecordWriter("a48,3i4")
-        f2020 = ff.FortranRecordWriter("5e16.9")
+        f2020 = ff.FortranRecordWriter("5ES23.16e2")
         f2022 = ff.FortranRecordWriter("2i5")
         fCSTM = ff.FortranRecordWriter("i5")
 

@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-import filecmp
 import json
 from copy import deepcopy
 from pathlib import Path
@@ -11,6 +10,7 @@ from unittest import mock
 import numpy as np
 import pytest
 
+from eqdsk.cocos import COCOS
 from eqdsk.file import EQDSKInterface
 from tests._helpers import compare_dicts, get_private_dir, read_strict_geqdsk
 
@@ -90,11 +90,27 @@ class TestEQDSKInterface:
         ],
     )
     def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path):
-        eqd_default = EQDSKInterface.from_file(self.data_dir / file, ind)
+        eqd_default = EQDSKInterface.from_file(
+            self.data_dir / file, from_cocos_index=ind
+        )
+        eqd_default_nc = EQDSKInterface.from_file(self.data_dir / file, no_cocos=True)
+        if ind != 11:
+            assert not compare_dicts(
+                eqd_default.to_dict(), eqd_default_nc.to_dict(), verbose=True
+            )
 
         eqd_default.write(tmp_path / "test", file_format=ftype)
 
-        filecmp.cmp(self.data_dir / file, tmp_path / f"test.{ftype}", shallow=False)
+        eqd_test = EQDSKInterface.from_file(tmp_path / f"test.{ftype}", no_cocos=True)
+        eqd_test_d = eqd_test.to_dict()
+        eqd_def = eqd_default.to_dict()
+
+        eqd_test.identify(as_cocos_index=11)
+        assert eqd_test._cocos is COCOS.C11  # noqa: SLF001
+
+        eqd_def.pop("name")
+        eqd_test_d.pop("name")
+        assert compare_dicts(eqd_def, eqd_test_d, verbose=True)
 
     def test_read_wrong_cocos_raises_ValueError(self):
         with pytest.raises(ValueError, match="No convention found"):
@@ -156,11 +172,26 @@ class TestEQDSKInterface:
     def test_read_write_doesnt_change_file_private(file, ftype, ind, tmp_path):
         path = tmp_path / "private"
         path.mkdir(exist_ok=True)
-        eqd_default = EQDSKInterface.from_file(file, ind)
 
-        eqd_default.write(path / "test", file_format=ftype)
+        eqd_default = EQDSKInterface.from_file(file, from_cocos_index=ind)
+        eqd_default_nc = EQDSKInterface.from_file(file, no_cocos=True)
+        if ind != 11:
+            assert not compare_dicts(
+                eqd_default.to_dict(), eqd_default_nc.to_dict(), verbose=True
+            )
 
-        filecmp.cmp(file, path / f"test.{ftype}", shallow=False)
+        eqd_default.write(tmp_path / "test", file_format=ftype)
+
+        eqd_test = EQDSKInterface.from_file(tmp_path / f"test.{ftype}", no_cocos=True)
+        eqd_test_d = eqd_test.to_dict()
+        eqd_def = eqd_default.to_dict()
+
+        eqd_test.identify(as_cocos_index=11)
+        assert eqd_test._cocos is COCOS.C11  # noqa: SLF001
+
+        eqd_def.pop("name")
+        eqd_test_d.pop("name")
+        assert compare_dicts(eqd_def, eqd_test_d, verbose=True)
 
     def test_derived_field_is_calculated_if_not_given(self):
         data_file = Path(self.data_dir, "DN-DEMO_eqref.json")
