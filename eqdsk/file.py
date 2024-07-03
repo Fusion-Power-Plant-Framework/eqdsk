@@ -122,6 +122,10 @@ class EQDSKInterface:
     """Safety factor values on the 1-D flux grid [dimensionless]."""
     file_name: str | None = None
     """The EQDSK file the data originates from."""
+    coil_names: list[str] | None = None
+    """Name of the coils"""
+    coil_types: list[str] | None = None
+    """Type of the coils"""
 
     def __post_init__(self):
         """Calculate derived parameters if they're not given."""
@@ -332,7 +336,7 @@ def _read_json(file_path: Path) -> dict[str, Any]:
         data = json.load(file)
 
     for k, value in data.items():
-        if isinstance(value, list):
+        if isinstance(value, list) and k not in {"coil_type", "coil_names"}:
             data[k] = np.asarray(value)
 
     # For backward compatibility where 'psinorm' was sometimes 'pnorm'
@@ -618,7 +622,7 @@ def _write_eqdsk(file_path: str | Path, data: dict):
         # Create FortranRecordWriter objects with the Fortran format
         # edit descriptors to be used in the G-EQDSK output.
         f2000 = ff.FortranRecordWriter("a48,3i4")
-        f2020 = ff.FortranRecordWriter("5e16.9")
+        f2020 = ff.FortranRecordWriter("5ES23.16e2")
         f2022 = ff.FortranRecordWriter("2i5")
         fCSTM = ff.FortranRecordWriter("i5")
 
