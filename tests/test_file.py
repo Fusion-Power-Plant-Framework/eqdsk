@@ -180,7 +180,7 @@ class TestEQDSKInterface:
                 eqd_default.to_dict(), eqd_default_nc.to_dict(), verbose=True
             )
 
-        eqd_default.write(tmp_path / "test", file_format=ftype)
+        eqd_default.write(tmp_path / "test", file_format=ftype, strict_spec=False)
 
         eqd_test = EQDSKInterface.from_file(tmp_path / f"test.{ftype}", no_cocos=True)
         eqd_test_d = eqd_test.to_dict()

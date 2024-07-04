@@ -283,6 +283,8 @@ class EQDSKInterface:
         file_path: str,
         file_format: str = "json",
         json_kwargs: dict | None = None,
+        *,
+        strict_spec: bool = True,
     ):
         """Write the EQDSK data to file in the given format.
 
@@ -296,6 +298,9 @@ class EQDSKInterface:
         json_kwargs:
             Key word arguments to pass to the ``json.dump`` call. Only
             used if ``format`` is 'json'.
+        strict_spec:
+            As https://w3.pppl.gov/ntcc/TORAY/G_EQDSK.pdf arrays have the format
+            5e16.9, disabling this changes the format to 5ES23.16e2
         """
         if file_format == "json":
             json_kwargs = {} if json_kwargs is None else json_kwargs
@@ -305,7 +310,7 @@ class EQDSKInterface:
                 "You are in the 21st century. "
                 "Are you sure you want to be making an EDQSK in this day and age?"
             )
-            _write_eqdsk(file_path, self.to_dict())
+            _write_eqdsk(file_path, self.to_dict(), strict_spec=strict_spec)
 
     def update(self, eqdsk_data: dict[str, Any]):
         """Update this object's data with values from a dictionary.
@@ -516,7 +521,7 @@ def _derive_psinorm(fpol) -> np.ndarray:
     return np.linspace(0, 1, len(fpol))
 
 
-def _write_eqdsk(file_path: str | Path, data: dict):
+def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True):
     """Write data out to a text file in G-EQDSK format.
 
     Parameters
@@ -525,6 +530,9 @@ def _write_eqdsk(file_path: str | Path, data: dict):
         The full path string of the file to be created
     data:
         Dictionary of EQDSK data.
+    strict_spec:
+        As https://w3.pppl.gov/ntcc/TORAY/G_EQDSK.pdf arrays have the format
+        5e16.9, disabling this changes the format to 5ES23.16e2
     """
     file_path = Path(file_path)
     if file_path.suffix not in EQDSK_EXTENSIONS:
@@ -622,7 +630,7 @@ def _write_eqdsk(file_path: str | Path, data: dict):
         # Create FortranRecordWriter objects with the Fortran format
         # edit descriptors to be used in the G-EQDSK output.
         f2000 = ff.FortranRecordWriter("a48,3i4")
-        f2020 = ff.FortranRecordWriter("5e16.9")
+        f2020 = ff.FortranRecordWriter("5e16.9" if strict_spec else "5ES23.16e2")
         f2022 = ff.FortranRecordWriter("2i5")
         fCSTM = ff.FortranRecordWriter("i5")
 
