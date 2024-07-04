@@ -23,7 +23,7 @@ def get_private_dir():
     return None
 
 
-def read_strict_geqdsk(file_path):
+def read_strict_geqdsk(file_path, *, strict_spec=True):
     """
     Reads an input EQDSK file in, assuming strict adherence to the
     GEQDSK format. Used to check bluemira outputs can be read by
@@ -41,7 +41,7 @@ def read_strict_geqdsk(file_path):
     # Create FortranRecordReader objects with the Fortran format
     # edit descriptors to be used to parse the G-EQDSK input.
     f2000 = ff.FortranRecordReader("a48,3i4")
-    f2020 = ff.FortranRecordReader("5ES23.16e2")
+    f2020 = ff.FortranRecordReader("5e16.9" if strict_spec else "5ES23.16e2")
     f2022 = ff.FortranRecordReader("2i5")
     fCSTM = ff.FortranRecordReader("i5")
 
