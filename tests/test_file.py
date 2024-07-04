@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 from eqdsk.cocos import COCOS
+from eqdsk.errors import NoSingleConventionError
 from eqdsk.file import EQDSKInterface
 from tests._helpers import compare_dicts, get_private_dir, read_strict_geqdsk
 
@@ -46,26 +47,20 @@ class TestEQDSKInterface:
         caplog.set_level("INFO")
 
         eqd_default = EQDSKInterface.from_file(
-            self.data_dir / "jetto.eqdsk_out",
+            self.data_dir / "jetto.eqdsk_out", from_cocos=11
         )
 
         logs = caplog.records
-        assert logs[0].levelname == "WARNING"
-        assert "(1, 2, 11, 12)" in logs[0].message
-        assert all(lg.levelname == "INFO" for lg in logs[1:])
-        assert all(
-            int(lg.message.split("COCOS")[-1].strip(".")) == ind
-            for lg, ind in zip(logs[1:], [1, 11, 11], strict=True)
-        )
-
-        assert eqd_default.cocos.index == EQDSKInterface.DEFAULT_COCOS_INDEX
+        assert logs[0].levelname == "INFO"
+        assert "COCOS 11" in logs[0].message
+        assert eqd_default.cocos.index == EQDSKInterface.DEFAULT_COCOS
 
     def test_read_cocos_specified(self, caplog):
         eqd_as_cc_2 = EQDSKInterface.from_file(
             self.data_dir / "jetto.eqdsk_out",
             volt_seconds_per_radian=True,
             clockwise_phi=True,
-            to_cocos_index=2,
+            to_cocos=2,
         )
 
         logs = caplog.records
@@ -84,15 +79,13 @@ class TestEQDSKInterface:
         ("file", "ftype", "ind"),
         [
             ("jetto.eqdsk_out", "eqdsk", 11),
-            ("DN-DEMO_eqref.json", "json", 17),
-            ("eqref_OOB.json", "json", 17),
-            ("DN-DEMO_eqref_withCoilNames.json", "json", 17),
+            ("DN-DEMO_eqref.json", "json", 7),
+            ("eqref_OOB.json", "json", 7),
+            ("DN-DEMO_eqref_withCoilNames.json", "json", 7),
         ],
     )
     def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path):
-        eqd_default = EQDSKInterface.from_file(
-            self.data_dir / file, from_cocos_index=ind
-        )
+        eqd_default = EQDSKInterface.from_file(self.data_dir / file, from_cocos=ind)
         eqd_default_nc = EQDSKInterface.from_file(self.data_dir / file, no_cocos=True)
         if ind != 11:
             assert not compare_dicts(
@@ -105,7 +98,7 @@ class TestEQDSKInterface:
         eqd_test_d = eqd_test.to_dict()
         eqd_def = eqd_default.to_dict()
 
-        eqd_test.identify(as_cocos_index=11)
+        eqd_test.identify(as_cocos=11)
         assert eqd_test._cocos is COCOS.C11  # noqa: SLF001
 
         eqd_def.pop("name")
@@ -119,7 +112,7 @@ class TestEQDSKInterface:
     @pytest.mark.parametrize(
         ("setup_keys", "end_keys"),
         [
-            ({"from_cocos_index": 17, "to_cocos_index": 11}, {"from_cocos_index": 11}),
+            ({"from_cocos": 17, "to_cocos": 11}, {"from_cocos": 11}),
             ({"no_cocos": True}, {"no_cocos": True}),
         ],
     )
@@ -158,7 +151,7 @@ class TestEQDSKInterface:
         file = self.data_dir / "DN-DEMO_eqref.json"
         # Create EQDSK file interface and read data to a dict
 
-        eqdsk = EQDSKInterface.from_file(file, from_cocos_index=17, to_cocos_index=11)
+        eqdsk = EQDSKInterface.from_file(file, from_cocos=17, to_cocos=11)
         eqdsk.qpsi = np.ones(2)
 
         with pytest.raises(ValueError, match="the length"):
@@ -173,7 +166,7 @@ class TestEQDSKInterface:
         path = tmp_path / "private"
         path.mkdir(exist_ok=True)
 
-        eqd_default = EQDSKInterface.from_file(file, from_cocos_index=ind)
+        eqd_default = EQDSKInterface.from_file(file, from_cocos=ind)
         eqd_default_nc = EQDSKInterface.from_file(file, no_cocos=True)
         if ind != 11:
             assert not compare_dicts(
@@ -186,7 +179,7 @@ class TestEQDSKInterface:
         eqd_test_d = eqd_test.to_dict()
         eqd_def = eqd_default.to_dict()
 
-        eqd_test.identify(as_cocos_index=11)
+        eqd_test.identify(as_cocos=11)
         assert eqd_test._cocos is COCOS.C11  # noqa: SLF001
 
         eqd_def.pop("name")
@@ -205,7 +198,7 @@ class TestEQDSKInterface:
         with mock.patch(
             "pathlib.Path.open", new=mock.mock_open(read_data=json.dumps(mod_sof_data))
         ):
-            eqdsk = EQDSKInterface.from_file("/some/file.json")
+            eqdsk = EQDSKInterface.from_file("/some/file.json", from_cocos=7)
 
         np.testing.assert_allclose(eqdsk.x, eudemo_sof_data["x"])
         np.testing.assert_allclose(eqdsk.z, eudemo_sof_data["z"])
@@ -217,7 +210,9 @@ class TestEQDSKInterface:
         )
 
     def test_read_matches_values_in_file(self):
-        eq = EQDSKInterface.from_file(Path(self.data_dir, "jetto.eqdsk_out"))
+        eq = EQDSKInterface.from_file(
+            Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=11
+        )
 
         assert eq.nz == 151
         assert eq.nx == 151
@@ -244,3 +239,7 @@ class TestEQDSKInterface:
             mock.patch("pathlib.Path.open", new=mock.mock_open(read_data=" ")),
         ):
             EQDSKInterface.from_file(Path(self.data_dir, "jetto.eqdsk_out"), 11)
+
+    def test_fail_identify_from_file(self):
+        with pytest.raises(NoSingleConventionError):
+            EQDSKInterface.from_file(Path(self.data_dir, "jetto.eqdsk_out"))

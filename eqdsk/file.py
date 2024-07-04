@@ -16,11 +16,14 @@ import fortranformat as ff
 import numpy as np
 
 from eqdsk.cocos import COCOS, convert_eqdsk, identify_eqdsk
+from eqdsk.errors import NoSingleConventionError
 from eqdsk.log import eqdsk_print, eqdsk_warn
 from eqdsk.tools import is_num, json_writer
 
 if TYPE_CHECKING:
     from io import TextIOWrapper
+
+    from eqdsk.models import Sign
 
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
 
@@ -47,7 +50,7 @@ class EQDSKInterface:
     Plasma current direction is not enforced here!
     """
 
-    DEFAULT_COCOS_INDEX = 11
+    DEFAULT_COCOS = 11
 
     bcentre: float
     """Vacuum toroidal Magnetic field at the reference radius [T]."""
@@ -138,15 +141,16 @@ class EQDSKInterface:
         self._cocos = None
 
     @classmethod
-    def from_file(
+    def from_file(  # noqa: PLR0913
         cls,
         file_path: str | Path,
-        from_cocos_index: int | None = None,
-        to_cocos_index: int | None = DEFAULT_COCOS_INDEX,
+        from_cocos: int | None = None,
+        to_cocos: int | None = DEFAULT_COCOS,
         *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
         no_cocos: bool = False,
+        qpsi_sign: Sign | None = None,
     ) -> EQDSKInterface:
         """Create an EQDSKInterface object from a file.
 
@@ -158,19 +162,23 @@ class EQDSKInterface:
                 - eqdsk
                 - eqdsk_out
                 - geqdsk
+        from_cocos:
+            The user set COCOS of the EQDSK file.
+            This sets what COCCOS the file will be id's as
+            and will raise it's not one of the determined COCOS.
+        to_cocos:
+            The COCOS to convert the EQDSK file to. If None, the file
+            will not be converted.
         clockwise_phi:
             Whether the EQDSK file's phi is clockwise or not.
         volt_seconds_per_radian:
             Whether the EQDSK file's psi is in volt seconds per radian.
-        from_cocos_index:
-            The COCOS index of the EQDSK file. Used when the determined
-            COCOS is ambiguous. Will raise if given and not one of
-            the determined COCOS indices.
-        to_cocos_index:
-            The COCOS index to convert the EQDSK file to.
         no_cocos:
-            Whether to return the EQDSK data without identifying
-            and converting to `to_cocos_index` COCOS index.
+            Whether to return the EQDSK data without performing
+            any identifying COCOS identification or conversion.
+        qpsi_sign:
+            The sign of the qpsi, required for identification
+            when qpsi is not present in the file.
 
         Returns
         -------
@@ -189,13 +197,22 @@ class EQDSKInterface:
         if no_cocos:
             return inst
 
-        inst.identify(
-            as_cocos_index=from_cocos_index,
-            clockwise_phi=clockwise_phi,
-            volt_seconds_per_radian=volt_seconds_per_radian,
-        )
-        if to_cocos_index is not None:
-            inst = inst.as_cocos(to_cocos_index)
+        try:
+            inst.identify(
+                as_cocos=from_cocos,
+                clockwise_phi=clockwise_phi,
+                volt_seconds_per_radian=volt_seconds_per_radian,
+                qpsi_sign=qpsi_sign,
+            )
+        except NoSingleConventionError as e:
+            raise NoSingleConventionError(
+                e.conventions,
+                "You need to specify `from_cocos` or "
+                "`clockwise_phi` and `volt_seconds_per_radian`.",
+            ) from None
+
+        if to_cocos is not None:
+            inst = inst.to_cocos(to_cocos)
 
         return inst
 
@@ -212,64 +229,94 @@ class EQDSKInterface:
 
     def identify(
         self,
-        as_cocos_index: int | None = None,
+        as_cocos: int | None = None,
         *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
+        qpsi_sign: Sign | None = None,
     ):
-        """Identify the COCOS of this eqdsk and set the COCOS attribute.
+        """Identifies the COCOS of this eqdsk.
+
+        Note
+        ----
+            This sets the internal _cocos attribute and does not return
+            anything.
 
         Parameters
         ----------
+        as_cocos:
+            The COCOS index to convert the EQDSK file to.
+            If given, the file will be id's as the given COCOS,
+            only if it one of the possible identified COCOS.
         clockwise_phi:
             Whether the EQDSK file's phi is clockwise or not.
         volt_seconds_per_radian:
             Whether the EQDSK file's psi is in volt seconds per radian.
-        as_cocos_index:
-            The COCOS index to convert the EQDSK file to. If given,
-            the COCOS will be converted to this COCOS index.
 
         Raises
         ------
         ValueError:
-            If as_cocos_index is given but does not match any
-            identified COCOS index.
+            If as_cocos is given but does not match any identified COCOS.
         ValueError:
             If no COCOS can be identified.
 
         """
+        qpsi_is_not_set = self.qpsi is None or np.allclose(self.qpsi, 0)
+        if qpsi_is_not_set and (as_cocos is None and qpsi_sign is None):
+            raise ValueError(
+                "In order to properly identify the COCOS of this EQDSK file, "
+                "qpsi data must be present in the file. Either set the "
+                " `as_cocos` parameter or provide the `qpsi_sign` parameter."
+            )
+
+        if qpsi_is_not_set and qpsi_sign is not None:
+            eqdsk_warn(
+                "No qpsi data found but `qpsi_sign` provided. "
+                f"Setting qpsi as array of {qpsi_sign.value}'s."
+            )
+            self.qpsi = np.ones(self.nx) * qpsi_sign.value
+
         conventions = identify_eqdsk(
             self,
             clockwise_phi=clockwise_phi,
             volt_seconds_per_radian=volt_seconds_per_radian,
         )
 
-        if as_cocos_index is not None:
-            matching_conv = [c for c in conventions if c.index == as_cocos_index]
-            if not matching_conv:
-                raise ValueError(
-                    f"No convention found that matches "
-                    f"the given COCOS index {as_cocos_index}, "
-                    f"from the possible ({', '.join([str(c.index) for c in conventions])}).",  # noqa: E501
+        def _id():
+            if as_cocos:
+                matching_conv = next(
+                    (c for c in conventions if c.index == as_cocos), None
                 )
-            conventions = matching_conv
+                if not matching_conv:
+                    raise ValueError(
+                        f"No convention found that matches "
+                        f"the given COCOS index {as_cocos}, "
+                        f"from the possible ({', '.join([str(c.index) for c in conventions])}).",  # noqa: E501
+                    )
+                return matching_conv
+            if len(conventions) != 1:
+                raise NoSingleConventionError(
+                    conventions,
+                    "You need to specify `as_cocos` or "
+                    "`clockwise_phi` and `volt_seconds_per_radian`.",
+                )
+            return conventions[0]
 
-        conv = conventions[0]
-        if len(conventions) != 1:
-            eqdsk_warn(
-                f"A single COCOS could not be determined, "
-                f"found conventions ({', '.join([str(c.index) for c in conventions])}) "
-                f"for the EQDSK file. Choosing COCOS {conv.index}.",
-            )
-        eqdsk_print(f"EQDSK identified as COCOS {conv.index}.")
-        self._cocos = conv
+        c = _id()
+        eqdsk_print(f"EQDSK identified as COCOS {c.index}.")
+        self._cocos = c
 
-    def as_cocos(self, cocos_index: int) -> EQDSKInterface:
-        """Return a copy of this eqdsk converted to the given COCOS."""
-        if self.cocos.index == cocos_index:
+    def to_cocos(self, to_cocos: int) -> EQDSKInterface:
+        """Returns a copy of this eqdsk converted to the given COCOS.
+
+        Note
+        ----
+            This returns a new instance of the EQDSKInterface class.
+        """
+        if self.cocos.index == to_cocos:
             return self
-        eqdsk_print(f"Converting EQDSK to COCOS {cocos_index}.")
-        return convert_eqdsk(self, cocos_index)
+        eqdsk_print(f"Converting EQDSK to COCOS {to_cocos}.")
+        return convert_eqdsk(self, to_cocos)
 
     def to_dict(self) -> dict:
         """Return a dictionary of the EQDSK data."""
@@ -612,9 +659,9 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
 
         # Define dummy data for qpsi if it has not been previously defined.
         qpsi = (
-            np.ones(data["nx"]) if data["qpsi"] is None else np.atleast_1d(data["qpsi"])
+            np.zeros(data["nx"]) if data["qpsi"] is None else np.atleast_1d(data["qpsi"])
         )
-
+        eqdsk_warn("No qpsi data found. Setting as array of 0's.")
         if len(qpsi) == 1:
             qpsi = np.full(data["nx"], qpsi)
         elif len(qpsi) != data["nx"]:

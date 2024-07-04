@@ -9,52 +9,15 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum, unique
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from eqdsk.log import eqdsk_warn
+from eqdsk.models import Sign, ZeroOne
 
 if TYPE_CHECKING:
     from eqdsk.file import EQDSKInterface
-
-
-class ZeroOne(Enum):
-    """An enum representing the values 0 and 1 for the 2pi exponent of Bp."""
-
-    ZERO = 0
-    ONE = 1
-
-    def __sub__(self, other: Any) -> ZeroOne:
-        """Return the difference between the value and the other value.
-
-        - If it is another ZeroOne, return the difference of the values.
-        - Raise a `TypeError` otherwise.
-        """
-        if type(other) is ZeroOne:
-            return ZeroOne(self.value - other.value)
-        raise TypeError(
-            f"Cannot subtract {type(other)} from {type(self)}.",
-        )
-
-
-class Sign(Enum):
-    """An enum representing the positive or negative sign of
-    a COCOS parameter.
-    """
-
-    POSITIVE = 1
-    NEGATIVE = -1
-
-    def __mul__(self, other: Any):
-        """Return the product of the sign with the other value.
-
-        - If it is another Sign, return the product of the values.
-        - If it is a number, return the product of the value and the number.
-        """
-        if type(other) is Sign:
-            return Sign(self.value * other.value)
-        return self.value * other
 
 
 @dataclass(frozen=True)
@@ -68,11 +31,11 @@ class COCOSParams:
     sign_Bp: Sign
     """The sign of Bp, depends on the sign of Ip and the gradient of psi."""
     sign_R_phi_Z: Sign
-    """The sign of (R, phi, Z), positive if theta and phi have
-    opposite directions, negative if the same."""
+    """The sign of (R, phi, Z), positive if phi (toroidal)
+    is CCW from the top, negative if CW."""
     sign_rho_theta_phi: Sign
-    """The sign of (rho, theta, phi), positive if phi (toroidal)
-    is CW from the top."""
+    """The sign of (rho, theta, phi), positive if theta and phi have
+    opposite directions, negative if the same."""
 
 
 @unique
@@ -333,12 +296,12 @@ def identify_cocos(
 
     Returns
     -------
-        The identified COCOS convention.
+    The identified COCOS convention.
 
     Raises
     ------
-        ValueError: If the sign of qpsi is not consistent across the flux
-            surfaces.
+    ValueError: If the sign of qpsi is not consistent across the flux
+        surfaces.
     """
     sign_R_phi_Z = Sign.NEGATIVE if phi_clockwise_from_top else Sign.POSITIVE
     exp_Bp = ZeroOne.ZERO if volt_seconds_per_radian else ZeroOne.ONE
