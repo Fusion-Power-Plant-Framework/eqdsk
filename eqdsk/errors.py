@@ -19,3 +19,16 @@ class NoSingleConventionError(Exception):
             f"({', '.join([str(c.index) for c in self.conventions])}) "
             f"for the EQDSK file.\n{self.message_extra}"
         )
+
+
+class ImproperIdentificationError(Exception):
+    """Raised when attempting to set the COCOS for an EQDSK file,
+    that is not one of the possible standards.
+    """
+
+    def __init__(self, message_extra: str):
+        self.message_extra = message_extra
+        super().__init__(
+            f"In order to properly identify the COCOS of this EQDSK file, "
+            f"qpsi data must be present in the file.\n{self.message_extra}"
+        )

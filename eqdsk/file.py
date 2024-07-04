@@ -16,7 +16,7 @@ import fortranformat as ff
 import numpy as np
 
 from eqdsk.cocos import COCOS, convert_eqdsk, identify_eqdsk
-from eqdsk.errors import NoSingleConventionError
+from eqdsk.errors import ImproperIdentificationError, NoSingleConventionError
 from eqdsk.log import eqdsk_print, eqdsk_warn
 from eqdsk.tools import is_num, json_writer
 
@@ -210,6 +210,11 @@ class EQDSKInterface:
                 "You need to specify `from_cocos` or "
                 "`clockwise_phi` and `volt_seconds_per_radian`.",
             ) from None
+        except ImproperIdentificationError:
+            raise ImproperIdentificationError(
+                "Either set the `from_cocos` parameter "
+                "or provide the `qpsi_sign` parameter."
+            ) from None
 
         if to_cocos is not None:
             inst = inst.to_cocos(to_cocos)
@@ -263,10 +268,9 @@ class EQDSKInterface:
         """
         qpsi_is_not_set = self.qpsi is None or np.allclose(self.qpsi, 0)
         if qpsi_is_not_set and (as_cocos is None and qpsi_sign is None):
-            raise ValueError(
-                "In order to properly identify the COCOS of this EQDSK file, "
-                "qpsi data must be present in the file. Either set the "
-                " `as_cocos` parameter or provide the `qpsi_sign` parameter."
+            raise ImproperIdentificationError(
+                "Either set the `as_cocos` parameter "
+                "or provide the `qpsi_sign` parameter."
             )
 
         if qpsi_is_not_set and qpsi_sign is not None:
