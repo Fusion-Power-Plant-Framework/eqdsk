@@ -21,9 +21,9 @@ class NoSingleConventionError(Exception):
         )
 
 
-class ImproperIdentificationError(Exception):
-    """Raised when attempting to set the COCOS for an EQDSK file,
-    that is not one of the possible standards.
+class MissingQpsiDataError(Exception):
+    """Raised when attempting to identify the COCOS for an EQDSK file,
+    that does not have an qpsi data in it.
     """
 
     def __init__(self, message_extra: str):

@@ -16,7 +16,10 @@ import fortranformat as ff
 import numpy as np
 
 from eqdsk.cocos import COCOS, convert_eqdsk, identify_eqdsk
-from eqdsk.errors import ImproperIdentificationError, NoSingleConventionError
+from eqdsk.errors import (
+    MissingQpsiDataError,
+    NoSingleConventionError,
+)
 from eqdsk.log import eqdsk_print, eqdsk_warn
 from eqdsk.tools import is_num, json_writer
 
@@ -207,13 +210,8 @@ class EQDSKInterface:
         except NoSingleConventionError as e:
             raise NoSingleConventionError(
                 e.conventions,
-                "You need to specify `from_cocos` or "
+                message_extra="You need to specify `from_cocos` or "
                 "`clockwise_phi` and `volt_seconds_per_radian`.",
-            ) from None
-        except ImproperIdentificationError:
-            raise ImproperIdentificationError(
-                "Either set the `from_cocos` parameter "
-                "or provide the `qpsi_sign` parameter."
             ) from None
 
         if to_cocos is not None:
@@ -244,8 +242,8 @@ class EQDSKInterface:
 
         Note
         ----
-            This sets the internal _cocos attribute and does not return
-            anything.
+        This sets the internal _cocos attribute and does not return
+        anything.
 
         Parameters
         ----------
@@ -257,6 +255,9 @@ class EQDSKInterface:
             Whether the EQDSK file's phi is clockwise or not.
         volt_seconds_per_radian:
             Whether the EQDSK file's psi is in volt seconds per radian.
+        qpsi_sign:
+            The sign of the qpsi, required for identification
+            when qpsi is not present in the file.
 
         Raises
         ------
@@ -267,18 +268,22 @@ class EQDSKInterface:
 
         """
         qpsi_is_not_set = self.qpsi is None or np.allclose(self.qpsi, 0)
-        if qpsi_is_not_set and (as_cocos is None and qpsi_sign is None):
-            raise ImproperIdentificationError(
-                "Either set the `as_cocos` parameter "
-                "or provide the `qpsi_sign` parameter."
-            )
-
-        if qpsi_is_not_set and qpsi_sign is not None:
-            eqdsk_warn(
-                "No qpsi data found but `qpsi_sign` provided. "
-                f"Setting qpsi as array of {qpsi_sign.value}'s."
-            )
-            self.qpsi = np.ones(self.nx) * qpsi_sign.value
+        if qpsi_is_not_set:
+            if qpsi_sign:
+                eqdsk_warn(
+                    "No qpsi data found but `qpsi_sign` provided. "
+                    f"Setting qpsi as array of {qpsi_sign.value}'s."
+                )
+                self.qpsi = np.ones(self.nx) * qpsi_sign.value
+            else:
+                raise MissingQpsiDataError(
+                    message_extra="Setting the `qpsi_sign` parameter will resolve this. "
+                    "This is the sign of the qpsi across the flux surfaces."
+                    "\nRefer to the COCOS spec or the implementation of it "
+                    "in this package, if you know what the desired direction (CW/CCW) "
+                    "is for theta and phi for this EQDSK."
+                    "This can help you determine what sign qpsi should be."
+                )
 
         conventions = identify_eqdsk(
             self,
@@ -301,7 +306,7 @@ class EQDSKInterface:
             if len(conventions) != 1:
                 raise NoSingleConventionError(
                     conventions,
-                    "You need to specify `as_cocos` or "
+                    message_extra="You need to specify `as_cocos` or "
                     "`clockwise_phi` and `volt_seconds_per_radian`.",
                 )
             return conventions[0]

@@ -13,6 +13,7 @@ import pytest
 from eqdsk.cocos import COCOS
 from eqdsk.errors import NoSingleConventionError
 from eqdsk.file import EQDSKInterface
+from eqdsk.models import Sign
 from tests._helpers import compare_dicts, get_private_dir, read_strict_geqdsk
 
 
@@ -79,13 +80,17 @@ class TestEQDSKInterface:
         ("file", "ftype", "ind"),
         [
             ("jetto.eqdsk_out", "eqdsk", 11),
-            ("DN-DEMO_eqref.json", "json", 7),
+            ("DN-DEMO_eqref.json", "json", 3),
             ("eqref_OOB.json", "json", 7),
-            ("DN-DEMO_eqref_withCoilNames.json", "json", 7),
+            ("DN-DEMO_eqref_withCoilNames.json", "json", 3),
         ],
     )
     def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path):
-        eqd_default = EQDSKInterface.from_file(self.data_dir / file, from_cocos=ind)
+        eqd_default = EQDSKInterface.from_file(
+            self.data_dir / file,
+            from_cocos=ind,
+            qpsi_sign=Sign.NEGATIVE,
+        )
         eqd_default_nc = EQDSKInterface.from_file(self.data_dir / file, no_cocos=True)
         if ind != 11:
             assert not compare_dicts(
@@ -112,7 +117,10 @@ class TestEQDSKInterface:
     @pytest.mark.parametrize(
         ("setup_keys", "end_keys"),
         [
-            ({"from_cocos": 17, "to_cocos": 11}, {"from_cocos": 11}),
+            (
+                {"from_cocos": 3, "to_cocos": 11, "qpsi_sign": Sign.NEGATIVE},
+                {"from_cocos": 11},
+            ),
             ({"no_cocos": True}, {"no_cocos": True}),
         ],
     )
@@ -151,7 +159,9 @@ class TestEQDSKInterface:
         file = self.data_dir / "DN-DEMO_eqref.json"
         # Create EQDSK file interface and read data to a dict
 
-        eqdsk = EQDSKInterface.from_file(file, from_cocos=17, to_cocos=11)
+        eqdsk = EQDSKInterface.from_file(
+            file, from_cocos=3, to_cocos=11, qpsi_sign=Sign.NEGATIVE
+        )
         eqdsk.qpsi = np.ones(2)
 
         with pytest.raises(ValueError, match="the length"):
@@ -198,7 +208,9 @@ class TestEQDSKInterface:
         with mock.patch(
             "pathlib.Path.open", new=mock.mock_open(read_data=json.dumps(mod_sof_data))
         ):
-            eqdsk = EQDSKInterface.from_file("/some/file.json", from_cocos=7)
+            eqdsk = EQDSKInterface.from_file(
+                "/some/file.json", from_cocos=3, qpsi_sign=Sign.NEGATIVE
+            )
 
         np.testing.assert_allclose(eqdsk.x, eudemo_sof_data["x"])
         np.testing.assert_allclose(eqdsk.z, eudemo_sof_data["z"])
