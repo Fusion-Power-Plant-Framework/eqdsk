@@ -25,10 +25,10 @@ def private_files():
     file_path = pdir / "equilibria"
 
     def _cocos(pth):
-        pth = pth.as_posix()
+        pth = Path(*pth.parts[-2:]).as_posix()
         if "jetto" in pth or "COCOS11" in pth:
             return 11
-        if "STEP" in pth or "DEMO" in pth:
+        if ("STEP" in pth and "BLUEPRINT" not in pth) or "DEMO" in pth:
             return 7
         return 3
 
