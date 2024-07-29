@@ -1,11 +1,9 @@
-name: Main
+name: Main and PR
 
 on:
   push:
     branches: [main]
-
-permissions:
-  contents: write
+  pull_request:
 
 jobs:
   lint:
