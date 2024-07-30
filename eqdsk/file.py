@@ -21,12 +21,12 @@ from eqdsk.errors import (
     NoSingleConventionError,
 )
 from eqdsk.log import eqdsk_print, eqdsk_warn
+from eqdsk.models import Sign
 from eqdsk.tools import is_num, json_writer
 
 if TYPE_CHECKING:
     from io import TextIOWrapper
 
-    from eqdsk.models import Sign
 
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
 
@@ -153,7 +153,7 @@ class EQDSKInterface:
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
         no_cocos: bool = False,
-        qpsi_sign: Sign | None = None,
+        qpsi_sign: int | Sign | None = None,
     ) -> EQDSKInterface:
         """Create an EQDSKInterface object from a file.
 
@@ -236,7 +236,7 @@ class EQDSKInterface:
         *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
-        qpsi_sign: Sign | None = None,
+        qpsi_sign: int | Sign | None = None,
     ):
         """Identifies the COCOS of this eqdsk.
 
@@ -267,22 +267,25 @@ class EQDSKInterface:
             If no COCOS can be identified.
 
         """
+        qpsi_sign = qpsi_sign if qpsi_sign is None else Sign(qpsi_sign)
         qpsi_is_not_set = self.qpsi is None or np.allclose(self.qpsi, 0)
         if qpsi_is_not_set:
             if qpsi_sign:
                 eqdsk_warn(
-                    "No qpsi data found but `qpsi_sign` provided. "
-                    f"Setting qpsi as array of {qpsi_sign.value}'s."
+                    "eqdsk contains no qpsi data, but `qpsi_sign` provided. "
+                    f"Setting qpsi to array of {qpsi_sign.value}'s."
                 )
                 self.qpsi = np.ones(self.nx) * qpsi_sign.value
             else:
                 raise MissingQpsiDataError(
-                    message_extra="Setting the `qpsi_sign` parameter will resolve this. "
-                    "This is the sign of the qpsi across the flux surfaces."
-                    "\nRefer to the COCOS spec or the implementation of it "
-                    "in this package, if you know what the desired direction (CW/CCW) "
-                    "is for theta and phi for this EQDSK."
-                    "This can help you determine what sign qpsi should be."
+                    message_extra="To resolve this, set the `qpsi_sign` parameter. "
+                    "This is the sign (1, -1) of the qpsi across the flux surfaces.\n"
+                    "If you are unsure what the sign should be, "
+                    "refer to the COCOS spec (or its implementation "
+                    "in this package) and see which standard fits the direction"
+                    "for theta and phi (CW or CCW) for this EQDSK.\n"
+                    "You can try setting the sign to 1 or -1 and see if the "
+                    "resulting COCOS is correct.",
                 )
 
         conventions = identify_eqdsk(
