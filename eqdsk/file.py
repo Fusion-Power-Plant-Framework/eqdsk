@@ -21,12 +21,12 @@ from eqdsk.errors import (
     NoSingleConventionError,
 )
 from eqdsk.log import eqdsk_print, eqdsk_warn
+from eqdsk.models import Sign
 from eqdsk.tools import is_num, json_writer
 
 if TYPE_CHECKING:
     from io import TextIOWrapper
 
-    from eqdsk.models import Sign
 
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
 
@@ -153,7 +153,7 @@ class EQDSKInterface:
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
         no_cocos: bool = False,
-        qpsi_sign: Sign | None = None,
+        qpsi_sign: int | Sign | None = None,
     ) -> EQDSKInterface:
         """Create an EQDSKInterface object from a file.
 
@@ -236,7 +236,7 @@ class EQDSKInterface:
         *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
-        qpsi_sign: Sign | None = None,
+        qpsi_sign: int | Sign | None = None,
     ):
         """Identifies the COCOS of this eqdsk.
 
@@ -267,6 +267,7 @@ class EQDSKInterface:
             If no COCOS can be identified.
 
         """
+        qpsi_sign = qpsi_sign if qpsi_sign is None else Sign(qpsi_sign)
         qpsi_is_not_set = self.qpsi is None or np.allclose(self.qpsi, 0)
         if qpsi_is_not_set:
             if qpsi_sign:

@@ -340,7 +340,7 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
     eff_rho_theta_phi = (
         out_cocos.sign_rho_theta_phi * in_cocos.sign_rho_theta_phi
     ).value
-    eff_exp_bp = (out_cocos.exp_Bp - in_cocos.exp_Bp).value
+    eff_exp_bp = out_cocos.exp_Bp.value - in_cocos.exp_Bp.value
 
     pi_factor = (2 * np.pi) ** eff_exp_bp
 
