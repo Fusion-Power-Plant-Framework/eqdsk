@@ -45,7 +45,6 @@ jobs:
 
       - name: Run all tests with coverage
         env:
-          HATCH_VERBOSE: 3
           PRIVATE: ${{ github.event.pull_request.head.repo.fork  && 'tests-cov' || 'tests-cov-private' }}
         run: hatch run test:${PRIVATE}
 
