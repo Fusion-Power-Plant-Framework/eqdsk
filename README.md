@@ -2,7 +2,7 @@
 
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 [![linting - Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Actions status](https://github.com/Fusion-Power-Plant-Framework/eqdsk/actions/workflows/main.yml/badge.svg)](https://github.com//Fusion-Power-Plant-Framework/eqdsk/actions)
+[![Actions status](https://github.com/Fusion-Power-Plant-Framework/eqdsk/actions/workflows/main_and_pr.yml/badge.svg)](https://github.com//Fusion-Power-Plant-Framework/eqdsk/actions)
 
 An EQDSK reader and writer for GEQDSK (more soon), with COCOS identification and conversion.
 
