@@ -144,7 +144,7 @@ class EQDSKInterface:
         self._cocos = None
 
     @classmethod
-    def from_file(  # noqa: PLR0913
+    def from_file(
         cls,
         file_path: str | Path,
         from_cocos: int | None = None,
@@ -186,6 +186,13 @@ class EQDSKInterface:
         Returns
         -------
             An instance of this class containing the EQDSK file's data.
+
+        Raises
+        ------
+        ValueError
+            Unrecognised file format
+        NoSingleConventionError
+            Multiple COCOS conventions possible
         """
         file_path = Path(file_path)
         file_extension = file_path.suffix
@@ -221,7 +228,16 @@ class EQDSKInterface:
 
     @property
     def cocos(self) -> COCOS:
-        """Return the COCOS for this eqdsk."""
+        """
+        Returns
+        -------
+        The COCOS for this eqdsk.
+
+        Raises
+        ------
+        ValueError
+            COCOS has not yet been identified
+        """
         if self._cocos is None:
             raise ValueError(
                 "The COCOS for this eqdsk has not yet been identified. "
@@ -261,10 +277,14 @@ class EQDSKInterface:
 
         Raises
         ------
-        ValueError:
+        ValueError
             If as_cocos is given but does not match any identified COCOS.
-        ValueError:
+        ValueError
             If no COCOS can be identified.
+        MissingQpsiDataError
+            qpsi not found in file and not set from input
+        NoSingleConventionError
+            No single COCOS convention can be identified
 
         """
         qpsi_sign = qpsi_sign if qpsi_sign is None else Sign(qpsi_sign)
@@ -319,11 +339,14 @@ class EQDSKInterface:
         self._cocos = c
 
     def to_cocos(self, to_cocos: int) -> EQDSKInterface:
-        """Returns a copy of this eqdsk converted to the given COCOS.
+        """
+        Returns
+        -------
+        A copy of this eqdsk converted to the given COCOS.
 
-        Note
-        ----
-            This returns a new instance of the EQDSKInterface class.
+        Notes
+        -----
+        This returns a new instance of the EQDSKInterface class.
         """
         if self.cocos.index == to_cocos:
             return self
@@ -331,7 +354,11 @@ class EQDSKInterface:
         return convert_eqdsk(self, to_cocos)
 
     def to_dict(self) -> dict:
-        """Return a dictionary of the EQDSK data."""
+        """
+        Returns
+        -------
+        A dictionary of the EQDSK data.
+        """
         d = asdict(self)
         # Remove the file name as this is metadata, not EQDSK data
         del d["file_name"]
@@ -381,7 +408,7 @@ class EQDSKInterface:
 
         Raises
         ------
-         ValueError:
+        ValueError
             If a key in `eqdsk_data` does not correspond to an
             attribute of this class.
         """
@@ -442,7 +469,7 @@ def _eqdsk_generator(file: TextIOWrapper):
     Returns
     -------
         The generator of the file handle being read
-    """
+    """  # noqa: DOC202
     while True:
         line = file.readline()
         if not line:
@@ -592,6 +619,11 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
     strict_spec:
         As https://w3.pppl.gov/ntcc/TORAY/G_EQDSK.pdf arrays have the format
         5e16.9, disabling this changes the format to 5ES23.16e2
+
+    Raises
+    ------
+    ValueError
+        Length of qpsi different to nx
     """
     file_path = Path(file_path)
     if file_path.suffix not in EQDSK_EXTENSIONS:

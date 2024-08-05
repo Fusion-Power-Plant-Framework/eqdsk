@@ -18,6 +18,10 @@ class NumpyJSONEncoder(JSONEncoder):
     def default(self, obj):
         """Override the JSONEncoder default object handling behaviour
         for np.arrays.
+
+        Returns
+        -------
+        json encoded object
         """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
@@ -46,6 +50,10 @@ def json_writer(
         json encoder child class
     kwargs:
         all further kwargs passed to the json writer
+
+    Returns
+    -------
+    json representation as a string (if requested)
 
     """
     if file is None and not return_output:
@@ -102,6 +110,10 @@ def floatify(x: npt.ArrayLike) -> float:
     -----
     This function aims to avoid numpy warnings for float(x) for >0 rank scalars
     it emulates the functionality of float conversion
+
+    Returns
+    -------
+    the element from the array
 
     Raises
     ------

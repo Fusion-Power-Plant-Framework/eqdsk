@@ -166,7 +166,16 @@ class COCOS(Enum):
 
     @classmethod
     def with_index(cls, cocos_index: int) -> COCOS:
-        """Return the COCOS of the given index."""
+        """
+        Returns
+        -------
+        The COCOS of the given index.
+
+        Raises
+        ------
+        ValueError
+            COCOS index not valid
+        """
         if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
             msg = f"Convention number {cocos_index} is not valid. "
             "Must be between 1 and 8 or 11 and 18."
@@ -181,7 +190,11 @@ class COCOS(Enum):
         sign_R_phi_Z: Sign,
         sign_rho_theta_phi: Sign,
     ) -> COCOS:
-        """Return the COCOS matching the given parameters."""
+        """
+        Returns
+        -------
+        The COCOS matching the given parameters.
+        """
 
         def _match_cocos(c: COCOS) -> bool:
             return all(
@@ -300,7 +313,8 @@ def identify_cocos(
 
     Raises
     ------
-    ValueError: If the sign of qpsi is not consistent across the flux
+    ValueError
+        If the sign of qpsi is not consistent across the flux
         surfaces.
     """
     sign_R_phi_Z = Sign.NEGATIVE if phi_clockwise_from_top else Sign.POSITIVE
@@ -329,7 +343,10 @@ def identify_cocos(
 
 
 def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransform:
-    """Return the transformation needed to transform from one COCOS
+    """
+    Returns
+    -------
+    The transformation needed to transform from one COCOS
     to another.
     """
     in_cocos = COCOS.with_index(from_cocos_index)
@@ -359,7 +376,17 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
 
 
 def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
-    """Convert an eqdsk file to the given COCOS."""
+    """Convert an eqdsk file to the given COCOS.
+
+    Returns
+    -------
+    Converted eqdsk
+
+    Raises
+    ------
+    RuntimeError
+        Cannot convert eqdsk to given COCOS
+    """
     in_eqdsk = eqdsk
     out_eqdsk = deepcopy(in_eqdsk)
 

@@ -13,7 +13,12 @@ from eqdsk.tools import is_num
 
 
 def get_private_dir():
-    """Get private data directory"""
+    """Get private data directory
+
+    Returns
+    -------
+    path to private data or None
+    """
     if (private_data := Path(__file__).parent / "test_data" / "private").is_dir():
         return private_data
     if (

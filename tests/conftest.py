@@ -21,6 +21,11 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     """
     Configures pytest.
+
+    Raises
+    ------
+    ValueError
+        Private test directory not found and requested
     """
     if config.option.private and get_private_dir() is None:
         raise ValueError("You cannot run private tests. Data directory not found")
