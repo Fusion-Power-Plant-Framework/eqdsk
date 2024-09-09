@@ -25,6 +25,7 @@ from eqdsk.models import Sign
 from eqdsk.tools import is_num, json_writer
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from io import TextIOWrapper
 
 
@@ -185,7 +186,15 @@ class EQDSKInterface:
 
         Returns
         -------
+        :
             An instance of this class containing the EQDSK file's data.
+
+        Raises
+        ------
+        ValueError
+            Unknown file format
+        NoSingleConventionError
+            More than one COCOS convention identified
         """
         file_path = Path(file_path)
         file_extension = file_path.suffix
@@ -221,7 +230,13 @@ class EQDSKInterface:
 
     @property
     def cocos(self) -> COCOS:
-        """Return the COCOS for this eqdsk."""
+        """Return the COCOS for this eqdsk.
+
+        Raises
+        ------
+        ValueError
+            COCOS not identified
+        """
         if self._cocos is None:
             raise ValueError(
                 "The COCOS for this eqdsk has not yet been identified. "
@@ -261,11 +276,12 @@ class EQDSKInterface:
 
         Raises
         ------
-        ValueError:
+        ValueError
             If as_cocos is given but does not match any identified COCOS.
-        ValueError:
+        ValueError
             If no COCOS can be identified.
-
+        MissingQpsiDataError
+            qpsi not provided or found in file
         """
         qpsi_sign = qpsi_sign if qpsi_sign is None else Sign(qpsi_sign)
         qpsi_is_not_set = self.qpsi is None or np.allclose(self.qpsi, 0)
@@ -331,7 +347,12 @@ class EQDSKInterface:
         return convert_eqdsk(self, to_cocos)
 
     def to_dict(self) -> dict:
-        """Return a dictionary of the EQDSK data."""
+        """
+        Returns
+        -------
+        :
+            a dictionary of the EQDSK data.
+        """
         d = asdict(self)
         # Remove the file name as this is metadata, not EQDSK data
         del d["file_name"]
@@ -381,7 +402,7 @@ class EQDSKInterface:
 
         Raises
         ------
-         ValueError:
+        ValueError
             If a key in `eqdsk_data` does not correspond to an
             attribute of this class.
         """
@@ -430,7 +451,7 @@ def _read_2d_array(tokens, n_x, n_y, name="Unknown") -> np.ndarray:
     return np.transpose(data)
 
 
-def _eqdsk_generator(file: TextIOWrapper):
+def _eqdsk_generator(file: TextIOWrapper) -> Iterator[str]:
     """Transform a file object into a generator, following G-EQDSK number
     conventions.
 
@@ -439,9 +460,10 @@ def _eqdsk_generator(file: TextIOWrapper):
     file:
         The file to read
 
-    Returns
-    -------
-        The generator of the file handle being read
+    Yields
+    ------
+    :
+        The lines of the file
     """
     while True:
         line = file.readline()
@@ -592,6 +614,11 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
     strict_spec:
         As https://w3.pppl.gov/ntcc/TORAY/G_EQDSK.pdf arrays have the format
         5e16.9, disabling this changes the format to 5ES23.16e2
+
+    Raises
+    ------
+    ValueError
+        Length of qpsi is not consistent with the number of grid points
     """
     file_path = Path(file_path)
     if file_path.suffix not in EQDSK_EXTENSIONS:

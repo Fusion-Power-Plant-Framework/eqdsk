@@ -17,10 +17,16 @@ class ZeroOne(Enum):
     ONE = 1
 
     def __sub__(self, other: Any) -> ZeroOne:
-        """Return the difference between the value and the other value.
+        """
+        Returns
+        -------
+        :
+            The difference of the values as a new ZeroOne object
 
-        - If it is another ZeroOne, return the difference of the values.
-        - Raise a `TypeError` otherwise.
+        Raises
+        ------
+        TypeError
+            if not a ZeroOne object
         """
         if type(other) is ZeroOne:
             return ZeroOne(self.value - other.value)
@@ -37,9 +43,15 @@ class Sign(Enum):
     POSITIVE = 1
     NEGATIVE = -1
 
-    def __mul__(self, other: Any):
-        """Return the product of the sign with the other value.
+    def __mul__(self, other: Any) -> Sign | int:
+        """
+        Returns
+        -------
+        :
+            the product of the sign with the other value.
 
+        Notes
+        -----
         - If it is another Sign, return the product of the values.
         - If it is a number, return the product of the value and the number.
         """

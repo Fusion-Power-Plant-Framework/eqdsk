@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from enum import Enum, unique
+from enum import Enum, auto, unique
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -166,7 +166,17 @@ class COCOS(Enum):
 
     @classmethod
     def with_index(cls, cocos_index: int) -> COCOS:
-        """Return the COCOS of the given index."""
+        """
+        Returns
+        -------
+        :
+            the COCOS of the given index.
+
+        Raises
+        ------
+        ValueError
+            COCOS format not known
+        """
         if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
             msg = f"Convention number {cocos_index} is not valid. "
             "Must be between 1 and 8 or 11 and 18."
@@ -181,7 +191,12 @@ class COCOS(Enum):
         sign_R_phi_Z: Sign,
         sign_rho_theta_phi: Sign,
     ) -> COCOS:
-        """Return the COCOS matching the given parameters."""
+        """
+        Returns
+        -------
+        :
+            the COCOS matching the given parameters.
+        """
 
         def _match_cocos(c: COCOS) -> bool:
             return all(
@@ -235,6 +250,7 @@ def identify_eqdsk(
 
     Returns
     -------
+    :
         A list of the identified COCOS definitions.
     """
     if eqdsk.qpsi is None:
@@ -296,11 +312,13 @@ def identify_cocos(
 
     Returns
     -------
-    The identified COCOS convention.
+    :
+        The identified COCOS convention.
 
     Raises
     ------
-    ValueError: If the sign of qpsi is not consistent across the flux
+    ValueError
+        If the sign of qpsi is not consistent across the flux
         surfaces.
     """
     sign_R_phi_Z = Sign.NEGATIVE if phi_clockwise_from_top else Sign.POSITIVE
@@ -329,8 +347,12 @@ def identify_cocos(
 
 
 def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransform:
-    """Return the transformation needed to transform from one COCOS
-    to another.
+    """
+    Returns
+    -------
+    :
+        the transformation needed to transform from one COCOS
+        to another.
     """
     in_cocos = COCOS.with_index(from_cocos_index)
     out_cocos = COCOS.with_index(to_cocos_index)
@@ -359,7 +381,19 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
 
 
 def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
-    """Convert an eqdsk file to the given COCOS."""
+    """
+    Convert an eqdsk file to the given COCOS.
+
+    Returns
+    -------
+    :
+        The transformed eqdsk
+
+    Raises
+    ------
+    RuntimeError
+        Unable to convert to COCOS format
+    """
     in_eqdsk = eqdsk
     out_eqdsk = deepcopy(in_eqdsk)
 

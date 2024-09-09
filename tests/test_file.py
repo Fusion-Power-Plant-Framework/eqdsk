@@ -17,8 +17,14 @@ from eqdsk.models import Sign
 from tests._helpers import compare_dicts, get_private_dir, read_strict_geqdsk
 
 
-def private_files():
-    """Get private files"""
+def private_files() -> list[tuple[Path, str, int]]:
+    """Get private files
+
+    Returns
+    -------
+    :
+        the list of available private eqdsks their filetype and cocos format
+    """
     if (pdir := get_private_dir()) is None:
         return []
 
@@ -172,7 +178,7 @@ class TestEQDSKInterface:
             )
 
     @staticmethod
-    @pytest.mark.private()
+    @pytest.mark.private
     @pytest.mark.parametrize(("file", "ftype", "ind"), private_files())
     def test_read_write_doesnt_change_file_private(file, ftype, ind, tmp_path):
         path = tmp_path / "private"
