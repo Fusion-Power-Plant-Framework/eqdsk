@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any
 import fortranformat as ff
 import numpy as np
 
-from eqdsk.cocos import COCOS, convert_eqdsk, identify_eqdsk
+from eqdsk.cocos import COCOS, KnownCOCOS, convert_eqdsk, identify_eqdsk
 from eqdsk.errors import (
     MissingQpsiDataError,
     NoSingleConventionError,
@@ -145,11 +145,11 @@ class EQDSKInterface:
         self._cocos = None
 
     @classmethod
-    def from_file(  # noqa: PLR0913
+    def from_file(
         cls,
         file_path: str | Path,
-        from_cocos: int | None = None,
-        to_cocos: int | None = DEFAULT_COCOS,
+        from_cocos: int | str | COCOS | KnownCOCOS | None = None,
+        to_cocos: int | str | COCOS | KnownCOCOS | None = DEFAULT_COCOS,
         *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
@@ -247,7 +247,7 @@ class EQDSKInterface:
 
     def identify(
         self,
-        as_cocos: int | None = None,
+        as_cocos: int | str | COCOS | KnownCOCOS | None = None,
         *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
@@ -312,13 +312,12 @@ class EQDSKInterface:
 
         def _id():
             if as_cocos:
-                matching_conv = next(
-                    (c for c in conventions if c.index == as_cocos), None
-                )
+                cocos_fmt = COCOS(as_cocos)
+                matching_conv = next((c for c in conventions if c == cocos_fmt), None)
                 if not matching_conv:
                     raise ValueError(
                         f"No convention found that matches "
-                        f"the given COCOS index {as_cocos}, "
+                        f"the given COCOS index {cocos_fmt.index}, "
                         f"from the possible ({', '.join([str(c.index) for c in conventions])}).",  # noqa: E501
                     )
                 return matching_conv
@@ -334,17 +333,22 @@ class EQDSKInterface:
         eqdsk_print(f"EQDSK identified as COCOS {c.index}.")
         self._cocos = c
 
-    def to_cocos(self, to_cocos: int) -> EQDSKInterface:
-        """Returns a copy of this eqdsk converted to the given COCOS.
+    def to_cocos(self, to_cocos: int | str | COCOS | KnownCOCOS) -> EQDSKInterface:
+        """
+        Returns
+        -------
+        :
+             a copy of this eqdsk converted to the given COCOS.
 
         Note
         ----
             This returns a new instance of the EQDSKInterface class.
         """
-        if self.cocos.index == to_cocos:
+        to_cocos = COCOS(to_cocos)
+        if self.cocos == to_cocos:
             return self
-        eqdsk_print(f"Converting EQDSK to COCOS {to_cocos}.")
-        return convert_eqdsk(self, to_cocos)
+        eqdsk_print(f"Converting EQDSK to COCOS {to_cocos.index}.")
+        return convert_eqdsk(self, to_cocos.index)
 
     def to_dict(self) -> dict:
         """

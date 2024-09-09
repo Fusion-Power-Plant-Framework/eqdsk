@@ -51,12 +51,13 @@ class TestEQDSKInterface:
     def setup_class(cls):
         cls.data_dir = Path(__file__).parent / "test_data"
 
-    def test_read_default_cocos(self, caplog):
+    @pytest.mark.parametrize("cocos", [11, "jetto", "C11"])
+    def test_read_default_cocos(self, cocos, caplog):
         """Read and return the COCOS for the eqdsk."""
         caplog.set_level("INFO")
 
         eqd_default = EQDSKInterface.from_file(
-            self.data_dir / "jetto.eqdsk_out", from_cocos=11
+            self.data_dir / "jetto.eqdsk_out", from_cocos=cocos
         )
 
         logs = caplog.records
@@ -265,3 +266,17 @@ class TestEQDSKInterface:
     def test_fail_identify_from_file(self):
         with pytest.raises(NoSingleConventionError):
             EQDSKInterface.from_file(Path(self.data_dir, "jetto.eqdsk_out"))
+
+    def test_failed_cocos_fmt(self):
+        with pytest.raises(ValueError, match="not a known"):
+            EQDSKInterface.from_file(
+                Path(self.data_dir, "jetto.eqdsk_out"), from_cocos="hi"
+            )
+        with pytest.raises(ValueError, match="not a known"):
+            EQDSKInterface.from_file(
+                Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=b"hi"
+            )
+        with pytest.raises(ValueError, match="Convention number"):
+            EQDSKInterface.from_file(
+                Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=10
+            )

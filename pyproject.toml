@@ -111,6 +111,7 @@ ignore = [
   "D301",
   "D400",
   "D401",
+  "DOC502",  # Raises sections not in top level function
   "DTZ005",  # datetime timezone arg
   "E203",    # black/ruff format conflicts
   "FIX002",  # Line contains todo

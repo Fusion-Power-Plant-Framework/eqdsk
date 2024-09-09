@@ -210,6 +210,48 @@ class COCOS(Enum):
 
         return next(filter(_match_cocos, cls))
 
+    @classmethod
+    def _missing_(cls, value) -> COCOS:
+        if isinstance(value, KnownCOCOS):
+            return value.cocos
+        if isinstance(value, str):
+            value = value.upper()
+            try:
+                try:
+                    return cls[value]
+                except KeyError:
+                    return KnownCOCOS[value].cocos
+            except KeyError:
+                raise ValueError(f"'{value}' not a known COCOS standard") from None
+        try:
+            value = int(value)
+        except ValueError:
+            raise ValueError(f"'{value}' not a known COCOS standard") from None
+        return cls.with_index(int(value))
+
+
+class KnownCOCOS(Enum):
+    """A enum of known COCOS outputs of codes"""
+
+    BLUEMIRA = (auto(), COCOS.C3)
+    JETTO = (auto(), COCOS.C11)
+    CREATE = (auto(), COCOS.C11)  # noqa: PIE796
+    FIESTA = (auto(), COCOS.C17)
+    IMAS = (auto(), COCOS.C1)
+
+    def __new__(cls, value: int, cocos: COCOS):
+        """A little hack to have different enums with the same COCOS
+
+        Returns
+        -------
+        :
+            The enum
+        """
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.cocos = cocos
+        return obj
+
 
 @dataclass(frozen=True)
 class COCOSTransform:
