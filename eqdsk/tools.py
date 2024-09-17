@@ -22,7 +22,7 @@ class NumpyJSONEncoder(JSONEncoder):
         Returns
         -------
         :
-            object in a format json can handle
+            The object in a format json can handle
         """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
@@ -55,7 +55,7 @@ def json_writer(
     Returns
     -------
     :
-        the json file as a string if requested else None
+        The json file as a string if requested else None
     """
     if file is None and not return_output:
         eqdsk_warn("No json action to take")

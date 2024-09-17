@@ -170,7 +170,7 @@ class COCOS(Enum):
         Returns
         -------
         :
-            the COCOS of the given index.
+            The COCOS of the given index.
 
         Raises
         ------
@@ -195,7 +195,7 @@ class COCOS(Enum):
         Returns
         -------
         :
-            the COCOS matching the given parameters.
+            The COCOS matching the given parameters.
         """
 
         def _match_cocos(c: COCOS) -> bool:
@@ -393,7 +393,7 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
     Returns
     -------
     :
-        the transformation needed to transform from one COCOS
+        The transformation needed to transform from one COCOS
         to another.
     """
     in_cocos = COCOS.with_index(from_cocos_index)

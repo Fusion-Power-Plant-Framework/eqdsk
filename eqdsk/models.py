@@ -48,7 +48,7 @@ class Sign(Enum):
         Returns
         -------
         :
-            the product of the sign with the other value.
+            The product of the sign with the other value.
 
         Notes
         -----

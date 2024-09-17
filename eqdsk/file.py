@@ -338,7 +338,7 @@ class EQDSKInterface:
         Returns
         -------
         :
-             a copy of this eqdsk converted to the given COCOS.
+             A copy of this eqdsk converted to the given COCOS.
 
         Note
         ----
@@ -355,7 +355,7 @@ class EQDSKInterface:
         Returns
         -------
         :
-            a dictionary of the EQDSK data.
+            A dictionary of the EQDSK data.
         """
         d = asdict(self)
         # Remove the file name as this is metadata, not EQDSK data

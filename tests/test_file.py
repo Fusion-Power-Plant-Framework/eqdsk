@@ -23,7 +23,7 @@ def private_files() -> list[tuple[Path, str, int]]:
     Returns
     -------
     :
-        the list of available private eqdsks their filetype and cocos format
+        The list of available private eqdsks their filetype and cocos format
     """
     if (pdir := get_private_dir()) is None:
         return []
