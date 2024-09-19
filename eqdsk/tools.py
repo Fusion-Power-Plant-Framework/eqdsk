@@ -18,6 +18,11 @@ class NumpyJSONEncoder(JSONEncoder):
     def default(self, obj):
         """Override the JSONEncoder default object handling behaviour
         for np.arrays.
+
+        Returns
+        -------
+        :
+            The object in a format json can handle
         """
         if isinstance(obj, np.ndarray):
             return obj.tolist()
@@ -47,6 +52,10 @@ def json_writer(
     kwargs:
         all further kwargs passed to the json writer
 
+    Returns
+    -------
+    :
+        The json file as a string if requested else None
     """
     if file is None and not return_output:
         eqdsk_warn("No json action to take")
@@ -81,7 +90,7 @@ def is_num(thing) -> bool:
 
     Returns
     -------
-    num:
+    :
         Whether or not the input is a number
     """
     if thing in {True, False}:
@@ -102,6 +111,11 @@ def floatify(x: npt.ArrayLike) -> float:
     -----
     This function aims to avoid numpy warnings for float(x) for >0 rank scalars
     it emulates the functionality of float conversion
+
+    Returns
+    -------
+    :
+        The value as a float
 
     Raises
     ------

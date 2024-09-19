@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from enum import Enum, unique
+from enum import Enum, auto, unique
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -166,7 +166,17 @@ class COCOS(Enum):
 
     @classmethod
     def with_index(cls, cocos_index: int) -> COCOS:
-        """Return the COCOS of the given index."""
+        """
+        Returns
+        -------
+        :
+            The COCOS of the given index.
+
+        Raises
+        ------
+        ValueError
+            COCOS format not known
+        """
         if not (cocos_index in range(1, 9) or cocos_index in range(11, 19)):
             msg = f"Convention number {cocos_index} is not valid. "
             "Must be between 1 and 8 or 11 and 18."
@@ -181,7 +191,12 @@ class COCOS(Enum):
         sign_R_phi_Z: Sign,
         sign_rho_theta_phi: Sign,
     ) -> COCOS:
-        """Return the COCOS matching the given parameters."""
+        """
+        Returns
+        -------
+        :
+            The COCOS matching the given parameters.
+        """
 
         def _match_cocos(c: COCOS) -> bool:
             return all(
@@ -194,6 +209,48 @@ class COCOS(Enum):
             )
 
         return next(filter(_match_cocos, cls))
+
+    @classmethod
+    def _missing_(cls, value) -> COCOS:
+        if isinstance(value, KnownCOCOS):
+            return value.cocos
+        if isinstance(value, str):
+            value = value.upper()
+            try:
+                try:
+                    return cls[value]
+                except KeyError:
+                    return KnownCOCOS[value].cocos
+            except KeyError:
+                raise ValueError(f"'{value}' not a known COCOS standard") from None
+        try:
+            value = int(value)
+        except ValueError:
+            raise ValueError(f"'{value}' not a known COCOS standard") from None
+        return cls.with_index(int(value))
+
+
+class KnownCOCOS(Enum):
+    """A enum of known COCOS outputs of codes"""
+
+    BLUEMIRA = (auto(), COCOS.C3)
+    JETTO = (auto(), COCOS.C11)
+    CREATE = (auto(), COCOS.C11)  # noqa: PIE796
+    FIESTA = (auto(), COCOS.C17)
+    IMAS = (auto(), COCOS.C1)
+
+    def __new__(cls, value: int, cocos: COCOS):
+        """A little hack to have different enums with the same COCOS
+
+        Returns
+        -------
+        :
+            The enum
+        """
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.cocos = cocos
+        return obj
 
 
 @dataclass(frozen=True)
@@ -235,6 +292,7 @@ def identify_eqdsk(
 
     Returns
     -------
+    :
         A list of the identified COCOS definitions.
     """
     if eqdsk.qpsi is None:
@@ -296,11 +354,13 @@ def identify_cocos(
 
     Returns
     -------
-    The identified COCOS convention.
+    :
+        The identified COCOS convention.
 
     Raises
     ------
-    ValueError: If the sign of qpsi is not consistent across the flux
+    ValueError
+        If the sign of qpsi is not consistent across the flux
         surfaces.
     """
     sign_R_phi_Z = Sign.NEGATIVE if phi_clockwise_from_top else Sign.POSITIVE
@@ -329,8 +389,12 @@ def identify_cocos(
 
 
 def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransform:
-    """Return the transformation needed to transform from one COCOS
-    to another.
+    """
+    Returns
+    -------
+    :
+        The transformation needed to transform from one COCOS
+        to another.
     """
     in_cocos = COCOS.with_index(from_cocos_index)
     out_cocos = COCOS.with_index(to_cocos_index)
@@ -359,7 +423,19 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
 
 
 def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
-    """Convert an eqdsk file to the given COCOS."""
+    """
+    Convert an eqdsk file to the given COCOS.
+
+    Returns
+    -------
+    :
+        The transformed eqdsk
+
+    Raises
+    ------
+    RuntimeError
+        Unable to convert to COCOS format
+    """
     in_eqdsk = eqdsk
     out_eqdsk = deepcopy(in_eqdsk)
 

@@ -8,12 +8,20 @@ from typing import Any
 
 import fortranformat as ff
 import numpy as np
+import numpy.typing as npt
 
 from eqdsk.tools import is_num
 
 
-def get_private_dir():
-    """Get private data directory"""
+def get_private_dir() -> Path | None:
+    """
+    Get private data directory
+
+    Returns
+    -------
+    :
+        The data directory if found
+    """
     if (private_data := Path(__file__).parent / "test_data" / "private").is_dir():
         return private_data
     if (
@@ -46,21 +54,23 @@ def read_strict_geqdsk(file_path, *, strict_spec=True):
     fCSTM = ff.FortranRecordReader("i5")
 
     # Define helper function to read in flattened arrays.
-    def read_flat_array(fortran_format, array_size):
+    def read_flat_array(
+        fortran_format: ff.FortranRecordReader, array_size: int
+    ) -> npt.NDArray:
         """
         Reads in a flat (1D) numpy array from a G-EQDSK file.
 
         Parameters
         ----------
-        fortran_format: ff.FortranRecordReader
+        fortran_format:
             FortranRecordReader object for Fortran format edit descriptor
             to be used to parse the format of each line of the output.
-        array_size: int
+        array_size:
             Number of elements in array to be read in.
 
         Returns
         -------
-        array: np.array
+        array:
             1D Numpy array of length array_size populated by elements from
             the GEQDSK file input.
         """
@@ -136,7 +146,8 @@ def compare_dicts(
 
     Returns
     -------
-    Whether or not the dictionaries are the same
+    :
+        Whether or not the dictionaries are the same
     """
     nkey_diff = len(d1) - len(d2)
     k1 = set(d1.keys())

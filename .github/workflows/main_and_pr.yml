@@ -44,10 +44,16 @@ jobs:
           path: "./tests/test_data/private"
 
       - name: Run all tests with coverage
+        if: ${{ matrix.os != 'windows-latest'}}
         env:
           PRIVATE: ${{ github.event.pull_request.head.repo.fork  && 'tests-cov' || 'tests-cov-private' }}
         run: hatch run test:${PRIVATE}
 
+      - name: Run windows tests with coverage
+        if: ${{ matrix.os == 'windows-latest' }}
+        env:
+          PRIVATE: ${{ github.event.pull_request.head.repo.fork  && 'tests-cov' || 'tests-cov-private' }}
+        run: hatch run test:${env:PRIVATE}
   # docs:
   #   runs-on: ubuntu-latest
   #   steps:
