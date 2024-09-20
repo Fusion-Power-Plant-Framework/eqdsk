@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from eqdsk.log import eqdsk_warn
 from eqdsk.models import Sign, ZeroOne
 
 if TYPE_CHECKING:
@@ -275,6 +274,7 @@ def identify_eqdsk(
     *,
     clockwise_phi: bool | None = None,
     volt_seconds_per_radian: bool | None = None,
+    qpsi_positive: bool | None = None,
 ) -> list[COCOS]:
     """Identify the COCOS for the given
     [EQDSKInterface][eqdsk.file.EQDSKInterface].
@@ -289,15 +289,26 @@ def identify_eqdsk(
     volt_seconds_per_radian:
         Whether the flux is in volt seconds per radian,
         by default None which means either.
+    qpsi_positive:
+        Whether qpsi is positive or not, used when
+        eqdsk.qpsi is None.
+        By default None, which means use the eqdsk value.
+        Must be provided if eqdsk.qpsi is None.
 
     Returns
     -------
     :
         A list of the identified COCOS definitions.
+
+    Raises
+    ------
+    ValueError:
+        If eqdsk.qpsi is None and qpsi_positive is not provided.
     """
-    if eqdsk.qpsi is None:
-        eqdsk_warn("qpsi is not defined in the eqdsk file. Setting to 1")
-        eqdsk.qpsi = np.array([1])
+    if eqdsk.qpsi is None and qpsi_positive is None:
+        raise ValueError(
+            "eqdsk.qpsi is None, qpsi_positive must be provided.",
+        )
 
     cw_phi_l = [True, False] if clockwise_phi is None else [clockwise_phi]
     vs_pr_l = (
@@ -310,7 +321,9 @@ def identify_eqdsk(
             b_toroidal=eqdsk.bcentre,
             psi_at_boundary=eqdsk.psibdry,
             psi_at_mag_axis=eqdsk.psimag,
-            q_psi=eqdsk.qpsi,
+            q_psi=np.asarray(1 if qpsi_positive else -1)
+            if eqdsk.qpsi is None
+            else eqdsk.qpsi,
             phi_clockwise_from_top=cw_phi,
             volt_seconds_per_radian=vs_pr,
         )
@@ -389,12 +402,19 @@ def identify_cocos(
 
 
 def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransform:
-    """
+    """Return the transformation needed to transform from one COCOS
+    to another.
+
+    Parameters
+    ----------
+    from_cocos_index:
+        The COCOS index to transform from.
+    to_cocos_index:
+        The COCOS index to transform to.
+
     Returns
     -------
-    :
-        The transformation needed to transform from one COCOS
-        to another.
+        The transformation needed to convert from the from_cocos_index to
     """
     in_cocos = COCOS.with_index(from_cocos_index)
     out_cocos = COCOS.with_index(to_cocos_index)
@@ -423,13 +443,18 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
 
 
 def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
-    """
-    Convert an eqdsk file to the given COCOS.
+    """Convert an eqdsk file to the given COCOS.
+
+    Parameters
+    ----------
+    eqdsk:
+        The eqdsk file to convert.
+    to_cocos_index:
+        The COCOS index to convert to.
 
     Returns
     -------
-    :
-        The transformed eqdsk
+        The converted eqdsk file.
 
     Raises
     ------

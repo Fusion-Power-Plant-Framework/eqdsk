@@ -29,7 +29,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Physics",
 ]
 
-dependencies = ["fortranformat", "numpy"]
+dependencies = ["fortranformat", "numpy", "click"]
 
 [project.urls]
 Source        = "https://github.com/Fusion-Power-Plant-Framework/eqdsk"
@@ -47,6 +47,9 @@ test = [
 ]
 docs = ["mkdocs-material", "mkdocstrings[python]"]
 lint = ["ruff", "mypy"]
+
+[project.scripts]
+eqdsk = "eqdsk.cli:cli"
 
 # env: default
 [tool.hatch.envs.default]
