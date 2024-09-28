@@ -34,7 +34,7 @@ def eqdsk_banner():
 *  | _| (_) | |) \\__ \\ ' <      *
 *  |___\\__\\_\\___/|___/_|\\_\\     *
 *                               *
-*  by: The Bluemira Developers  *
+*    The Bluemira Developers    *
 *********************************
 EQDSK Version: {version}
 """
