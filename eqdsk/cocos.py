@@ -414,6 +414,7 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
 
     Returns
     -------
+    :
         The transformation needed to convert from the from_cocos_index to
     """
     in_cocos = COCOS.with_index(from_cocos_index)
@@ -454,6 +455,7 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
 
     Returns
     -------
+    :
         The converted eqdsk file.
 
     Raises
