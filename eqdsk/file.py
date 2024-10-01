@@ -147,9 +147,12 @@ class EQDSKInterface:
             conv_n = ", ".join(
                 str(c.index) for c in identify_eqdsk(self, qpsi_positive=False)
             )
-            conventions_str = f"{conv_p} (+ve qpsi) - {conv_n} (-ve qpsi)"
+            conventions_str = f"{conv_p} (+ve qpsi) | {conv_n} (-ve qpsi)"
         else:
             conventions_str = ", ".join(str(c.index) for c in identify_eqdsk(self))
+
+        if self._cocos is not None:
+            conventions_str = f"{conventions_str} (current COCOS: {self._cocos.index})"
 
         return f"""
 Identifiable COCOS: {conventions_str}

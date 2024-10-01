@@ -48,3 +48,11 @@ the cocos standard will be calculated for you:
 ```python
 EQDSKInterface.from_file('file.eqdsk', clockwise_phi=True, volt_seconds_per_radian=True)
 ```
+
+## CLI
+
+This package includes a CLI tool for eqdsk exploration.
+
+This can be accessed by running `eqdsk` in the terminal after installing the package (or in the Hatch `cli` environment, see CON).
+
+For more information on the CLI tool, run `eqdsk --help`.

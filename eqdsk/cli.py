@@ -3,12 +3,14 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Eqdsk CLI"""
 
+from pathlib import Path
+
 import click
 import numpy as np
 
+from eqdsk.cocos import COCOS
 from eqdsk.file import EQDSKInterface
 from eqdsk.log import eqdsk_banner, eqdsk_warn
-from tests._helpers import read_strict_geqdsk  # noqa: PLC2701
 
 
 def _setup_plotting(eq: EQDSKInterface):
@@ -49,15 +51,7 @@ def show(filepath):
     """Reads and prints important parameters of the eqdsk."""
     eq = EQDSKInterface.from_file(filepath, no_cocos=True)
 
-    try:
-        # tests if it is geqdsk readable/compatible
-        read_strict_geqdsk(filepath)
-        geqdsk_compatible = True
-    except Exception:  # noqa: BLE001
-        geqdsk_compatible = False
-
     print(eqdsk_banner())  # noqa: T201
-    print(f"geqdsk spec compliant: {geqdsk_compatible}")  # noqa: T201
     print(eq)  # noqa: T201
 
 
@@ -119,3 +113,59 @@ def plot_psi(filepath):
     ax.set_ylim(-plot_max_z, plot_max_z)
 
     show()
+
+
+@cli.command("convert", no_args_is_help=True)
+@click.argument("filepath", type=click.Path(exists=True))
+@click.option(
+    "-fmt",
+    "--format",
+    type=click.Choice(["json", "eqdsk"]),
+    default="json",
+    help="Format to save the eqdsk file in.",
+)
+@click.option(
+    "-f",
+    "--from",
+    "from_",
+    help="COCOS format to read the eqdsk as.",
+)
+@click.option(
+    "-t",
+    "--to",
+    help="COCOS format to convert the eqdsk to.",
+)
+def convert(filepath: str, format: str, from_: str | None, to: str | None):  # noqa: A002
+    """
+    Conversion utilities for the eqdsk file.
+
+    To save the file in a different format, use the -fmt (--format) option.
+
+    To convert between COCOS versions, use the -f (--from) and -t (--to)
+    options (both must be provided).
+
+    Valid values for --from and --to are:
+
+      Integers: [1, 8] and [11, 18]
+
+      Strings: "", "", "" and ""
+
+    The specified "from" COCOS value must be valid for the eqdsk file.
+
+    Use the `eqdsk show` command to see the valid COCOS's for file.
+
+    The saved file will have _out suffixed to the filename.
+    """
+    if from_ and to:
+        # does validation of from and to values
+        cc_fr = COCOS.with_index(int(from_))
+        cc_to = COCOS.with_index(int(to))
+        eq = EQDSKInterface.from_file(
+            filepath, from_cocos=cc_fr.index, to_cocos=cc_to.index
+        )
+    elif (from_ and to is None) or (from_ is None and to):
+        raise click.BadParameter("Both --from and --to must be provided")
+    else:
+        eq = EQDSKInterface.from_file(filepath, no_cocos=True)
+
+    eq.write(f"{Path(filepath).stem}_out", file_format=format)
