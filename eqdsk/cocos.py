@@ -213,15 +213,14 @@ class COCOS(Enum):
     def _missing_(cls, value) -> COCOS:
         if isinstance(value, KnownCOCOS):
             return value.cocos
+
         if isinstance(value, str):
             value = value.upper()
-            try:
-                try:
-                    return cls[value]
-                except KeyError:
-                    return KnownCOCOS[value].cocos
-            except KeyError:
-                raise ValueError(f"'{value}' not a known COCOS standard") from None
+            if value in KnownCOCOS.__members__:
+                return KnownCOCOS[value].cocos
+            if value in cls.__members__:
+                return cls[value]
+
         try:
             value = int(value)
         except ValueError:
@@ -302,7 +301,7 @@ def identify_eqdsk(
 
     Raises
     ------
-    ValueError:
+    ValueError
         If eqdsk.qpsi is None and qpsi_positive is not provided.
     """
     if eqdsk.qpsi is None and qpsi_positive is None:

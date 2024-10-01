@@ -148,7 +148,7 @@ def convert(filepath: str, format: str, from_: str | None, to: str | None):  # n
 
       Integers: [1, 8] and [11, 18]
 
-      Strings: "", "", "" and ""
+      Strings: (see KnownCOCOS)
 
     The specified "from" COCOS value must be valid for the eqdsk file.
 
@@ -158,13 +158,13 @@ def convert(filepath: str, format: str, from_: str | None, to: str | None):  # n
     """
     if from_ and to:
         # does validation of from and to values
-        cc_fr = COCOS.with_index(int(from_))
-        cc_to = COCOS.with_index(int(to))
+        cc_fr = COCOS(from_)
+        cc_to = COCOS(to)
         eq = EQDSKInterface.from_file(
             filepath, from_cocos=cc_fr.index, to_cocos=cc_to.index
         )
     elif (from_ and to is None) or (from_ is None and to):
-        raise click.BadParameter("Both --from and --to must be provided")
+        raise click.BadParameter("Both --from and --to must be provided")  # noqa: DOC501
     else:
         eq = EQDSKInterface.from_file(filepath, no_cocos=True)
 
