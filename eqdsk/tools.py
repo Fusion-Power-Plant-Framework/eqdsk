@@ -50,7 +50,7 @@ def json_writer(
     Returns
     -------
     :
-        json string
+        The JSON string
     """
     if "indent" not in kwargs:
         kwargs["indent"] = 4

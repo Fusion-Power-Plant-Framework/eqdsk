@@ -53,6 +53,6 @@ EQDSKInterface.from_file('file.eqdsk', clockwise_phi=True, volt_seconds_per_radi
 
 This package includes a CLI tool for eqdsk exploration.
 
-This can be accessed by running `eqdsk` in the terminal after installing the package (or in the Hatch `cli` environment, see CON).
+This can be accessed by running `eqdsk` in the terminal after installing the package (or in the Hatch `cli` environment, see [CONTRIBUTING.md](CONTRIBUTING.md#setup-with-hatch)).
 
 For more information on the CLI tool, run `eqdsk --help`.

@@ -414,7 +414,8 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
     Returns
     -------
     :
-        The transformation needed to convert from the from_cocos_index to
+        The transformation needed to convert from the from_cocos_index
+        to another.
     """
     in_cocos = COCOS.with_index(from_cocos_index)
     out_cocos = COCOS.with_index(to_cocos_index)
