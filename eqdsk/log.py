@@ -24,7 +24,12 @@ def eqdsk_print(*args, **kwargs):
 
 
 def eqdsk_banner():
-    """Returns the eqdsk banner"""
+    """
+    Returns
+    -------
+    :
+        The eqdsk banner
+    """
     from eqdsk._version import version  # noqa: PLC0415
 
     return f"""

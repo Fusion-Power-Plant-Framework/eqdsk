@@ -8,7 +8,7 @@ from pathlib import Path
 import click
 import numpy as np
 
-from eqdsk.cocos import COCOS
+from eqdsk.cocos import COCOS, KnownCOCOS
 from eqdsk.file import EQDSKInterface
 from eqdsk.log import eqdsk_banner, eqdsk_warn
 
@@ -121,7 +121,18 @@ def plot_psi(filepath):
     show()
 
 
-@cli.command("convert", no_args_is_help=True)
+class COCOSOptionsHelp(click.Command):
+    """COCOS options help formatter"""
+
+    def format_help(self, ctx, formatter):
+        """Format the help with the Known COCOS options"""
+        self.help = self.help.format(
+            "'" + "', '".join(KnownCOCOS.__members__.keys()) + "'"
+        )
+        super().format_help(ctx, formatter)
+
+
+@cli.command("convert", no_args_is_help=True, cls=COCOSOptionsHelp)
 @click.argument("filepath", type=click.Path(exists=True))
 @click.option(
     "-fmt",
@@ -169,7 +180,7 @@ def convert(
 
       Integers: [1, 8] and [11, 18]
 
-      Strings: (see KnownCOCOS)
+      Strings: {}
 
     The specified "from" COCOS value must be valid for the eqdsk file.
 
