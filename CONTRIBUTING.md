@@ -77,6 +77,13 @@ Then run:
 hatch shell
 ```
 
+To activate the default Hatch environment.
+
+Hatch environments are usually stored in the `~/.local/share/hatch/env` directory.
+
+VS Code users can use the `Python: Select Interpreter` command to select the Hatch environment.
+Detecting Hatch environments has been integrated into the Python extension for VS Code.
+
 ## Tests
 
 Run

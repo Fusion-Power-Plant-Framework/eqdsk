@@ -530,7 +530,7 @@ def _eqdsk_generator(file: TextIOWrapper) -> Iterator[str]:
         yield from generator_list
 
 
-def _read_eqdsk(file_path: Path) -> dict:
+def _read_eqdsk(file_path: Path) -> dict:  # noqa: PLR0915
     with file_path.open("r") as file:
         description = file.readline()
         if not description:
@@ -584,6 +584,8 @@ def _read_eqdsk(file_path: Path) -> dict:
 
         data["psi"] = _read_2d_array(tokens, n_x, n_z, "psi")
         data["qpsi"] = _read_array(tokens, n_x, "qpsi")
+        if np.allclose(data["qpsi"], 0):
+            data["qpsi"] = None
         nbdry = int(next(tokens))
         nlim = int(next(tokens))
         data["nbdry"] = nbdry
@@ -746,6 +748,10 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
         qpsi = (
             np.zeros(data["nx"]) if data["qpsi"] is None else np.atleast_1d(data["qpsi"])
         )
+        if np.allclose(qpsi, 0):
+            eqdsk_warn(
+                f"Writing EQDSK with qpsi all zeros. {data['name']}, {data['qpsi']}"
+            )
         if len(qpsi) == 1:
             qpsi = np.full(data["nx"], qpsi)
         elif len(qpsi) != data["nx"]:
