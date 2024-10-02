@@ -26,7 +26,7 @@ def _setup_plotting(eq: EQDSKInterface):
     fig, ax = plt.subplots()
     fig.set_size_inches(8, 8)
 
-    ax.set_title(f"EQDSK:  {eq.name}")
+    fig.suptitle(f"EQDSK:  {eq.name}")
     ax.set_xlabel("R [m]")
     ax.set_ylabel("Z [m]")
 
@@ -92,13 +92,19 @@ def plot_psi(filepath):
 
     _fig, ax, show = _setup_plotting(eq)
 
+    ax.set_title(
+        "[V.s/rad (COCOS 1-8), V.s (COCOS 11-18)]",
+        loc="right",
+        fontdict={"fontsize": 10},
+    )
+
     psi_x, psi_z = np.meshgrid(eq.x, eq.z)
 
     # TODO: should investigate the cause of this  # noqa: TD002, TD003
     if eq.psi.shape[0] != psi_x.shape[0]:
         eqdsk_warn(
             f"psi shape {eq.psi.shape} does match coords shape {psi_x.shape},"
-            " attempting to swap"
+            " attempting to swap..."
         )
         eq.psi = np.swapaxes(eq.psi, 0, 1)
     cont = ax.contour(psi_x, psi_z, eq.psi, levels=30, cmap="viridis")
@@ -135,7 +141,20 @@ def plot_psi(filepath):
     "--to",
     help="COCOS format to convert the eqdsk to.",
 )
-def convert(filepath: str, format: str, from_: str | None, to: str | None):  # noqa: A002
+@click.option(
+    "-q",
+    "--qpsi-sign",
+    type=click.Choice(["1", "-1"]),
+    help="Sign of qpsi, "
+    "required if the eqdsk has no qpsi data and you are converting between COCOS.",
+)
+def convert(
+    filepath: str,
+    format: str,  # noqa: A002
+    from_: str | None,
+    to: str | None,
+    qpsi_sign: str | None,
+):
     """
     Conversion utilities for the eqdsk file.
 
@@ -143,6 +162,8 @@ def convert(filepath: str, format: str, from_: str | None, to: str | None):  # n
 
     To convert between COCOS versions, use the -f (--from) and -t (--to)
     options (both must be provided).
+
+    If -f and -t are not provided, the file will be read without COCOS.
 
     Valid values for --from and --to are:
 
@@ -160,12 +181,17 @@ def convert(filepath: str, format: str, from_: str | None, to: str | None):  # n
         # does validation of from and to values
         cc_fr = COCOS(from_)
         cc_to = COCOS(to)
+        qs = None if qpsi_sign is None else int(qpsi_sign)
         eq = EQDSKInterface.from_file(
-            filepath, from_cocos=cc_fr.index, to_cocos=cc_to.index
+            filepath,
+            from_cocos=cc_fr.index,
+            to_cocos=cc_to.index,
+            qpsi_sign=qs,
         )
     elif (from_ and to is None) or (from_ is None and to):
         raise click.BadParameter("Both --from and --to must be provided")  # noqa: DOC501
     else:
         eq = EQDSKInterface.from_file(filepath, no_cocos=True)
 
-    eq.write(f"{Path(filepath).stem}_out", file_format=format)
+    output_path = Path(filepath).with_stem(f"{Path(filepath).stem}_out").as_posix()
+    eq.write(output_path, file_format=format)
