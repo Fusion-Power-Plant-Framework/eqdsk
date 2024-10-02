@@ -10,7 +10,6 @@ This project and everyone participating in it is governed by the  Contributor Co
 Code of Conduct. By participating, you are expected to uphold this code. Please report
 unacceptable behavior to [oliver.funk@ukaea.uk](mailto:olive.funk@ukaea.uk) and/or [james.cook1@ukaea.uk](mailto:james.cook1@ukaea.uk).
 
-
 ## Submitting an issue
 
 In order to help us address your issue effectively, we ask that you follow this
@@ -72,28 +71,18 @@ pip install -g hatch
 
 If you can run `hatch -h` then Hatch has been successfully installed.
 
-We recommend setting the `dirs.env` in you hatch config to the following:
-
-```toml
-[dirs.env]
-virtual = ".hatch"
-```
-
-The path to this file can be found by running:
-
-```bash
-hatch config find
-```
-
-It makes it easier to set the path the the venv in your code editor.
-
 Then run:
 
 ```bash
 hatch shell
 ```
 
-This will create the default hatch environment in the project folder. Set your python enviorment path for your editor to `.hatch/eqdsk/bin/python`
+To activate the default Hatch environment.
+
+Hatch environments are usually stored in the `~/.local/share/hatch/env` directory.
+
+VS Code users can use the `Python: Select Interpreter` command to select the Hatch environment.
+Detecting Hatch environments has been integrated into the Python extension for VS Code.
 
 ## Tests
 

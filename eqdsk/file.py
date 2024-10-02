@@ -32,8 +32,7 @@ if TYPE_CHECKING:
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
 
 
-# repr = False to avoid printing the data in __repr__
-@dataclass(repr=False)
+@dataclass
 class EQDSKInterface:
     """Container for data from an EQDSK file.
 
@@ -48,10 +47,6 @@ class EQDSKInterface:
     G-EQDSK is from the 1980's and EQDSK files should generally only be
     read and not written. New equilibria should really just be saved as
     JSON files.
-
-    Poloidal magnetic flux units not enforced here!
-
-    Plasma current direction is not enforced here!
     """
 
     DEFAULT_COCOS = 11
@@ -90,7 +85,7 @@ class EQDSKInterface:
     """Poloidal magnetic flux on the 2-D grid
     [V.s/rad (COCOS 1-8) or V.s (COCOS 11-18)]."""
     psibdry: float
-    """Poloidal flux at the magnetic axis [V.s/rad]."""
+    """Poloidal flux at the plasma boundary (LCFS) [V.s/rad]."""
     psimag: float
     """Poloidal flux at the magnetic axis [V.s/rad]."""
     xbdry: np.ndarray
@@ -98,7 +93,7 @@ class EQDSKInterface:
     xc: np.ndarray
     """X coordinates of the coils [m]."""
     xcentre: float
-    """Radius of the reference toroidal magnetic  [m]."""
+    """Radius of the reference toroidal magnetic [m]."""
     xdim: float
     """Horizontal dimension of the spatial grid [m]."""
     xgrid1: float
@@ -144,6 +139,53 @@ class EQDSKInterface:
             self.psinorm = _derive_psinorm(self.fpol)
         self._cocos = None
 
+    def __repr__(self) -> str:  # noqa: D105
+        if self.qpsi is None:
+            conv_p = ", ".join(
+                str(c.index) for c in identify_eqdsk(self, qpsi_positive=True)
+            )
+            conv_n = ", ".join(
+                str(c.index) for c in identify_eqdsk(self, qpsi_positive=False)
+            )
+            conventions_str = f"{conv_p} (+ve qpsi) | {conv_n} (-ve qpsi)"
+        else:
+            conventions_str = ", ".join(str(c.index) for c in identify_eqdsk(self))
+
+        if self._cocos is not None:
+            conventions_str = f"{conventions_str} (current COCOS: {self._cocos.index})"
+
+        return f"""
+Identifiable COCOS: {conventions_str}
+
+Main properties:
+
+* bcentre: {self.bcentre} [T] (vacuum toroidal magnetic field at the reference radius)
+* cplasma: {self.cplasma} [A] (plasma current)
+
+* xcentre: {self.xcentre} [m] (radius of the reference toroidal magnetic axis)
+
+* xmag: {self.xmag} [m] (radius of the magnetic axis)
+* zmag: {self.zmag} [m] (z coordinate of the magnetic axis)
+
+* psibdry: {self.psibdry} [V.s/rad or V.s] (poloidal flux at the plasma boundary (LCFS))
+* psimag: {self.psimag} [V.s/rad or V.s] (poloidal flux at the magnetic axis)
+
+* nlim: {self.nlim} (number of limiters)
+
+File properties:
+
+* name: {self.name}
+* file_name: {self.file_name}
+
+Grid properties:
+
+* nx: {self.nx} (no. points in the radial direction)
+* nz: {self.nz} (no. points in the vertical direction)
+
+* xdim: {self.xdim} [m] (grid radial extent)
+* zdim: {self.zdim} [m] (grid vertical extent)
+"""
+
     @classmethod
     def from_file(
         cls,
@@ -153,8 +195,8 @@ class EQDSKInterface:
         *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
-        no_cocos: bool = False,
         qpsi_sign: int | Sign | None = None,
+        no_cocos: bool = False,
     ) -> EQDSKInterface:
         """Create an EQDSKInterface object from a file.
 
@@ -488,7 +530,7 @@ def _eqdsk_generator(file: TextIOWrapper) -> Iterator[str]:
         yield from generator_list
 
 
-def _read_eqdsk(file_path: Path) -> dict:
+def _read_eqdsk(file_path: Path) -> dict:  # noqa: PLR0915
     with file_path.open("r") as file:
         description = file.readline()
         if not description:
@@ -542,6 +584,8 @@ def _read_eqdsk(file_path: Path) -> dict:
 
         data["psi"] = _read_2d_array(tokens, n_x, n_z, "psi")
         data["qpsi"] = _read_array(tokens, n_x, "qpsi")
+        if np.allclose(data["qpsi"], 0):
+            data["qpsi"] = None
         nbdry = int(next(tokens))
         nlim = int(next(tokens))
         data["nbdry"] = nbdry
@@ -704,7 +748,10 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
         qpsi = (
             np.zeros(data["nx"]) if data["qpsi"] is None else np.atleast_1d(data["qpsi"])
         )
-        eqdsk_warn("No qpsi data found. Setting as array of 0's.")
+        if np.allclose(qpsi, 0):
+            eqdsk_warn(
+                f"Writing EQDSK with qpsi all zeros. {data['name']}, {data['qpsi']}"
+            )
         if len(qpsi) == 1:
             qpsi = np.full(data["nx"], qpsi)
         elif len(qpsi) != data["nx"]:

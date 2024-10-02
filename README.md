@@ -29,17 +29,30 @@ For a developer setup please see [CONTRIBUTING.md](CONTRIBUTING.md#setup-with-ha
 ## Basic Usage
 
 To read in an eqdsk (json or eqdsk) in its raw state:
+
 ```python
 from eqdsk import EQDSKInterface
 
 EQDSKInterface.from_file('file.json', no_cocos=True)
 ```
+
 To read in an eqdsk file with a known cocos format and convert it to a given cocos format:
+
 ```python
 EQDSKInterface.from_file('file.eqdsk', from_cocos=11, to_cocos=17)
 ```
+
 Alternatively if the direction (clockwise or anticlockwise) and the units of phi (V.s or V.s/rad) are known,
 the cocos standard will be calculated for you:
+
 ```python
 EQDSKInterface.from_file('file.eqdsk', clockwise_phi=True, volt_seconds_per_radian=True)
 ```
+
+## CLI
+
+This package includes a CLI tool for eqdsk exploration.
+
+This can be accessed by running `eqdsk` in the terminal after installing the package (or in the Hatch `cli` environment, see [CONTRIBUTING.md](CONTRIBUTING.md#setup-with-hatch)).
+
+For more information on the CLI tool, run `eqdsk --help`.

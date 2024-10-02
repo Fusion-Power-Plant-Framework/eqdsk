@@ -9,8 +9,6 @@ from pathlib import Path
 import numpy as np
 import numpy.typing as npt
 
-from eqdsk.log import eqdsk_warn
-
 
 class NumpyJSONEncoder(JSONEncoder):
     """A JSON encoder that can handle numpy arrays."""
@@ -33,10 +31,9 @@ def json_writer(
     data: dict,
     file: str | Path | None = None,
     *,
-    return_output: bool = False,
     cls=NumpyJSONEncoder,
     **kwargs,
-) -> str | None:
+) -> str:
     """Write json in the bluemria style.
 
     Parameters
@@ -45,8 +42,6 @@ def json_writer(
         dictionary to write to json
     file:
         filename to write to
-    return_output:
-        return the json as a string
     cls:
         json encoder child class
     kwargs:
@@ -55,12 +50,8 @@ def json_writer(
     Returns
     -------
     :
-        The json file as a string if requested else None
+        The JSON string
     """
-    if file is None and not return_output:
-        eqdsk_warn("No json action to take")
-        return None
-
     if "indent" not in kwargs:
         kwargs["indent"] = 4
 
@@ -75,9 +66,7 @@ def json_writer(
             fh.write(the_json)
             fh.write("\n")
 
-    if return_output:
-        return the_json
-    return None
+    return the_json
 
 
 def is_num(thing) -> bool:

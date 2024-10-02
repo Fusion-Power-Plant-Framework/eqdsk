@@ -21,3 +21,25 @@ def eqdsk_warn(*args, **kwargs):
 def eqdsk_print(*args, **kwargs):
     """Printing"""
     logger.info(*args, **kwargs)
+
+
+def eqdsk_banner():
+    """
+    Returns
+    -------
+    :
+        The eqdsk banner
+    """
+    from eqdsk._version import version  # noqa: PLC0415
+
+    return f"""
+********************************
+*    ___ ___  ___  ___ _  __   *
+*   | __/ _ \\|   \\/ __| |/ /   *
+*   | _| (_) | |) \\__ \\ ' <    *
+*   |___\\__\\_\\___/|___/_|\\_\\   *
+*                              *
+*   The Bluemira Developers    *
+********************************
+EQDSK Version: {version}
+"""

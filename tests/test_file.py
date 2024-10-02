@@ -144,19 +144,25 @@ class TestEQDSKInterface:
         # file, with the suffix "_temp"
         name = Path(file).stem + "_temp"
         fname = Path(tmp_path, f"{name}.eqdsk")
-        eqdsk.write(fname, file_format="eqdsk")
-        d2 = eqdsk.to_dict()
+        eqdsk.write(fname, file_format="eqdsk", strict_spec=True)
 
         # Check eqdsk is readable by Fortran readers.
         # This demands stricter adherence to the G-EQDSK
         # format than eqdsk's main reader.
         read_strict_geqdsk(fname)
 
+        eqdsk.write(fname, file_format="eqdsk", strict_spec=False)
+        d2 = EQDSKInterface.from_file(fname, **end_keys).to_dict()
+
         # Write data read in from test file into a new JSON
         # file, with the suffix "_temp"
         jname = fname.with_suffix("").with_suffix(".json")
         eqdsk.write(jname, file_format="json")
         d3 = EQDSKInterface.from_file(jname, **end_keys).to_dict()
+
+        d1.pop("name")
+        d2.pop("name")
+        d3.pop("name")
 
         # Compare dictionaries to check data hasn't
         # been changed.
