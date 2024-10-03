@@ -43,6 +43,24 @@ class Sign(Enum):
     POSITIVE = 1
     NEGATIVE = -1
 
+    @classmethod
+    def _missing_(cls, value) -> Sign:
+        """
+
+        Returns
+        -------
+        :
+            The Sign object corresponding to the value.
+
+        Raises
+        ------
+        ValueError
+            If the value is not a known Sign.
+        """
+        if isinstance(value, bool):
+            return Sign.POSITIVE if value else Sign.NEGATIVE
+        raise ValueError(f"'{value}' not a known Sign") from None
+
     def __mul__(self, other: Any) -> Sign | int:
         """
         Returns
