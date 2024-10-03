@@ -195,7 +195,7 @@ Grid properties:
         *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
-        qpsi_sign: int | Sign | None = None,
+        qpsi_positive: bool | None = None,
         no_cocos: bool = False,
     ) -> EQDSKInterface:
         """Create an EQDSKInterface object from a file.
@@ -222,8 +222,8 @@ Grid properties:
         no_cocos:
             Whether to return the EQDSK data without performing
             any identifying COCOS identification or conversion.
-        qpsi_sign:
-            The sign of the qpsi, required for identification
+        qpsi_positive:
+            Whether qpsi is positive or not, required for identification
             when qpsi is not present in the file.
 
         Returns
@@ -256,7 +256,7 @@ Grid properties:
                 as_cocos=from_cocos,
                 clockwise_phi=clockwise_phi,
                 volt_seconds_per_radian=volt_seconds_per_radian,
-                qpsi_sign=qpsi_sign,
+                qpsi_positive=qpsi_positive,
             )
         except NoSingleConventionError as e:
             raise NoSingleConventionError(
@@ -293,7 +293,7 @@ Grid properties:
         *,
         clockwise_phi: bool | None = None,
         volt_seconds_per_radian: bool | None = None,
-        qpsi_sign: int | Sign | None = None,
+        qpsi_positive: bool | None = None,
     ):
         """Identifies the COCOS of this eqdsk.
 
@@ -312,9 +312,9 @@ Grid properties:
             Whether the EQDSK file's phi is clockwise or not.
         volt_seconds_per_radian:
             Whether the EQDSK file's psi is in volt seconds per radian.
-        qpsi_sign:
-            The sign of the qpsi, required for identification
-            when qpsi is not present in the file.
+        qpsi_positive:
+            Whether qpsi is positive or not, required for identification
+            when self.qpsi is None.
 
         Raises
         ------
@@ -323,27 +323,30 @@ Grid properties:
         ValueError
             If no COCOS can be identified.
         MissingQpsiDataError
-            qpsi not provided or found in file
+            qpsi not provided or found in file and qpsi_positive is not set.
         """
-        qpsi_sign = qpsi_sign if qpsi_sign is None else Sign(qpsi_sign)
+        qpsi_sign = None if qpsi_positive is None else Sign(qpsi_positive)
         qpsi_is_not_set = self.qpsi is None or np.allclose(self.qpsi, 0)
+
         if qpsi_is_not_set:
             if qpsi_sign:
                 eqdsk_warn(
-                    "eqdsk contains no qpsi data, but `qpsi_sign` provided. "
+                    "eqdsk contains no qpsi data, but "
+                    f"`qpsi_positive={qpsi_positive}` provided. "
                     f"Setting qpsi to array of {qpsi_sign.value}'s."
                 )
                 self.qpsi = np.ones(self.nx) * qpsi_sign.value
             else:
                 raise MissingQpsiDataError(
-                    message_extra="To resolve this, set the `qpsi_sign` parameter. "
-                    "This is the sign (1, -1) of the qpsi across the flux surfaces.\n"
+                    message_extra="To resolve this, set the `qpsi_positive` parameter. "
+                    "This is the sign (true: 1, false: -1) "
+                    "of qpsi across the flux surfaces.\n"
                     "If you are unsure what the sign should be, "
                     "refer to the COCOS spec (or its implementation "
                     "in this package) and see which standard fits the direction"
                     "for theta and phi (CW or CCW) for this EQDSK.\n"
-                    "You can try setting the sign to 1 or -1 and see if the "
-                    "resulting COCOS is correct.",
+                    "You can also experiment by setting `qpsi_positive` and checking if "
+                    "the resulting COCOS('s) is(are) correct.",
                 )
 
         conventions = identify_eqdsk(

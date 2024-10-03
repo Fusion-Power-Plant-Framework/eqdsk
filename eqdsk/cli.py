@@ -192,12 +192,12 @@ def convert(
         # does validation of from and to values
         cc_fr = COCOS(from_)
         cc_to = COCOS(to)
-        qs = None if qpsi_sign is None else int(qpsi_sign)
+        qsp = None if qpsi_sign is None else int(qpsi_sign) == 1
         eq = EQDSKInterface.from_file(
             filepath,
             from_cocos=cc_fr.index,
             to_cocos=cc_to.index,
-            qpsi_sign=qs,
+            qpsi_positive=qsp,
         )
     elif (from_ and to is None) or (from_ is None and to):
         raise click.BadParameter("Both --from and --to must be provided")  # noqa: DOC501
