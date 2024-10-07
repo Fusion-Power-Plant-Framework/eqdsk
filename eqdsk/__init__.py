@@ -4,13 +4,11 @@
 
 """The eqdsk package provides a class for reading and writing eqdsk files.
 
-Module contents:
+The core class is the [`EQDSKInterface`][eqdsk.file],
+responsible for most of the functionality.
 
-- [`file.py`][eqdsk.file]: The eqdsk file class.
-- `cocos`: The eqdsk coordinate system conversion functions.
-
+There is also the COCOS implementation in the [`cocos.py`][eqdsk.cocos] file,
+which provides the coordinate system conversion functions.
 """
 
 from eqdsk.file import EQDSKInterface
-
-__all__ = ["EQDSKInterface"]
