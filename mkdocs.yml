@@ -8,12 +8,15 @@ theme:
 watch:
   - eqdsk
 plugins:
-  - mkdocstrings
   - search
   - autorefs
+  - gen-files:
+      scripts:
+        - scripts/gen_api_ref.py
+  - literate-nav:
+      nav_file: overview.md
+  - mkdocstrings
 nav:
   - index.md
   - examples.md
-  - Code Reference:
-      - file.py: reference/file.py.md
-      - cocos.py: reference/cocos.py.md
+  - API Reference: reference/

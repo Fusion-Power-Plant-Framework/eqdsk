@@ -1,1 +1,0 @@
-::: eqdsk.cocos

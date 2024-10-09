@@ -45,7 +45,14 @@ test = [
   "pytest-metadata",
   "pytest-json-report",
 ]
-docs = ["mkdocs-material", "mkdocstrings[python]"]
+docs = [
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocstrings[python]",
+  "mkdocs-gen-files",
+  "mkdocs-section-index",
+  "mkdocs-literate-nav"
+]
 lint = ["ruff", "mypy"]
 cli = ["matplotlib"]
 
@@ -70,7 +77,9 @@ tests-cov-private  = "pytest --private --cov eqdsk --cov-report html:htmlcov --c
 [tool.hatch.envs.docs]
 features = ["docs"]
 [tool.hatch.envs.docs.scripts]
-docs = "sphinx-build -b html docs docs/_build"
+build = "mkdocs build"
+serve = "mkdocs serve"
+deploy = "mkdocs gh-deploy"
 
 # env: lint
 [tool.hatch.envs.lint]
