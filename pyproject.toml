@@ -51,7 +51,7 @@ docs = [
   "mkdocstrings[python]",
   "mkdocs-gen-files",
   "mkdocs-section-index",
-  "mkdocs-literate-nav"
+  "mkdocs-literate-nav",
 ]
 lint = ["ruff", "mypy"]
 cli = ["matplotlib"]
@@ -90,10 +90,6 @@ typing = "mypy --install-types --non-interactive {args:eqdsk tests}"
 style  = ["ruff {args:check .}"]
 fmt    = ["pre-commit run --all-files --hook-stage manual"]
 all    = ["style", "typing"]
-
-# env: cli
-[tool.hatch.envs.cli]
-features = ["cli"]
 
 # tool: ruff
 [tool.ruff]

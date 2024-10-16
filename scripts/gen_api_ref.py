@@ -14,7 +14,8 @@ nav = Nav()
 root = Path(__file__).parent.parent
 src = root / "eqdsk"
 
-nav["Overview",] = "overview.md"
+# With the navigation.sections feature enabled, this isn't necessary.
+# nav["Overview",] = "overview.md"  # noqa: ERA001
 
 for path in sorted(src.rglob("*.py")):
     module_path = path.relative_to(root).with_suffix("")
