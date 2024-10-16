@@ -3,7 +3,6 @@ name: publish-docs
 on:
   release:
     types: [published]
-  pull_request:
 
 permissions:
   contents: write
@@ -34,5 +33,5 @@ jobs:
           restore-keys: |
             mkdocs-material-
 
-      - name: Run all tests with coverage
+      - name: Deploy documentation - publish to gh_pages
         run: hatch run docs:deploy --force
