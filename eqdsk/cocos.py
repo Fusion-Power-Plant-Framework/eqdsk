@@ -164,6 +164,24 @@ class COCOS(Enum):
         self.sign_rho_theta_phi = c.sign_rho_theta_phi
 
     @classmethod
+    def _missing_(cls, value) -> COCOS:
+        if isinstance(value, KnownCOCOS):
+            return value.cocos
+
+        if isinstance(value, str):
+            value = value.upper()
+            if value in KnownCOCOS.__members__:
+                return KnownCOCOS[value].cocos
+            if value in cls.__members__:
+                return cls[value]
+
+        try:
+            value = int(value)
+        except ValueError:
+            raise ValueError(f"'{value}' not a known COCOS standard") from None
+        return cls.with_index(int(value))
+
+    @classmethod
     def with_index(cls, cocos_index: int) -> COCOS:
         """
         Returns
@@ -208,24 +226,6 @@ class COCOS(Enum):
             )
 
         return next(filter(_match_cocos, cls))
-
-    @classmethod
-    def _missing_(cls, value) -> COCOS:
-        if isinstance(value, KnownCOCOS):
-            return value.cocos
-
-        if isinstance(value, str):
-            value = value.upper()
-            if value in KnownCOCOS.__members__:
-                return KnownCOCOS[value].cocos
-            if value in cls.__members__:
-                return cls[value]
-
-        try:
-            value = int(value)
-        except ValueError:
-            raise ValueError(f"'{value}' not a known COCOS standard") from None
-        return cls.with_index(int(value))
 
 
 class KnownCOCOS(Enum):

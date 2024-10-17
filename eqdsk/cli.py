@@ -41,7 +41,7 @@ def _setup_plotting(eq: EQDSKInterface):
 def cli():
     """EQDSK cli
 
-    A useful utility for displaying eqdsk file data.
+    Useful utilities for displaying eqdsk file data.
     """
 
 
@@ -93,14 +93,13 @@ def plot_psi(filepath):
     _fig, ax, show = _setup_plotting(eq)
 
     ax.set_title(
-        "[V.s/rad (COCOS 1-8), V.s (COCOS 11-18)]",
+        "psi [V.s/rad (COCOS 1-8), V.s (COCOS 11-18)]",
         loc="right",
         fontdict={"fontsize": 10},
     )
 
-    psi_x, psi_z = np.meshgrid(eq.x, eq.z)
+    psi_x, psi_z = np.meshgrid(eq.x, eq.z, indexing="ij")
 
-    # TODO: should investigate the cause of this  # noqa: TD002, TD003
     if eq.psi.shape[0] != psi_x.shape[0]:
         eqdsk_warn(
             f"psi shape {eq.psi.shape} does match coords shape {psi_x.shape},"

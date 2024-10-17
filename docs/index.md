@@ -1,17 +1,14 @@
-# Welcome to MkDocs
+# Introduction
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+The `eqdsk` pacakge provides a convenient interface to eqdsk files.
 
-## Commands
+It can read and write .eqdsk (g-eqdsk) and .json formats.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+There is built-in COCOS support, for identifying and converting between different COCOS versions.
 
-## Project Overview
+## Examples
 
-::: eqdsk
+See [examples](examples/using_api) for how to use the package.
 
 ## Acknowledgments
 
