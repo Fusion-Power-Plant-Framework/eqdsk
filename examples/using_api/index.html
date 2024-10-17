@@ -10,9 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://fusion-power-plant-framework.github.io/eqdsk/reference/overview/">
+        <link rel="canonical" href="https://fusion-power-plant-framework.github.io/eqdsk/examples/using_api/">
       
       
+        <link rel="prev" href="../..">
+      
+      
+        <link rel="next" href="../using_cli/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -20,7 +24,7 @@
     
     
       
-        <title>Overview - EQDSK Documentation</title>
+        <title>Using the API - EQDSK Documentation</title>
       
     
     
@@ -73,6 +77,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#using-the-api" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -103,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Using the API
             
           </span>
         </div>
@@ -235,11 +244,13 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../examples/using_api/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   Examples
@@ -263,7 +274,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../eqdsk/__init__/" class="md-tabs__link">
+        <a href="../../reference/eqdsk/__init__/" class="md-tabs__link">
           
   
   API Reference
@@ -346,25 +357,30 @@
       
   
   
+    
   
   
+  
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -375,7 +391,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Examples
@@ -386,10 +402,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../examples/using_api/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Using the API
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -398,6 +434,86 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#read-by-specifying-cocos-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Read by specifying COCOS parameters
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Read by specifying COCOS parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#perform-a-specific-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Perform a specific conversion
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#perform-no-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Perform no conversion
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specifying-the-sign-of-qpsi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifying the sign of qpsi
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-by-specifying-the-cocos-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Read by specifying the COCOS number
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-with-no-cocos-identification-or-conversions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Read with no COCOS identification or conversions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -410,7 +526,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/using_cli/" class="md-nav__link">
+      <a href="../using_cli/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -518,7 +634,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../eqdsk/__init__/" class="md-nav__link">
+      <a href="../../reference/eqdsk/__init__/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -539,7 +655,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../eqdsk/cocos/" class="md-nav__link">
+      <a href="../../reference/eqdsk/cocos/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -560,7 +676,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../eqdsk/errors/" class="md-nav__link">
+      <a href="../../reference/eqdsk/errors/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -581,7 +697,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../eqdsk/file/" class="md-nav__link">
+      <a href="../../reference/eqdsk/file/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -602,7 +718,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../eqdsk/log/" class="md-nav__link">
+      <a href="../../reference/eqdsk/log/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -623,7 +739,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../eqdsk/models/" class="md-nav__link">
+      <a href="../../reference/eqdsk/models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -644,7 +760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../eqdsk/tools/" class="md-nav__link">
+      <a href="../../reference/eqdsk/tools/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -690,6 +806,76 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#read-by-specifying-cocos-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Read by specifying COCOS parameters
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Read by specifying COCOS parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#perform-a-specific-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Perform a specific conversion
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#perform-no-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Perform no conversion
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specifying-the-sign-of-qpsi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifying the sign of qpsi
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-by-specifying-the-cocos-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Read by specifying the COCOS number
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-with-no-cocos-identification-or-conversions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Read with no COCOS identification or conversions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -703,21 +889,87 @@
                 
                   
 
+  
+  
 
-  <h1>Overview</h1>
 
+<h1 id="using-the-api">Using the API</h1>
+<p>This packages exposes the <a class="autorefs autorefs-internal" href="../../reference/eqdsk/file/#eqdsk.file.EQDSKInterface">EQDSKInterface</a> class, which is the main interface for reading and writing eqdsk files.</p>
+<p>Below are a few examples of how to use the API.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the examples, <code>file_path</code> can be a string or a <code>pathlib.Path</code> object pointing to an eqdsk file.</p>
+</div>
+<h2 id="read-by-specifying-cocos-parameters">Read by specifying COCOS parameters</h2>
+<p>This is a "regular" use case, where you want to read an eqdsk file and have its COCOS be automatically identified.</p>
+<p>There are two required input parameters that must be specified (and know beforehand):</p>
 <ul>
-<li>eqdsk<ul>
-<li><a href="../eqdsk/__init__/">eqdsk</a></li>
-<li><a href="../eqdsk/cocos/">eqdsk.cocos</a></li>
-<li><a href="../eqdsk/errors/">eqdsk.errors</a></li>
-<li><a href="../eqdsk/file/">eqdsk.file</a></li>
-<li><a href="../eqdsk/log/">eqdsk.log</a></li>
-<li><a href="../eqdsk/models/">eqdsk.models</a></li>
-<li><a href="../eqdsk/tools/">eqdsk.tools</a></li>
+<li><code>clockwise_phi</code>: Whether the magnetic field is defined in the clockwise or counter-clockwise direction, when viewed from above down.</li>
+<li><code>volt_seconds_per_radian</code>: Whether the flux function is in units of V.s or V.s/2π.</li>
 </ul>
-</li>
-</ul>
+<div class="language-py highlight"><span class="filename">main.py</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">eqdsk</span> <span class="kn">import</span> <span class="n">EQDSKInterface</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">ed</span> <span class="o">=</span> <span class="n">EQDSKInterface</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">file_path</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">clockwise_phi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">volt_seconds_per_radian</span><span class="o">=</span><span class="kc">True</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>This will perform a conversion to the <code>DEFAULT_COCOS</code> value (COCOS 11) if no <code>to_cocos</code> parameter is provided.</p>
+<h3 id="perform-a-specific-conversion">Perform a specific conversion</h3>
+<div class="language-py highlight"><span class="filename">main.py</span><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">eqdsk</span> <span class="kn">import</span> <span class="n">EQDSKInterface</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">ed</span> <span class="o">=</span> <span class="n">EQDSKInterface</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">file_path</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">clockwise_phi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">volt_seconds_per_radian</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">to_cocos</span><span class="o">=</span><span class="mi">13</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Will convert the eqdsk file to COCOS 13.</p>
+<p>Some known COCOS numbers from cetain code are prdovided (see <a class="autorefs autorefs-internal" href="../../reference/eqdsk/cocos/#eqdsk.cocos.KnownCOCOS">KnownCOCOS</a>).</p>
+<div class="language-py highlight"><span class="filename">main.py</span><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">eqdsk</span> <span class="kn">import</span> <span class="n">EQDSKInterface</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">ed</span> <span class="o">=</span> <span class="n">EQDSKInterface</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">file_path</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">clockwise_phi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">volt_seconds_per_radian</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">to_cocos</span><span class="o">=</span><span class="s2">&quot;JETTO&quot;</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Will convert the eqdsk file to the known JETTO COCOS (COCOS 11).</p>
+<h3 id="perform-no-conversion">Perform no conversion</h3>
+<div class="language-py highlight"><span class="filename">main.py</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span> <span class="nn">eqdsk</span> <span class="kn">import</span> <span class="n">EQDSKInterface</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">ed</span> <span class="o">=</span> <span class="n">EQDSKInterface</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">file_path</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">clockwise_phi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">volt_seconds_per_radian</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">to_cocos</span><span class="o">=</span><span class="kc">None</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="specifying-the-sign-of-qpsi">Specifying the sign of qpsi</h3>
+<p>The COCOS identification procedure uses the sign of qpsi and thus requires there be qpsi data in the eqdsk file. However, qpsi is not required to be stored by the eqdsk format and thus may be None (null) in some files.</p>
+<p>If this is case, the <code>qpsi_sign</code> parameter must be specified and will set the qpsi data to an array (+/-)1's.</p>
+<div class="language-py highlight"><span class="filename">main.py</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">eqdsk</span> <span class="kn">import</span> <span class="n">EQDSKInterface</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">ed</span> <span class="o">=</span> <span class="n">EQDSKInterface</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">file_path</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">clockwise_phi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">volt_seconds_per_radian</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">qpsi_positive</span><span class="o">=</span><span class="kc">False</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="read-by-specifying-the-cocos-number">Read by specifying the COCOS number</h2>
+<p>The <code>clockwise_phi</code> and <code>volt_seconds_per_radian</code> parameters do not need to be set if you know the COCOS number already.</p>
+<div class="language-py highlight"><span class="filename">main.py</span><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span> <span class="nn">eqdsk</span> <span class="kn">import</span> <span class="n">EQDSKInterface</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">ed</span> <span class="o">=</span> <span class="n">EQDSKInterface</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">file_path</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">from_cocos</span><span class="o">=</span><span class="mi">8</span> <span class="c1"># Could also be a known string, like &quot;JETTO&quot;</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>This will only work if the <code>from_cocos</code> number is one of the possible identifiable versions.</p>
+<p>There are 4 possible verisons if the <code>clockwise_phi</code> and <code>volt_seconds_per_radian</code> parameters are not set (two if one of them is).</p>
+<h2 id="read-with-no-cocos-identification-or-conversions">Read with no COCOS identification or conversions</h2>
+<p>You may want to read an eqdsk file and access the raw data, without any kind of COCOS identification or conversion.</p>
+<div class="language-py highlight"><span class="filename">main.py</span><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span> <span class="nn">eqdsk</span> <span class="kn">import</span> <span class="n">EQDSKInterface</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">ed</span> <span class="o">=</span> <span class="n">EQDSKInterface</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">no_cocos</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
 
 
 
