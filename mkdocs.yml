@@ -8,16 +8,6 @@ repo_url: https://github.com/Fusion-Power-Plant-Framework/eqdsk
 watch:
   - eqdsk
 
-theme:
-  name: material
-  features:
-    - navigation.tabs
-    - navigation.instant
-    - navigation.instant.progress
-    - navigation.sections
-    - navigation.path
-    - navigation.top
-
 plugins:
   - search
   - autorefs
@@ -26,9 +16,58 @@ plugins:
         - scripts/gen_api_ref.py
   - literate-nav:
       nav_file: overview.md
-  - mkdocstrings
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+
+theme:
+  name: material
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: black
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+  features:
+    - navigation.tabs
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.path
+    - navigation.top
+    - navigation.tracking
+    - content.code.copy
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      use_pygments: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
 
 nav:
   - index.md
-  - examples.md
+  - Examples: examples/
   - API Reference: reference/

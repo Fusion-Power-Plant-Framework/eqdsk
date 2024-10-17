@@ -387,7 +387,7 @@ Grid properties:
 
         Note
         ----
-            This returns a new instance of the EQDSKInterface class.
+        This returns a new instance of the EQDSKInterface class.
         """
         to_cocos = COCOS(to_cocos)
         if self.cocos == to_cocos:

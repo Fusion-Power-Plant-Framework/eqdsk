@@ -41,7 +41,7 @@ def _setup_plotting(eq: EQDSKInterface):
 def cli():
     """EQDSK cli
 
-    A useful utility for displaying eqdsk file data.
+    Useful utilities for displaying eqdsk file data.
     """
 
 
