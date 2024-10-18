@@ -24,3 +24,5 @@ repos:
       - id: prettier
         types_or: [json, yaml]
         args: [--tab-width=2]
+ci:
+  autofix_prs: false
