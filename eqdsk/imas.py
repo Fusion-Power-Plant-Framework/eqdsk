@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
@@ -40,7 +41,16 @@ IMAS = MappingProxyType({
 })
 
 
-def imas_connection():
+class ReadWrite(Enum):
+    READ = "r"
+    WRITE = "w"
+
+
+def imas_connection(path: str, mode: ReadWrite = ReadWrite.READ):
+    import imas
+
+    db = imas.DBEntry(f"imas:hdf5?path={path}", mode.value())
+    db.open()
     return db
 
 
