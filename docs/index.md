@@ -9,7 +9,3 @@ There is built-in COCOS support, for identifying and converting between differen
 ## Examples
 
 See [examples](examples/using_api) for how to use the package.
-
-## Acknowledgments
-
-Acknowledged.

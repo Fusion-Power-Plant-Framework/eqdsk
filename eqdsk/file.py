@@ -36,9 +36,6 @@ EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
 class EQDSKInterface:
     """Container for data from an EQDSK file.
 
-    Inspired by an EQDSK reader originally developed by B Dudson:
-        https://github.com/bendudson/pyTokamak/blob/master/tokamak/formats/geqdsk.py
-
     The G-EQDSK file format is described here:
         https://fusion.gat.com/conferences/snowmass/working/mfe/physics/p3/equilibria/g_eqdsk_s.pdf
 
