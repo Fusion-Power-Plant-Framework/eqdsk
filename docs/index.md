@@ -1,6 +1,6 @@
 # Introduction
 
-The `eqdsk` pacakge provides a convenient interface to eqdsk files.
+The `eqdsk` package provides a convenient interface to eqdsk files.
 
 It can read and write .eqdsk (g-eqdsk) and .json formats.
 
