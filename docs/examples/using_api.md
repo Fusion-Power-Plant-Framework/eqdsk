@@ -97,7 +97,7 @@ ed = EQDSKInterface.from_file(
 
 This will only work if the `from_cocos` number is one of the possible identifiable versions.
 
-There are 4 possible verisons if the `clockwise_phi` and `volt_seconds_per_radian` parameters are not set (two if one of them is).
+There are 4 possible versions if the `clockwise_phi` and `volt_seconds_per_radian` parameters are not set (two if one of them is).
 
 ## Read with no COCOS identification or conversions
 
