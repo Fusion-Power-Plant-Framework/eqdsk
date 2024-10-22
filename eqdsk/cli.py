@@ -29,6 +29,7 @@ def _setup_plotting(eq: EQDSKInterface):
     fig.suptitle(f"EQDSK:  {eq.name}")
     ax.set_xlabel("R [m]")
     ax.set_ylabel("Z [m]")
+    ax.set_aspect("equal")
 
     # plot mag center
     ax.plot(eq.xmag, eq.zmag, color="red", marker="o")
