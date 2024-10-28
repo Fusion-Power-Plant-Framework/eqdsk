@@ -457,8 +457,7 @@ Grid properties:
                 setattr(self, key, value)
             else:
                 raise ValueError(
-                    "Cannot update EQDSKInterface from dict. "
-                    f"Unrecognised key '{key}'.",
+                    f"Cannot update EQDSKInterface from dict. Unrecognised key '{key}'.",
                 )
 
 
@@ -540,8 +539,7 @@ def _read_eqdsk(file_path: Path) -> dict:  # noqa: PLR0915
         ints = [v for v in description if is_num(v)]
         if len(ints) < 3:  # noqa: PLR2004
             raise OSError(
-                "Should be at least 3 numbers in the first line "
-                f"of the EQDSK {file}.",
+                f"Should be at least 3 numbers in the first line of the EQDSK {file}.",
             )
 
         data = {}
