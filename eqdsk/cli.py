@@ -200,7 +200,7 @@ def convert(
             qpsi_positive=qsp,
         )
     elif (from_ and to is None) or (from_ is None and to):
-        raise click.BadParameter("Both --from and --to must be provided")  # noqa: DOC501
+        raise click.BadParameter("Both --from and --to must be provided")
     else:
         eq = EQDSKInterface.from_file(filepath, no_cocos=True)
 
