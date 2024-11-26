@@ -187,7 +187,7 @@ def convert(
     Use the `eqdsk show` command to see the valid COCOS's for file.
 
     The saved file will have _out suffixed to the filename.
-    """
+    """  # noqa: DOC501
     if from_ and to:
         # does validation of from and to values
         cc_fr = COCOS(from_)
