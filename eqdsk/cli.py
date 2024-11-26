@@ -187,7 +187,7 @@ def convert(
     Use the `eqdsk show` command to see the valid COCOS's for file.
 
     The saved file will have _out suffixed to the filename.
-    """
+    """  # noqa: DOC501
     if from_ and to:
         # does validation of from and to values
         cc_fr = COCOS(from_)
@@ -200,7 +200,7 @@ def convert(
             qpsi_positive=qsp,
         )
     elif (from_ and to is None) or (from_ is None and to):
-        raise click.BadParameter("Both --from and --to must be provided")  # noqa: DOC501
+        raise click.BadParameter("Both --from and --to must be provided")
     else:
         eq = EQDSKInterface.from_file(filepath, no_cocos=True)
 
