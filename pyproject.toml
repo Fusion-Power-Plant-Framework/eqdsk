@@ -67,7 +67,7 @@ features = ["dev", "test", "docs", "lint"]
 [tool.hatch.envs.test]
 features = ["test"]
 [[tool.hatch.envs.test.matrix]]
-python = ["3.10", "3.11", "3.12"]
+python = ["3.10", "3.11", "3.12", "3.13"]
 [tool.hatch.envs.test.scripts]
 tests      = "pytest {args:tests}"
 tests-cov  = "pytest --cov eqdsk  --cov-report html:htmlcov_eqdsk --cov-report xml {args:tests}"
