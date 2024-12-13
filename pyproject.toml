@@ -55,6 +55,7 @@ docs = [
 ]
 lint = ["ruff", "mypy"]
 cli = ["matplotlib"]
+imas = ["imaspy>=1.1.1"]
 
 [project.scripts]
 eqdsk = "eqdsk.cli:cli"
