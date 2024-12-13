@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from enum import Enum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
@@ -46,12 +47,12 @@ class ReadWrite(Enum):
     WRITE = "w"
 
 
-def imas_connection(path: str, mode: ReadWrite = ReadWrite.READ):
-    import imas
+@contextmanager
+def imas_connection(path: str, mode: ReadWrite = ReadWrite.READ) -> DBEntry:
+    import imaspy
 
-    db = imas.DBEntry(f"imas:hdf5?path={path}", mode.value())
-    db.open()
-    return db
+    with imaspy.DBEntry(f"imas:hdf5?path={path}", mode.value()) as db:
+        yield db
 
 
 def from_imas(
