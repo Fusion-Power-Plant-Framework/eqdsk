@@ -126,9 +126,7 @@ ignore = [
   "D401",
   "DOC502",  # Raises sections not in top level function
   "DTZ005",  # datetime timezone arg
-  "E203",    # black/ruff format conflicts
   "FIX002",  # Line contains todo
-  "ISC001",  # ruff format conflict
   "PLW1514", # Specify file open encoding
   "PTH123",  # use Path.open
   "TRY003",  # put error messages in error class
