@@ -10,7 +10,7 @@ import json
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import fortranformat as ff
 import numpy as np
@@ -46,7 +46,7 @@ class EQDSKInterface:
     JSON files.
     """
 
-    DEFAULT_COCOS = 11
+    DEFAULT_COCOS: ClassVar[int] = 11
 
     bcentre: float
     """Vacuum toroidal Magnetic field at the reference radius [T]."""
