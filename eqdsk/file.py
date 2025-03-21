@@ -8,12 +8,15 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import fortranformat as ff
 import numpy as np
+import numpy.typing as npt
+from pydantic import AliasChoices, ConfigDict, Field
+from pydantic.dataclasses import dataclass
 
 from eqdsk.cocos import COCOS, KnownCOCOS, convert_eqdsk, identify_eqdsk
 from eqdsk.errors import (
@@ -22,7 +25,7 @@ from eqdsk.errors import (
 )
 from eqdsk.log import eqdsk_print, eqdsk_warn
 from eqdsk.models import Sign
-from eqdsk.tools import is_num, json_writer
+from eqdsk.tools import aliases, is_num, json_writer
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -32,7 +35,8 @@ if TYPE_CHECKING:
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
 
 
-@dataclass
+@aliases
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class EQDSKInterface:
     """Container for data from an EQDSK file.
 
@@ -52,15 +56,15 @@ class EQDSKInterface:
     """Vacuum toroidal Magnetic field at the reference radius [T]."""
     cplasma: float
     """Plasma current [A]."""
-    dxc: np.ndarray
+    dxc: npt.NDArray
     """X half-thicknesses of the coils [m]."""
-    dzc: np.ndarray
+    dzc: npt.NDArray
     """Z half-thicknesses of the coils [m]."""
-    ffprime: np.ndarray
+    ffprime: npt.NDArray
     """FF' function on 1-D flux grid [m.T^2/V.s/rad]."""
-    fpol: np.ndarray
+    fpol: npt.NDArray
     """Poloidal current function f = R*B on 1-D flux [T.m]."""
-    Ic: np.ndarray
+    Ic: npt.NDArray
     """Coil currents [A]."""
     name: str
     """Name of the equilibrium EQDSK [dimensionless]."""
@@ -74,20 +78,20 @@ class EQDSKInterface:
     """Number of grid points in the radial direction [dimensionless]."""
     nz: int
     """Number of grid points in the vertical direction [dimensionless]."""
-    pprime: np.ndarray
+    pprime: npt.NDArray
     """P' function on 1-D flux grid [N/m^2/V.s/rad]."""
-    pressure: np.ndarray
+    pressure: npt.NDArray
     """Plasma pressure function on 1-D flux grid [N/m^2]."""
-    psi: np.ndarray
+    psi: npt.NDArray
     """Poloidal magnetic flux on the 2-D grid
     [V.s/rad (COCOS 1-8) or V.s (COCOS 11-18)]."""
     psibdry: float
     """Poloidal flux at the plasma boundary (LCFS) [V.s/rad]."""
     psimag: float
     """Poloidal flux at the magnetic axis [V.s/rad]."""
-    xbdry: np.ndarray
+    xbdry: npt.NDArray
     """X coordinates of the plasma boundary [m]."""
-    xc: np.ndarray
+    xc: npt.NDArray
     """X coordinates of the coils [m]."""
     xcentre: float
     """Radius of the reference toroidal magnetic [m]."""
@@ -95,29 +99,31 @@ class EQDSKInterface:
     """Horizontal dimension of the spatial grid [m]."""
     xgrid1: float
     """Minimum radius of the spatial grid [m]."""
-    xlim: np.ndarray
+    xlim: npt.NDArray
     """X coordinates of the limiters [m]."""
     xmag: float
     """Radius of the magnetic axis [m]."""
-    zbdry: np.ndarray
+    zbdry: npt.NDArray
     """Z coordinates of the plasma boundary [m]."""
-    zc: np.ndarray
+    zc: npt.NDArray
     """Z coordinates of the coils [m]."""
     zdim: float
     """Vertical dimension of the spatial grid [m]."""
-    zlim: np.ndarray
+    zlim: npt.NDArray
     """Z coordinates of the limiters [m]."""
     zmag: float
     """Z coordinate of the magnetic axis [m]."""
     zmid: float
     """Z coordinate of the middle of the spatial grid [m]."""
-    x: np.ndarray | None = None
+    x: npt.NDArray | None = None
     """X 1-D vector [m] (calculated if not given)."""
-    z: np.ndarray | None = None
+    z: npt.NDArray | None = None
     """Z 1-D vector [m] (calculated if not given)."""
-    psinorm: np.ndarray | None = None
+    psinorm: npt.NDArray | None = Field(
+        alias=AliasChoices("psinorm", "pnorm"), default=None
+    )
     """Normalised psi vector [A] (calculated if not given)."""
-    qpsi: np.ndarray | None = None
+    qpsi: npt.NDArray | None = None
     """Safety factor values on the 1-D flux grid [dimensionless]."""
     file_name: str | None = None
     """The EQDSK file the data originates from."""
@@ -468,13 +474,6 @@ def _read_json(file_path: Path) -> dict[str, Any]:
     for k, value in data.items():
         if isinstance(value, list) and k not in {"coil_type", "coil_names"}:
             data[k] = np.asarray(value)
-
-    # For backward compatibility where 'psinorm' was sometimes 'pnorm'
-    if "pnorm" in data:
-        if "psinorm" in data:
-            del data["pnorm"]
-        else:
-            data["psinorm"] = data.pop("pnorm")
 
     return data
 
