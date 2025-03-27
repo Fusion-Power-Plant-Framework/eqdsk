@@ -282,3 +282,18 @@ class TestEQDSKInterface:
             EQDSKInterface.from_file(
                 Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=10
             )
+
+    def test_aliases_return_same_object(self):
+        file = self.data_dir / "DN-DEMO_eqref.json"
+
+        eqdsk = EQDSKInterface.from_file(
+            file, from_cocos=3, to_cocos=11, qpsi_positive=False
+        )
+
+        assert eqdsk.psinorm is eqdsk.pnorm
+        eqdsk.psinorm = np.array([10])
+        assert eqdsk.pnorm == np.array([10])
+        assert eqdsk.psinorm is eqdsk.pnorm
+        eqdsk.pnorm = np.array([5])
+        assert eqdsk.psinorm == np.array([5])
+        assert eqdsk.psinorm is eqdsk.pnorm
