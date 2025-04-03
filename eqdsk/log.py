@@ -15,12 +15,14 @@ logging.basicConfig(
 
 def eqdsk_warn(*args, **kwargs):
     """Warning"""
-    logger.warning(*args, **kwargs)
+    stacklevel = kwargs.pop("stacklevel", 1) + 1
+    logger.warning(*args, stacklevel=stacklevel, **kwargs)
 
 
 def eqdsk_print(*args, **kwargs):
     """Printing"""
-    logger.info(*args, **kwargs)
+    stacklevel = kwargs.pop("stacklevel", 1) + 1
+    logger.info(*args, stacklevel=stacklevel, **kwargs)
 
 
 def eqdsk_banner():
