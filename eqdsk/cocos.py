@@ -233,7 +233,7 @@ class KnownCOCOS(Enum):
 
     BLUEMIRA = (auto(), COCOS.C3)
     JETTO = (auto(), COCOS.C11)
-    CREATE = (auto(), COCOS.C11)  # noqa: PIE796
+    CREATE = (auto(), COCOS.C11)
     FIESTA = (auto(), COCOS.C17)
     IMAS = (auto(), COCOS.C1)
 
