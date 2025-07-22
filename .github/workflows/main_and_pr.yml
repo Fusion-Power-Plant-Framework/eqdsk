@@ -14,8 +14,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup python and Hatch
-        uses: ./.github/workflows/actions/setup-hatch
+      - name: Setup python and hatch
+        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@main
+        with:
+          python-version: "3.11"
 
       - name: Run Hatch linting tasks
         uses: ./.github/workflows/actions/hatch-lint
@@ -32,8 +34,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup python and Hatch
-        uses: "./.github/workflows/actions/setup-hatch"
+      - name: Setup python and hatch
+        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@main
 
       - name: Checkout bluemira-private-data
         uses: actions/checkout@v4
@@ -62,8 +64,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup python and Hatch
-        uses: "./.github/workflows/actions/setup-hatch"
+      - name: Setup python and hatch
+        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@main
+        with:
+          python-versions: "3.11"
 
       - name: Build docs
         run: hatch run docs:build
