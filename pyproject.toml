@@ -88,7 +88,7 @@ dependencies = ["ruff", "mypy", "pre-commit"]
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:eqdsk tests}"
 style  = ["ruff {args:check .}"]
-fmt    = ["pre-commit run --all-files --hook-stage manual"]
+fmt    = ["pre-commit run --all-files --hook-stage manual {args:}"]
 all    = ["style", "typing"]
 
 # tool: ruff
