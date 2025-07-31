@@ -22,7 +22,7 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
       - name: Setup python and Hatch
-        uses: "./.github/workflows/actions/setup-hatch"
+        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@main
 
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
 
