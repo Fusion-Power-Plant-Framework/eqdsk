@@ -20,7 +20,7 @@ jobs:
           python-version: "3.11"
 
       - name: Run Hatch linting tasks
-        uses: ./.github/workflows/actions/hatch-lint
+        uses: Fusion-Power-Plant-Framework/fppf-actions/hatch-lint@main
 
   test:
     strategy:
@@ -67,7 +67,7 @@ jobs:
       - name: Setup python and hatch
         uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@main
         with:
-          python-versions: "3.11"
+          python-version: "3.11"
 
       - name: Build docs
         run: hatch run docs:build

@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup python and Hatch
-        uses: "./.github/workflows/actions/setup-hatch"
+        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@main
       - name: Build package
         run: hatch build
       - name: Run all tests with coverage
