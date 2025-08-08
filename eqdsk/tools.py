@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Eqdsk tools"""
 
+from dataclasses import fields
 from json import JSONEncoder, dumps
 from pathlib import Path
 
 import numpy as np
 import numpy.typing as npt
+from pydantic.fields import FieldInfo
 
 
 class NumpyJSONEncoder(JSONEncoder):
@@ -116,3 +118,43 @@ def floatify(x: npt.ArrayLike) -> float:
     if x is None:
         raise TypeError("The argument cannot be None")
     return np.asarray(x, dtype=float).item()
+
+
+def aliases(dcls):
+    """Decorator to add aliases to dataclasses
+
+    Requires specification in the dataclass like so
+
+    ``` py
+    from pydantic import AliasChoices, Field
+    from pydantic.dataclasses import dataclass
+
+    @aliases
+    @dataclass
+    class Test:
+        id: int = Field(alias=AliasChoices("id", "identification"))
+    ```
+
+    Parameters
+    ----------
+    dcls:
+        dataclass to modify for aliases
+
+    Returns
+    -------
+    :
+        Modified dataclass
+    """
+    for field in fields(dcls):
+        if isinstance(field.default, FieldInfo):
+            for alias in set(field.default.alias.choices).difference([field.name]):
+                setattr(
+                    dcls,
+                    alias,
+                    property(
+                        lambda self, name=field.name: getattr(self, name),
+                        lambda self, value, name=field.name: setattr(self, name, value),
+                        doc=f"'{field.name}' alias",
+                    ),
+                )
+    return dcls
