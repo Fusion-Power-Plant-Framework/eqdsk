@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -401,7 +402,7 @@ Grid properties:
         eqdsk_print(f"Converting EQDSK to COCOS {to_cocos.index}.")
         return convert_eqdsk(self, to_cocos.index)
 
-    def to_dict(self) -> dict:
+    def to_dict(self, *, with_comment: bool = False) -> dict:
         """
         Returns
         -------
@@ -411,6 +412,8 @@ Grid properties:
         d = asdict(self)
         # Remove the file name as this is metadata, not EQDSK data
         del d["file_name"]
+        if not with_comment:
+            d.pop("comment")
         return d
 
     def write(
@@ -420,6 +423,7 @@ Grid properties:
         json_kwargs: dict | None = None,
         *,
         strict_spec: bool = True,
+        write_comment: bool = False,
     ):
         """Write the EQDSK data to file in the given format.
 
@@ -436,16 +440,24 @@ Grid properties:
         strict_spec:
             As https://w3.pppl.gov/ntcc/TORAY/G_EQDSK.pdf arrays have the format
             5e16.9, disabling this changes the format to 5ES23.16e2
+        write_comment:
+            write any comments to file
         """
         if file_format == "json":
             json_kwargs = {} if json_kwargs is None else json_kwargs
-            json_writer(self.to_dict(), file_path, **json_kwargs)
+            json_writer(
+                self.to_dict(with_comment=write_comment), file_path, **json_kwargs
+            )
         elif file_format in {"eqdsk", "geqdsk"}:
             eqdsk_warn(
                 "You are in the 21st century. "
                 "Are you sure you want to be making an EDQSK in this day and age?"
             )
-            _write_eqdsk(file_path, self.to_dict(), strict_spec=strict_spec)
+            _write_eqdsk(
+                file_path,
+                self.to_dict(with_comment=write_comment),
+                strict_spec=strict_spec,
+            )
 
     def update(self, eqdsk_data: dict[str, Any]):
         """Update this object's data with values from a dictionary.
@@ -687,7 +699,7 @@ def _derive_psinorm(fpol) -> np.ndarray:
     return np.linspace(0, 1, len(fpol))
 
 
-def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True):
+def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True):  # noqa: PLR0915
     """Write data out to a text file in G-EQDSK format.
 
     Parameters
@@ -833,3 +845,11 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
         if data["ncoil"] > 0:
             write_line(fCSTM, ["ncoil"])
             write_array(f2020, coil)
+
+        if comment := data.get("comment"):
+            cl = list(filter(lambda x: x.strip(), comment.split("\n")))[1:]
+            if len(cl) > 1:
+                comment_char = os.path.commonprefix(cl) or " " * 4
+                if not comment.startswith(comment_char):
+                    comment = f"{comment_char}{comment}"
+            file.write(comment)

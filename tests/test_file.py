@@ -283,9 +283,11 @@ class TestEQDSKInterface:
                 Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=10
             )
 
-    def test_eqdsk_with_comment(self):
+    @pytest.mark.parametrize("ftype", ["eqdsk", "json"])
+    @pytest.mark.parametrize("comment", [True, False])
+    def test_eqdsk_with_comment(self, ftype, comment, tmp_path):
         data = Path(self.data_dir, "jetto.eqdsk_out").read_text()
-        extra = "\n\n    some comment\n    over many lines\n"
+        extra = "\n\n    some comment\n    over many lines\n    and stuff"
         data += extra
         with mock.patch("pathlib.Path.open", new=mock.mock_open(read_data=data)):
             eqdsk = EQDSKInterface.from_file(
@@ -293,3 +295,21 @@ class TestEQDSKInterface:
             )
 
         assert eqdsk.comment == extra[2:]
+
+        path = tmp_path / f"test.{ftype}"
+        eqdsk.write(path, file_format=ftype, write_comment=comment)
+
+        if ftype == "json":
+            with path.open() as file:
+                data = json.load(file)
+            if comment:
+                assert data["comment"] == extra[2:]
+            else:
+                assert data.get("comment") is None
+
+        elif ftype == "eqdsk":
+            file = path.read_text()
+            if comment:
+                assert file.endswith(extra)
+            else:
+                assert not file.endswith(extra)
