@@ -282,3 +282,14 @@ class TestEQDSKInterface:
             EQDSKInterface.from_file(
                 Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=10
             )
+
+    def test_eqdsk_with_comment(self):
+        data = Path(self.data_dir, "jetto.eqdsk_out").read_text()
+        extra = "\n\n    some comment\n    over many lines\n"
+        data += extra
+        with mock.patch("pathlib.Path.open", new=mock.mock_open(read_data=data)):
+            eqdsk = EQDSKInterface.from_file(
+                Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=11
+            )
+
+        assert eqdsk.comment == extra[2:]
