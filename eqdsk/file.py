@@ -637,7 +637,6 @@ def _read_eqdsk(file_path: Path, *, comment_char=" " * 4) -> dict:  # noqa: PLR0
             comments, next_token = _get_comment(tokens, extension_token, comment_char)
             if comments:
                 data["comment"] = "".join(comments)
-            comments = []
             ncoil = int(next_token) if next_token is not None else 0
 
         x_c = np.zeros(ncoil)
