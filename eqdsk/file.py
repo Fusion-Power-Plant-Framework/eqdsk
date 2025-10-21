@@ -538,14 +538,16 @@ def _eqdsk_generator(file: TextIOWrapper, comment_char: str) -> Iterator[str]:
 
         # Distinguish negative/positive numbers from negative/positive exponent
         if "E" in line or "e" in line:
-            line = line.replace("E-", "*")
-            line = line.replace("e-", "*")
+            sym = "__SYM__"  # Symbol to avoid replacing valid text
+            line = line.replace("E-", sym)
+            line = line.replace("e-", sym)
             line = line.replace("-", " -")
-            line = line.replace("*", "e-")
-            line = line.replace("E+", "*")
-            line = line.replace("e+", "*")
+            line = line.replace(sym, "e-")
+            line = line.replace("E+", sym)
+            line = line.replace("e+", sym)
             line = line.replace("+", " ")
-            line = line.replace("*", "e+")
+            line = line.replace(sym, "e+")
+
         if line.startswith(comment_char):
             yield line
         else:
@@ -636,7 +638,7 @@ def _read_eqdsk(file_path: Path, *, comment_char=" " * 4) -> dict:  # noqa: PLR0
         else:
             comments, next_token = _get_comment(tokens, extension_token, comment_char)
             if comments:
-                data["comment"] = "".join(comments)
+                data["comment"] = comments
             ncoil = int(next_token) if next_token is not None else 0
 
         x_c = np.zeros(ncoil)
@@ -670,7 +672,7 @@ def _read_eqdsk(file_path: Path, *, comment_char=" " * 4) -> dict:  # noqa: PLR0
         comments, next_token = _get_comment(tokens, extension_token, comment_char)
         comment = data.get("comment")
         if comment or comments:
-            data["comment"] = comment + "".join(comments)
+            data["comment"] = comment + comments
 
     return data
 
@@ -683,7 +685,7 @@ def _get_comment(tokens, next_token, comment_char):
             next_token = next(tokens)
     except StopIteration:
         next_token = None
-    return "".join(comments), next_token
+    return "".join(comments).rstrip("\n"), next_token
 
 
 def _derive_x(xgrid1, xdim, nx) -> np.ndarray:
@@ -851,4 +853,4 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
                 comment_char = os.path.commonprefix(cl) or " " * 4
                 if not comment.startswith(comment_char):
                     comment = f"{comment_char}{comment}"
-            file.write(comment)
+            file.write(f"\n{comment}\n")
