@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -125,6 +126,8 @@ class EQDSKInterface:
     """Name of the coils"""
     coil_types: list[str] | None = None
     """Type of the coils"""
+    comment: str | None = None
+    """Any comment stored on file"""
 
     def __post_init__(self):
         """Calculate derived parameters if they're not given."""
@@ -184,7 +187,7 @@ Grid properties:
 """
 
     @classmethod
-    def from_file(
+    def from_file(  # noqa: PLR0913
         cls,
         file_path: str | Path,
         from_cocos: int | str | COCOS | KnownCOCOS | None = None,
@@ -194,6 +197,7 @@ Grid properties:
         volt_seconds_per_radian: bool | None = None,
         qpsi_positive: bool | None = None,
         no_cocos: bool = False,
+        comment_char: str = " " * 4,
     ) -> EQDSKInterface:
         """Create an EQDSKInterface object from a file.
 
@@ -222,6 +226,10 @@ Grid properties:
         qpsi_positive:
             Whether qpsi is positive or not, required for identification
             when qpsi is not present in the file.
+        comment_char:
+            some codes (eg CHEASE) put comment blocks at the bottom of raw eqdsks.
+            The differentiating factor it starts with some set of characters.
+            Anything in this block is put into a comment tag on the interface.
 
         Returns
         -------
@@ -239,7 +247,9 @@ Grid properties:
         file_extension = file_path.suffix
         file_name = file_path.name
         if file_extension.lower() in EQDSK_EXTENSIONS:
-            inst = cls(file_name=file_name, **_read_eqdsk(file_path))
+            inst = cls(
+                file_name=file_name, **_read_eqdsk(file_path, comment_char=comment_char)
+            )
         elif file_extension.lower() == ".json":
             inst = cls(file_name=file_name, **_read_json(file_path))
         else:
@@ -392,7 +402,7 @@ Grid properties:
         eqdsk_print(f"Converting EQDSK to COCOS {to_cocos.index}.")
         return convert_eqdsk(self, to_cocos.index)
 
-    def to_dict(self) -> dict:
+    def to_dict(self, *, with_comment: bool = False) -> dict:
         """
         Returns
         -------
@@ -402,6 +412,8 @@ Grid properties:
         d = asdict(self)
         # Remove the file name as this is metadata, not EQDSK data
         del d["file_name"]
+        if not with_comment:
+            d.pop("comment")
         return d
 
     def write(
@@ -411,6 +423,7 @@ Grid properties:
         json_kwargs: dict | None = None,
         *,
         strict_spec: bool = True,
+        write_comment: bool = False,
     ):
         """Write the EQDSK data to file in the given format.
 
@@ -427,16 +440,24 @@ Grid properties:
         strict_spec:
             As https://w3.pppl.gov/ntcc/TORAY/G_EQDSK.pdf arrays have the format
             5e16.9, disabling this changes the format to 5ES23.16e2
+        write_comment:
+            write any comments to file
         """
         if file_format == "json":
             json_kwargs = {} if json_kwargs is None else json_kwargs
-            json_writer(self.to_dict(), file_path, **json_kwargs)
+            json_writer(
+                self.to_dict(with_comment=write_comment), file_path, **json_kwargs
+            )
         elif file_format in {"eqdsk", "geqdsk"}:
             eqdsk_warn(
                 "You are in the 21st century. "
                 "Are you sure you want to be making an EDQSK in this day and age?"
             )
-            _write_eqdsk(file_path, self.to_dict(), strict_spec=strict_spec)
+            _write_eqdsk(
+                file_path,
+                self.to_dict(with_comment=write_comment),
+                strict_spec=strict_spec,
+            )
 
     def update(self, eqdsk_data: dict[str, Any]):
         """Update this object's data with values from a dictionary.
@@ -496,7 +517,7 @@ def _read_2d_array(tokens, n_x, n_y, name="Unknown") -> np.ndarray:
     return np.transpose(data)
 
 
-def _eqdsk_generator(file: TextIOWrapper) -> Iterator[str]:
+def _eqdsk_generator(file: TextIOWrapper, comment_char: str) -> Iterator[str]:
     """Transform a file object into a generator, following G-EQDSK number
     conventions.
 
@@ -517,19 +538,23 @@ def _eqdsk_generator(file: TextIOWrapper) -> Iterator[str]:
 
         # Distinguish negative/positive numbers from negative/positive exponent
         if "E" in line or "e" in line:
-            line = line.replace("E-", "*")
-            line = line.replace("e-", "*")
+            sym = "__SYM__"  # Symbol to avoid replacing valid text
+            line = line.replace("E-", sym)
+            line = line.replace("e-", sym)
             line = line.replace("-", " -")
-            line = line.replace("*", "e-")
-            line = line.replace("E+", "*")
-            line = line.replace("e+", "*")
+            line = line.replace(sym, "e-")
+            line = line.replace("E+", sym)
+            line = line.replace("e+", sym)
             line = line.replace("+", " ")
-            line = line.replace("*", "e+")
-        generator_list = line.split()
-        yield from generator_list
+            line = line.replace(sym, "e+")
+
+        if line.startswith(comment_char):
+            yield line
+        else:
+            yield from line.split()
 
 
-def _read_eqdsk(file_path: Path) -> dict:  # noqa: PLR0915
+def _read_eqdsk(file_path: Path, *, comment_char=" " * 4) -> dict:  # noqa: PLR0912, PLR0914, PLR0915
     with file_path.open("r") as file:
         description = file.readline()
         if not description:
@@ -549,7 +574,7 @@ def _read_eqdsk(file_path: Path) -> dict:  # noqa: PLR0915
         data["nx"] = n_x
         data["nz"] = n_z
 
-        tokens = _eqdsk_generator(file)
+        tokens = _eqdsk_generator(file, comment_char)
         for name in [
             "xdim",
             "zdim",
@@ -606,9 +631,15 @@ def _read_eqdsk(file_path: Path) -> dict:  # noqa: PLR0915
         data["zlim"] = zlim
 
         try:
-            ncoil = int(next(tokens))
-        except StopIteration:  # No coils in file
+            extension_token = next(tokens)
+        except StopIteration:
+            # Nothing left in file therefore no coils in file
             ncoil = 0
+        else:
+            comments, next_token = _get_comment(tokens, extension_token, comment_char)
+            if comments:
+                data["comment"] = comments
+            ncoil = int(next_token) if next_token is not None else 0
 
         x_c = np.zeros(ncoil)
         z_c = np.zeros(ncoil)
@@ -633,7 +664,28 @@ def _read_eqdsk(file_path: Path) -> dict:  # noqa: PLR0915
         data["z"] = _derive_z(data["zmid"], data["zdim"], data["nz"])
         data["psinorm"] = _derive_psinorm(data["fpol"])
 
+    try:
+        extension_token = next(tokens)
+    except (StopIteration, ValueError):
+        pass
+    else:
+        comments, next_token = _get_comment(tokens, extension_token, comment_char)
+        comment = data.get("comment")
+        if comment or comments:
+            data["comment"] = comment + comments
+
     return data
+
+
+def _get_comment(tokens, next_token, comment_char):
+    comments = []
+    try:
+        while next_token.startswith(comment_char):
+            comments.append(next_token)
+            next_token = next(tokens)
+    except StopIteration:
+        next_token = None
+    return "".join(comments).rstrip("\n"), next_token
 
 
 def _derive_x(xgrid1, xdim, nx) -> np.ndarray:
@@ -648,7 +700,7 @@ def _derive_psinorm(fpol) -> np.ndarray:
     return np.linspace(0, 1, len(fpol))
 
 
-def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True):
+def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True):  # noqa: PLR0915
     """Write data out to a text file in G-EQDSK format.
 
     Parameters
@@ -794,3 +846,11 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
         if data["ncoil"] > 0:
             write_line(fCSTM, ["ncoil"])
             write_array(f2020, coil)
+
+        if comment := data.get("comment"):
+            cl = list(filter(lambda x: x.strip(), comment.split("\n")))[1:]
+            if len(cl) > 1:
+                comment_char = os.path.commonprefix(cl) or " " * 4
+                if not comment.startswith(comment_char):
+                    comment = f"{comment_char}{comment}"
+            file.write(f"\n{comment}\n")
