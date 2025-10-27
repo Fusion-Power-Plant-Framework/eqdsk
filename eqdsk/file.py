@@ -653,7 +653,7 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
 
     Parameters
     ----------
-    file:
+    file_path:
         The full path string of the file to be created
     data:
         Dictionary of EQDSK data.
