@@ -35,6 +35,8 @@ def private_files() -> list[tuple[Path, str, int]]:
             return 11
         if ("STEP" in pth and "BLUEPRINT" not in pth) or "DEMO" in pth:
             return 7
+        if "COCOS02" in pth:
+            return 2
         return 3
 
     return [
@@ -190,6 +192,13 @@ class TestEQDSKInterface:
         path.mkdir(exist_ok=True)
 
         eqd_default = EQDSKInterface.from_file(file, from_cocos=ind, qpsi_positive=False)
+
+        if ind != 2:
+            assert eqd_default.comment is None, len(eqd_default.comment)
+        else:
+            assert eqd_default.comment is not None
+            assert "From" in eqd_default.comment
+
         eqd_default_nc = EQDSKInterface.from_file(file, no_cocos=True)
         if ind != 11:
             assert not compare_dicts(
