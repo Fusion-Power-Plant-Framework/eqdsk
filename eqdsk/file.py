@@ -187,7 +187,7 @@ Grid properties:
 """
 
     @classmethod
-    def from_file(  # noqa: PLR0913
+    def from_file(
         cls,
         file_path: str | Path,
         from_cocos: int | str | COCOS | KnownCOCOS | None = None,
@@ -197,7 +197,6 @@ Grid properties:
         volt_seconds_per_radian: bool | None = None,
         qpsi_positive: bool | None = None,
         no_cocos: bool = False,
-        comment_char: str = " " * 4,
     ) -> EQDSKInterface:
         """Create an EQDSKInterface object from a file.
 
@@ -226,10 +225,6 @@ Grid properties:
         qpsi_positive:
             Whether qpsi is positive or not, required for identification
             when qpsi is not present in the file.
-        comment_char:
-            some codes (eg CHEASE) put comment blocks at the bottom of raw eqdsks.
-            The differentiating factor it starts with some set of characters.
-            Anything in this block is put into a comment tag on the interface.
 
         Returns
         -------
@@ -247,9 +242,7 @@ Grid properties:
         file_extension = file_path.suffix
         file_name = file_path.name
         if file_extension.lower() in EQDSK_EXTENSIONS:
-            inst = cls(
-                file_name=file_name, **_read_eqdsk(file_path, comment_char=comment_char)
-            )
+            inst = cls(file_name=file_name, **_read_eqdsk(file_path))
         elif file_extension.lower() == ".json":
             inst = cls(file_name=file_name, **_read_json(file_path))
         else:
@@ -517,7 +510,7 @@ def _read_2d_array(tokens, n_x, n_y, name="Unknown") -> np.ndarray:
     return np.transpose(data)
 
 
-def _eqdsk_generator(file: TextIOWrapper, comment_char: str) -> Iterator[str]:
+def _eqdsk_generator(file: TextIOWrapper) -> Iterator[str]:
     """Transform a file object into a generator, following G-EQDSK number
     conventions.
 
@@ -531,30 +524,58 @@ def _eqdsk_generator(file: TextIOWrapper, comment_char: str) -> Iterator[str]:
     :
         The lines of the file
     """
-    while True:
-        line = file.readline()
-        if not line:
+    while line := file.readline():
+        yield from _process_exponents(line).split()
+
+
+def _process_exponents(line):
+    """Distinguish negative/positive numbers from negative/positive exponent"""  # noqa: DOC201
+    if "E" in line or "e" in line:
+        sym = "__SYM__"  # Symbol to avoid replacing valid text
+        line = line.replace("E-", sym)
+        line = line.replace("e-", sym)
+        line = line.replace("-", " -")
+        line = line.replace(sym, "e-")
+        line = line.replace("E+", sym)
+        line = line.replace("e+", sym)
+        line = line.replace("+", " ")
+        line = line.replace(sym, "e+")
+    return line
+
+
+def _coils_check(file: TextIOWrapper) -> bool:
+    position = file.tell()
+
+    while line := file.readline():
+        if line.strip():
             break
-
-        # Distinguish negative/positive numbers from negative/positive exponent
-        if "E" in line or "e" in line:
-            sym = "__SYM__"  # Symbol to avoid replacing valid text
-            line = line.replace("E-", sym)
-            line = line.replace("e-", sym)
-            line = line.replace("-", " -")
-            line = line.replace(sym, "e-")
-            line = line.replace("E+", sym)
-            line = line.replace("e+", sym)
-            line = line.replace("+", " ")
-            line = line.replace(sym, "e+")
-
-        if line.startswith(comment_char):
-            yield line
+    line = _process_exponents(line).split()
+    if line:
+        try:
+            # Possibly come up with better metric?
+            int(line[0])
+        except (ValueError, StopIteration):
+            return False
         else:
-            yield from line.split()
+            return True
+        finally:
+            file.seek(position)
+    file.seek(position)
+    return False
 
 
-def _read_eqdsk(file_path: Path, *, comment_char=" " * 4) -> dict:  # noqa: PLR0912, PLR0914, PLR0915
+def _eqdsk_out_of_spec_generator(
+    file: TextIOWrapper, *, has_coils: bool = False
+) -> Iterator[str]:
+    if has_coils:
+        while line := file.readline():
+            yield from _process_exponents(line).split()
+    else:
+        while line := file.readline():
+            yield line
+
+
+def _read_eqdsk(file_path: Path) -> dict:
     with file_path.open("r") as file:
         description = file.readline()
         if not description:
@@ -574,7 +595,7 @@ def _read_eqdsk(file_path: Path, *, comment_char=" " * 4) -> dict:  # noqa: PLR0
         data["nx"] = n_x
         data["nz"] = n_z
 
-        tokens = _eqdsk_generator(file, comment_char)
+        tokens = _eqdsk_generator(file)
         for name in [
             "xdim",
             "zdim",
@@ -630,62 +651,49 @@ def _read_eqdsk(file_path: Path, *, comment_char=" " * 4) -> dict:  # noqa: PLR0
         data["xlim"] = xlim
         data["zlim"] = zlim
 
-        try:
-            extension_token = next(tokens)
-        except StopIteration:
-            # Nothing left in file therefore no coils in file
-            ncoil = 0
-        else:
-            comments, next_token = _get_comment(tokens, extension_token, comment_char)
-            if comments:
-                data["comment"] = comments
-            ncoil = int(next_token) if next_token is not None else 0
-
-        x_c = np.zeros(ncoil)
-        z_c = np.zeros(ncoil)
-        dxc = np.zeros(ncoil)
-        dzc = np.zeros(ncoil)
-        i_c = np.zeros(ncoil)
-        for i in range(ncoil):
-            x_c[i] = float(next(tokens))
-            z_c[i] = float(next(tokens))
-            dxc[i] = float(next(tokens))
-            dzc[i] = float(next(tokens))
-            i_c[i] = float(next(tokens))
-        data["ncoil"] = ncoil
-        data["xc"] = x_c
-        data["zc"] = z_c
-        data["dxc"] = dxc
-        data["dzc"] = dzc
-        data["Ic"] = i_c
-
         # Additional utility data
         data["x"] = _derive_x(data["xgrid1"], data["xdim"], data["nx"])
         data["z"] = _derive_z(data["zmid"], data["zdim"], data["nz"])
         data["psinorm"] = _derive_psinorm(data["fpol"])
 
-    try:
-        extension_token = next(tokens)
-    except (StopIteration, ValueError):
-        pass
-    else:
-        comments, next_token = _get_comment(tokens, extension_token, comment_char)
-        comment = data.get("comment")
-        if comment or comments:
-            data["comment"] = comment + comments
+        # end of spec everything past this point is to support custom extensions
+        has_coils = _coils_check(file)
+        oos_tokens = _eqdsk_out_of_spec_generator(file, has_coils=has_coils)
+
+        data["ncoil"] = int(next(oos_tokens)) if has_coils else 0
+        data["xc"], data["zc"], data["dxc"], data["dzc"], data["Ic"] = (
+            _get_coils_from_eqdsk(data["ncoil"], oos_tokens)
+        )
+        comments = _get_comment(oos_tokens)
+        if comments:
+            data["comment"] = comments
 
     return data
 
 
-def _get_comment(tokens, next_token, comment_char):
+def _get_coils_from_eqdsk(ncoil, tokens):
+    x_c = np.zeros(ncoil)
+    z_c = np.zeros(ncoil)
+    dxc = np.zeros(ncoil)
+    dzc = np.zeros(ncoil)
+    i_c = np.zeros(ncoil)
+    for i in range(ncoil):
+        x_c[i] = float(next(tokens))
+        z_c[i] = float(next(tokens))
+        dxc[i] = float(next(tokens))
+        dzc[i] = float(next(tokens))
+        i_c[i] = float(next(tokens))
+    return x_c, z_c, dxc, dzc, i_c
+
+
+def _get_comment(tokens):
     comments = []
     try:
-        while next_token.startswith(comment_char):
-            comments.append(next_token)
-            next_token = next(tokens)
+        while True:
+            comments.append(next(tokens))
     except StopIteration:
-        next_token = None
-    return "".join(comments).rstrip("\n"), next_token
+        pass
+    return "".join(comments).strip("\n")
 
 
 def _derive_x(xgrid1, xdim, nx) -> np.ndarray:

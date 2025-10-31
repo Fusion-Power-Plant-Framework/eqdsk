@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2023-present The Bluemira Developers <https://github.com/Fusion-Power-Plant-Framework/bluemira>
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
-
 import json
 from copy import deepcopy
+from io import StringIO
 from pathlib import Path
 from unittest import mock
 
@@ -219,7 +219,7 @@ class TestEQDSKInterface:
             del mod_sof_data[field]
 
         with mock.patch(
-            "pathlib.Path.open", new=mock.mock_open(read_data=json.dumps(mod_sof_data))
+            "pathlib.Path.open", return_value=StringIO(json.dumps(mod_sof_data))
         ):
             eqdsk = EQDSKInterface.from_file(
                 "/some/file.json", from_cocos=3, qpsi_positive=False
@@ -255,13 +255,13 @@ class TestEQDSKInterface:
     def test_failed_read_eqdsk(self):
         with (
             pytest.raises(OSError, match="Could not read"),
-            mock.patch("pathlib.Path.open", new=mock.mock_open(read_data="")),
+            mock.patch("pathlib.Path.open", return_value=StringIO("")),
         ):
             EQDSKInterface.from_file(Path(self.data_dir, "jetto.eqdsk_out"), 11)
 
         with (
             pytest.raises(OSError, match="Should be at least"),
-            mock.patch("pathlib.Path.open", new=mock.mock_open(read_data=" ")),
+            mock.patch("pathlib.Path.open", return_value=StringIO(" ")),
         ):
             EQDSKInterface.from_file(Path(self.data_dir, "jetto.eqdsk_out"), 11)
 
@@ -289,7 +289,7 @@ class TestEQDSKInterface:
         data = Path(self.data_dir, "jetto.eqdsk_out").read_text()
         extra = "\n    some comment\n    over many lines\n    and stuff"
         data += extra
-        with mock.patch("pathlib.Path.open", new=mock.mock_open(read_data=data)):
+        with mock.patch("pathlib.Path.open", return_value=StringIO(data)):
             eqdsk = EQDSKInterface.from_file(
                 Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=11
             )
