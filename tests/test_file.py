@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2023-present The Bluemira Developers <https://github.com/Fusion-Power-Plant-Framework/bluemira>
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
-
 import json
 from copy import deepcopy
+from io import StringIO
 from pathlib import Path
 from unittest import mock
 
@@ -35,6 +35,8 @@ def private_files() -> list[tuple[Path, str, int]]:
             return 11
         if ("STEP" in pth and "BLUEPRINT" not in pth) or "DEMO" in pth:
             return 7
+        if "COCOS02" in pth:
+            return 2
         return 3
 
     return [
@@ -190,6 +192,13 @@ class TestEQDSKInterface:
         path.mkdir(exist_ok=True)
 
         eqd_default = EQDSKInterface.from_file(file, from_cocos=ind, qpsi_positive=False)
+
+        if ind != 2 and "Random" not in file.name:
+            assert eqd_default.comment is None, len(eqd_default.comment)
+        else:
+            assert eqd_default.comment is not None
+            assert "From" in eqd_default.comment
+
         eqd_default_nc = EQDSKInterface.from_file(file, no_cocos=True)
         if ind != 11:
             assert not compare_dicts(
@@ -219,7 +228,7 @@ class TestEQDSKInterface:
             del mod_sof_data[field]
 
         with mock.patch(
-            "pathlib.Path.open", new=mock.mock_open(read_data=json.dumps(mod_sof_data))
+            "pathlib.Path.open", return_value=StringIO(json.dumps(mod_sof_data))
         ):
             eqdsk = EQDSKInterface.from_file(
                 "/some/file.json", from_cocos=3, qpsi_positive=False
@@ -255,13 +264,13 @@ class TestEQDSKInterface:
     def test_failed_read_eqdsk(self):
         with (
             pytest.raises(OSError, match="Could not read"),
-            mock.patch("pathlib.Path.open", new=mock.mock_open(read_data="")),
+            mock.patch("pathlib.Path.open", return_value=StringIO("")),
         ):
             EQDSKInterface.from_file(Path(self.data_dir, "jetto.eqdsk_out"), 11)
 
         with (
             pytest.raises(OSError, match="Should be at least"),
-            mock.patch("pathlib.Path.open", new=mock.mock_open(read_data=" ")),
+            mock.patch("pathlib.Path.open", return_value=StringIO(" ")),
         ):
             EQDSKInterface.from_file(Path(self.data_dir, "jetto.eqdsk_out"), 11)
 
@@ -289,7 +298,7 @@ class TestEQDSKInterface:
         data = Path(self.data_dir, "jetto.eqdsk_out").read_text()
         extra = "\n    some comment\n    over many lines\n    and stuff"
         data += extra
-        with mock.patch("pathlib.Path.open", new=mock.mock_open(read_data=data)):
+        with mock.patch("pathlib.Path.open", return_value=StringIO(data)):
             eqdsk = EQDSKInterface.from_file(
                 Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=11
             )
