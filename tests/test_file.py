@@ -13,7 +13,12 @@ import pytest
 from eqdsk.cocos import COCOS
 from eqdsk.errors import NoSingleConventionError
 from eqdsk.file import EQDSKInterface
-from tests._helpers import compare_dicts, get_private_dir, read_strict_geqdsk
+from tests._helpers import (
+    compare_dicts,
+    get_differences_from_capture,
+    get_private_dir,
+    read_strict_geqdsk,
+)
 
 
 def private_files() -> list[tuple[Path, str, int]]:
@@ -95,7 +100,7 @@ class TestEQDSKInterface:
             ("DN-DEMO_eqref_withCoilNames.json", "json", 3),
         ],
     )
-    def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path):
+    def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path, capsys):
         eqd_default = EQDSKInterface.from_file(
             self.data_dir / file,
             from_cocos=ind,
@@ -106,8 +111,20 @@ class TestEQDSKInterface:
             assert not compare_dicts(
                 eqd_default.to_dict(), eqd_default_nc.to_dict(), verbose=True
             )
+            capture = capsys.readouterr()
+
+            x_diff_k = {"ffprime", "pprime", "psi", "psibdry", "psimag"}
+            if ind != 7:
+                x_diff_k |= {"qpsi", "fpol"}
+
+            assert not get_differences_from_capture(capture.out) ^ x_diff_k
+
         if ind < 10:
-            assert abs(eqd_default.psimag) == eqd_default_nc.psimag * 2 * np.pi
+            assert abs(eqd_default.psimag) == pytest.approx(
+                eqd_default_nc.psimag * 2 * np.pi
+            )
+        else:
+            assert eqd_default.psimag == pytest.approx(eqd_default_nc.psimag)
 
         eqd_default.write(tmp_path / "test", file_format=ftype)
 
