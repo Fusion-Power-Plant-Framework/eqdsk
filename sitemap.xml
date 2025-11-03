@@ -2,46 +2,46 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/examples/using_api/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/examples/using_cli/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/reference/overview/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/reference/eqdsk/__init__/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/reference/eqdsk/cocos/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/reference/eqdsk/errors/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/reference/eqdsk/file/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/reference/eqdsk/log/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/reference/eqdsk/models/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
     <url>
          <loc>https://fusion-power-plant-framework.github.io/eqdsk/reference/eqdsk/tools/</loc>
-         <lastmod>2025-10-27</lastmod>
+         <lastmod>2025-11-03</lastmod>
     </url>
 </urlset>
