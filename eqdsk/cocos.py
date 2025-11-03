@@ -263,8 +263,7 @@ class COCOSTransform:
     coil_current: float
     poloidal_current: float
     psi: float
-    pprime: float
-    ffprime: float
+    prime: float
     q: float
 
 
@@ -437,8 +436,7 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
         coil_current=eff_R_phi_Z,
         poloidal_current=eff_rho_theta_phi,
         psi=eff_bp * eff_R_phi_Z * pi_factor,
-        pprime=eff_bp * eff_R_phi_Z * pi_factor,
-        ffprime=eff_bp * eff_R_phi_Z * pi_factor,
+        prime=eff_bp * eff_R_phi_Z * (1 / pi_factor),
         q=eff_rho_theta_phi,
     )
 
@@ -488,8 +486,8 @@ def convert_eqdsk(eqdsk: EQDSKInterface, to_cocos_index: int) -> EQDSKInterface:
     out_eqdsk.psibdry = transform.psi * in_eqdsk.psibdry
     out_eqdsk.psimag = transform.psi * in_eqdsk.psimag
 
-    out_eqdsk.pprime = transform.pprime * in_eqdsk.pprime
-    out_eqdsk.ffprime = transform.ffprime * in_eqdsk.ffprime
+    out_eqdsk.pprime = transform.prime * in_eqdsk.pprime
+    out_eqdsk.ffprime = transform.prime * in_eqdsk.ffprime
 
     if in_eqdsk.qpsi is not None:
         out_eqdsk.qpsi = transform.q * in_eqdsk.qpsi
