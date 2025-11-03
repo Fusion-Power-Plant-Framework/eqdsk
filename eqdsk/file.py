@@ -783,7 +783,12 @@ def _read_eqdsk(file_path: Path) -> dict:
         data["xc"], data["zc"], data["dxc"], data["dzc"], data["Ic"] = (
             _get_coils_from_eqdsk(data["ncoil"], oos_tokens)
         )
-        comments = _get_comment(oos_tokens)
+
+        data["unprocessed_data"] = (
+            _get_extra_data(oos_tokens) if _more_data_check(file) else None
+        )
+
+        comments = _get_comment(_eqdsk_out_of_spec_generator(file, more_data=False))
         if comments:
             data["comment"] = comments
 
