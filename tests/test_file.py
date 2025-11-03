@@ -106,6 +106,8 @@ class TestEQDSKInterface:
             assert not compare_dicts(
                 eqd_default.to_dict(), eqd_default_nc.to_dict(), verbose=True
             )
+        if ind < 10:
+            assert abs(eqd_default.psimag) == eqd_default_nc.psimag * 2 * np.pi
 
         eqd_default.write(tmp_path / "test", file_format=ftype)
 
