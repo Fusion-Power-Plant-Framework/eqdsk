@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
+from typing import Any, TypeVar
 
 
 class ZeroOne(Enum):
@@ -33,6 +33,9 @@ class ZeroOne(Enum):
         raise TypeError(
             f"Cannot subtract {type(other)} from {type(self)}.",
         )
+
+
+SIGN_T = TypeVar("SIGN_T")
 
 
 class Sign(Enum):
@@ -61,7 +64,7 @@ class Sign(Enum):
             return Sign.POSITIVE if value else Sign.NEGATIVE
         raise ValueError(f"'{value}' not a known Sign") from None
 
-    def __mul__(self, other: Any) -> Sign | int:
+    def __mul__(self, other: SIGN_T) -> SIGN_T | Sign:
         """
         Returns
         -------
