@@ -193,7 +193,7 @@ class TestEQDSKInterface:
 
         eqd_default = EQDSKInterface.from_file(file, from_cocos=ind, qpsi_positive=False)
 
-        if ind != 2:
+        if ind != 2 and "Random" not in file.name:
             assert eqd_default.comment is None, len(eqd_default.comment)
         else:
             assert eqd_default.comment is not None

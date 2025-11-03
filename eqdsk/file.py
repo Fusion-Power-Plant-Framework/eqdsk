@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -26,8 +27,10 @@ from eqdsk.models import Sign
 from eqdsk.tools import is_num, json_writer
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Iterator, Sized
     from io import TextIOWrapper
+
+    import numpy.typing as npt
 
 
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
@@ -128,6 +131,8 @@ class EQDSKInterface:
     """Type of the coils"""
     comment: str | None = None
     """Any comment stored on file"""
+    unprocessed_data: np.ndarray | None = None
+    """Any unprocessed data from raw eqdsks"""
 
     def __post_init__(self):
         """Calculate derived parameters if they're not given."""
@@ -405,13 +410,15 @@ Grid properties:
         d = asdict(self)
         # Remove the file name as this is metadata, not EQDSK data
         del d["file_name"]
+        del d["unprocessed_data"]
         if not with_comment:
             d.pop("comment")
+
         return d
 
     def write(
         self,
-        file_path: str,
+        file_path: str | Path,
         file_format: str = "json",
         json_kwargs: dict | None = None,
         *,
@@ -493,7 +500,9 @@ def _read_json(file_path: Path) -> dict[str, Any]:
     return data
 
 
-def _read_array(tokens, n, name="Unknown") -> np.ndarray:
+def _read_array(
+    tokens: Iterator[str], n: int, name: str = "Unknown"
+) -> npt.NDArray[float]:
     data = np.zeros([n])
     try:
         for i in np.arange(n):
@@ -503,7 +512,9 @@ def _read_array(tokens, n, name="Unknown") -> np.ndarray:
     return data
 
 
-def _read_2d_array(tokens, n_x, n_y, name="Unknown") -> np.ndarray:
+def _read_2d_array(
+    tokens: Iterator[str], n_x: int, n_y: int, name: str = "Unknown"
+) -> npt.NDArray[float]:
     data = np.zeros([n_y, n_x])
     for i in np.arange(n_y):
         data[i, :] = _read_array(tokens, n_x, f"{name}[{i!s}]]")
@@ -528,7 +539,7 @@ def _eqdsk_generator(file: TextIOWrapper) -> Iterator[str]:
         yield from _process_exponents(line).split()
 
 
-def _process_exponents(line):
+def _process_exponents(line: str) -> str:
     """Distinguish negative/positive numbers from negative/positive exponent"""  # noqa: DOC201
     if "E" in line or "e" in line:
         sym = "__SYM__"  # Symbol to avoid replacing valid text
@@ -543,31 +554,40 @@ def _process_exponents(line):
     return line
 
 
-def _coils_check(file: TextIOWrapper) -> bool:
-    position = file.tell()
+CHAR_IN_LINE = re.compile(r"^[0-9 .e\-+]+$")
 
+
+def _get_line(file: TextIOWrapper) -> str:
+    position = file.tell()
     while line := file.readline():
         if line.strip():
             break
-    line = _process_exponents(line).split()
-    if line:
+    file.seek(position)
+    return _process_exponents(line)
+
+
+def _coils_check(file: TextIOWrapper) -> bool:
+    line = _get_line(file)
+    sline = line.split()
+    if sline and CHAR_IN_LINE.match(line):
         try:
-            # Possibly come up with better metric?
-            int(line[0])
-        except (ValueError, StopIteration):
+            int(sline[0])
+        except ValueError:
             return False
         else:
             return True
-        finally:
-            file.seek(position)
-    file.seek(position)
     return False
 
 
+def _more_data_check(file: TextIOWrapper) -> bool:
+    line = _get_line(file)
+    return bool(line.split() and CHAR_IN_LINE.match(line))
+
+
 def _eqdsk_out_of_spec_generator(
-    file: TextIOWrapper, *, has_coils: bool = False
+    file: TextIOWrapper, *, more_data: bool = False
 ) -> Iterator[str]:
-    if has_coils:
+    if more_data:
         while line := file.readline():
             yield from _process_exponents(line).split()
     else:
@@ -658,20 +678,25 @@ def _read_eqdsk(file_path: Path) -> dict:
 
         # end of spec everything past this point is to support custom extensions
         has_coils = _coils_check(file)
-        oos_tokens = _eqdsk_out_of_spec_generator(file, has_coils=has_coils)
+        oos_tokens = _eqdsk_out_of_spec_generator(file, more_data=has_coils)
 
         data["ncoil"] = int(next(oos_tokens)) if has_coils else 0
         data["xc"], data["zc"], data["dxc"], data["dzc"], data["Ic"] = (
             _get_coils_from_eqdsk(data["ncoil"], oos_tokens)
         )
-        comments = _get_comment(oos_tokens)
+
+        data["unprocessed_data"] = (
+            _get_extra_data(oos_tokens) if _more_data_check(file) else None
+        )
+
+        comments = _get_comment(_eqdsk_out_of_spec_generator(file, more_data=False))
         if comments:
             data["comment"] = comments
 
     return data
 
 
-def _get_coils_from_eqdsk(ncoil, tokens):
+def _get_coils_from_eqdsk(ncoil: int, tokens: Iterator[str]) -> tuple[list[float], ...]:
     x_c = np.zeros(ncoil)
     z_c = np.zeros(ncoil)
     dxc = np.zeros(ncoil)
@@ -686,7 +711,17 @@ def _get_coils_from_eqdsk(ncoil, tokens):
     return x_c, z_c, dxc, dzc, i_c
 
 
-def _get_comment(tokens):
+def _get_extra_data(tokens: Iterator[str]) -> npt.NDArray[float]:
+    data = []
+    try:
+        while d := float(next(tokens)):
+            data.append(d)
+    except (ValueError, StopIteration):
+        pass
+    return np.array(data)
+
+
+def _get_comment(tokens: Iterator[str]) -> str:
     comments = []
     try:
         while True:
@@ -696,15 +731,15 @@ def _get_comment(tokens):
     return "".join(comments).strip("\n")
 
 
-def _derive_x(xgrid1, xdim, nx) -> np.ndarray:
+def _derive_x(xgrid1: float, xdim: float, nx: int) -> npt.NDArray[float]:
     return np.linspace(xgrid1, xgrid1 + xdim, nx)
 
 
-def _derive_z(zmid, zdim, nz) -> np.ndarray:
+def _derive_z(zmid: float, zdim: float, nz: int) -> npt.NDArray[float]:
     return np.linspace(zmid - zdim / 2, zmid + zdim / 2, nz)
 
 
-def _derive_psinorm(fpol) -> np.ndarray:
+def _derive_psinorm(fpol: Sized) -> npt.NDArray[float]:
     return np.linspace(0, 1, len(fpol))
 
 
