@@ -236,3 +236,14 @@ def compare_dicts(
         if verbose:
             print(result)  # noqa: T201
     return the_same
+
+
+def get_differences_from_capture(c_string: str) -> set[str]:
+    def strip_empty(y):
+        return filter(lambda x: x.strip(), y)
+
+    return set(
+        strip_empty(
+            next(strip_empty(c_string.split(":")[1].split("="))).strip().split("\n\t")
+        )
+    )
