@@ -85,9 +85,9 @@ deploy = "mkdocs gh-deploy"
 # env: lint
 [tool.hatch.envs.lint]
 detached     = true                           # Don't inherit from default (does not download project dependencies)
-dependencies = ["ruff", "mypy", "pre-commit"]
+dependencies = ["ruff", "ty", "pre-commit"]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:eqdsk tests}"
+typing = "ty {args:check .}"
 style  = ["ruff {args:check .}"]
 fmt    = ["pre-commit run --all-files --hook-stage manual {args:}"]
 all    = ["style", "typing"]

@@ -13,7 +13,7 @@ plugins:
   - autorefs
   - gen-files:
       scripts:
-        - scripts/gen_api_ref.py
+        - documentation/gen_api_ref.py
   - literate-nav:
       nav_file: overview.md
   - mkdocstrings:
@@ -21,6 +21,8 @@ plugins:
         python:
           options:
             docstring_style: numpy
+
+docs_dir: "documentation/source"
 
 theme:
   name: material
