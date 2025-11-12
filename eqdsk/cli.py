@@ -194,7 +194,7 @@ class COCOSOptionsHelp(click.Command):
 
     def format_help(self, ctx: click.Context, formatter: click.HelpFormatter):
         """Format the help with the Known COCOS options"""
-        self.help = self.help.format(
+        self.help = (self.help or "").format(
             "'" + "', '".join(KnownCOCOS.__members__.keys()) + "'"
         )
         super().format_help(ctx, formatter)
