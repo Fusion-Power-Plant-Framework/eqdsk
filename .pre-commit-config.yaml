@@ -23,6 +23,7 @@ repos:
       - id: ty
         name: ty check
         entry: ty check .
+        pass_filenames: false
         language: python
 
   - repo: https://github.com/pre-commit/mirrors-prettier
