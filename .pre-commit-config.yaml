@@ -34,3 +34,4 @@ repos:
         args: [--tab-width=2]
 ci:
   autofix_prs: false
+  skip: [ty]
