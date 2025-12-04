@@ -27,7 +27,7 @@ from eqdsk.models import Sign
 from eqdsk.tools import is_num, json_writer
 
 try:
-    from eqdsk.imas import imas_connection, to_imas
+    from eqdsk.imas import from_imas, to_imas
 
     IMAS_AVAIL = True
 except ImportError:
@@ -283,11 +283,16 @@ Grid properties:
         return inst
 
     @classmethod
-    def from_imas(self, **kwargs):  # TODO @je-cook: proper args
+    def from_imas(
+        cls,
+        db,
+        time_index: int = 0,
+        profiles_2d_index: int = 0,
+        time: float | None = None,
+    ):
         if not IMAS_AVAIL:
-            raise ImportError("imaspy not found")
-        with imas_connection(**kwargs) as db:
-            return cls(**from_imas(db, time_index, profiles_2d_index, time))
+            raise ImportError("imas not found")
+        return cls(**from_imas(db, time_index, profiles_2d_index, time))
 
     @property
     def cocos(self) -> COCOS:
