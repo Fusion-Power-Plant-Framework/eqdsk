@@ -292,7 +292,11 @@ Grid properties:
     ):
         if not IMAS_AVAIL:
             raise ImportError("imas not found")
-        return cls(**from_imas(db, time_index, profiles_2d_index, time))
+
+        inst = cls(**from_imas(db, time_index, profiles_2d_index, time))
+
+        inst.identify(17)
+        return inst
 
     @property
     def cocos(self) -> COCOS:
