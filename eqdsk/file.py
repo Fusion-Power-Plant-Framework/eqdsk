@@ -437,10 +437,10 @@ Grid properties:
 
     def write(
         self,
-        file_path: str | Path,
+        file_path: str | Path,  # TODO: type should include IMAS DB
         file_format: str = "json",
         json_kwargs: dict | None = None,
-        imas_kwargs: dict | None = None,  # TODO @je-cook: proper args
+        imas_kwargs: dict | None = None,
         *,
         strict_spec: bool = True,
         write_comment: bool = False,
@@ -480,10 +480,9 @@ Grid properties:
             )
         elif file_format == "imas":
             if not IMAS_AVAIL:
-                raise ImportError("imaspy not found")
-            imas_kwargs = {} if imas_kwargs is None else imas_kwargs
-            with imas_connection(**imas_kwargs) as db:
-                to_imas(db, self, **imas_kwargs)
+                raise ImportError("imas not found")
+
+            to_imas(file_path, self, **(imas_kwargs or {}))
 
     def update(self, eqdsk_data: dict[str, Any]):
         """Update this object's data with values from a dictionary.
