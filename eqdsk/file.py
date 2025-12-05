@@ -26,6 +26,13 @@ from eqdsk.log import eqdsk_print, eqdsk_warn
 from eqdsk.models import Sign
 from eqdsk.tools import is_num, json_writer
 
+try:
+    from eqdsk.imas import from_imas, to_imas
+
+    IMAS_AVAIL = True
+except ImportError:
+    IMAS_AVAIL = False
+
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sized
     from io import TextIOWrapper
@@ -275,6 +282,22 @@ Grid properties:
 
         return inst
 
+    @classmethod
+    def from_imas(
+        cls,
+        db,
+        time_index: int = 0,
+        profiles_2d_index: int = 0,
+        time: float | None = None,
+    ):
+        if not IMAS_AVAIL:
+            raise ImportError("imas not found")
+
+        inst = cls(**from_imas(db, time_index, profiles_2d_index, time))
+
+        inst.identify(17)
+        return inst
+
     @property
     def cocos(self) -> COCOS:
         """Return the COCOS for this eqdsk.
@@ -418,9 +441,10 @@ Grid properties:
 
     def write(
         self,
-        file_path: str | Path,
+        file_path: str | Path,  # TODO: type should include IMAS DB
         file_format: str = "json",
         json_kwargs: dict | None = None,
+        imas_kwargs: dict | None = None,
         *,
         strict_spec: bool = True,
         write_comment: bool = False,
@@ -458,6 +482,11 @@ Grid properties:
                 self.to_dict(with_comment=write_comment),
                 strict_spec=strict_spec,
             )
+        elif file_format == "imas":
+            if not IMAS_AVAIL:
+                raise ImportError("imas not found")
+
+            to_imas(file_path, self, **(imas_kwargs or {}))
 
     def update(self, eqdsk_data: dict[str, Any]):
         """Update this object's data with values from a dictionary.
