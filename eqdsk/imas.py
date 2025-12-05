@@ -95,9 +95,9 @@ def from_imas(
             if _unwrap_imas_value(coil.geometry.geometry_type) == 2:
                 dxc.append(_unwrap_imas_value(coil.geometry.rectangle.width) / 2)
                 dzc.append(_unwrap_imas_value(coil.geometry.rectangle.height) / 2)
-                xc.append(_unwrap_imas_value(coil.geometry.rectangle.width))
-                zc.append(_unwrap_imas_value(coil.geometry.rectangle.height))
-                ic.append(coil.current.data)
+                xc.append(_unwrap_imas_value(coil.geometry.rectangle.r))
+                zc.append(_unwrap_imas_value(coil.geometry.rectangle.z))
+                ic.append(coil.current.data[0])
                 coil_names.append(_unwrap_imas_value(coil.name))
                 coil_types.append("PF")
 
@@ -151,8 +151,8 @@ def from_imas(
         "zmag": _unwrap_imas_value(global_quantities.magnetic_axis.z),
         "zmid": (max(gridz) + min(gridz)) / 2,
         "qpsi": _unwrap_imas_value(eq_profiles_1d.q),
-        "coil_names": coil_names,
-        "coil_types": coil_types,
+        "coil_names": coil_names or None,
+        "coil_types": coil_types or None,
     }
 
 
@@ -163,7 +163,7 @@ def to_imas(
     profiles_2d_index: int = 0,
     ids_factory_kwargs=None,
 ):
-    eqdsk = eqdsk.to_cocos(1)
+    eqdsk = eqdsk.to_cocos(17)
 
     ids_factory = imas.IDSFactory(**(ids_factory_kwargs or {}))
 
@@ -213,8 +213,15 @@ def to_imas(
 
     if eqdsk.nlim > 0:
         limiter_ids = ids_factory.wall()
-        outline = limiter_ids.description_2d[0].limiter.unit[0].outline
+        description_2d = limiter_ids.description_2d
+        description_2d.resize(1)
+        description_2d = description_2d[0]
+        unit = description_2d.limiter.unit
+        unit.resize(1)
+        unit = unit[0]
+        outline = unit.outline
 
+        limiter_ids.ids_properties.homogeneous_time = 1
         outline.r = eqdsk.xlim
         outline.z = eqdsk.zlim
 
@@ -223,14 +230,21 @@ def to_imas(
     if eqdsk.ncoil > 0:
         pf_active_ids = ids_factory.pf_active()
 
+        pf_active_ids.ids_properties.homogeneous_time = 1
+        pf_active_ids.time = np.array([0.0])
+        pf_active_ids.coil.resize(eqdsk.ncoil)
+
         for coil_id in range(eqdsk.ncoil):
             coil = pf_active_ids.coil[coil_id]
 
             coil.name = eqdsk.coil_names[coil_id]
-            coil.current = eqdsk.Ic[coil_id]
+            coil.current.data = np.array([eqdsk.Ic[coil_id]])
+            coil.current.time = np.array([0.0])
             geometry = coil.geometry
             geometry.geometry_type = 2
-            geometry.rectangle.width = eqdsk.xc[coil_id]
-            geometry.rectangle.height = eqdsk.zc[coil_id]
+            geometry.rectangle.width = eqdsk.dxc[coil_id] * 2
+            geometry.rectangle.height = eqdsk.dzc[coil_id] * 2
+            geometry.rectangle.r = eqdsk.xc[coil_id]
+            geometry.rectangle.z = eqdsk.zc[coil_id]
 
         db.put(pf_active_ids)
