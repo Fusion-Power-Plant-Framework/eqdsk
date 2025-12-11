@@ -21,22 +21,38 @@ if not IMAS_AVAIL:
     ("file", "cocos"),
     [("jetto.eqdsk_out", "jetto"), ("DN-DEMO_eqref_withCoilNames.json", 3)],
 )
-def test_imas_write_read(file, cocos):
+@pytest.mark.parametrize(
+    ("imas_dd_version", "coil_comparison"),
+    [
+        (None, True),
+        ("3.42.0", False),
+        ("4.0.0", False),
+        ("4.1.0", True),
+    ],
+)
+def test_imas_write_read(file, cocos, imas_dd_version, coil_comparison):
     """Test an eqdsk file can be read and then written to IMAS"""
     eqdsk = EQDSKInterface.from_file(
         DATA_DIR / file, from_cocos=cocos, qpsi_positive=False
     )
 
-    with DBEntry("test.nc", "w") as db:
+    with DBEntry("test.nc", "w", dd_version=imas_dd_version) as db:
         eqdsk.write(db, file_format="imas")
 
-    with DBEntry("test.nc", "r") as db:
+    with DBEntry("test.nc", "r", dd_version=imas_dd_version) as db:
         new_eqdsk = EQDSKInterface.from_imas(db).to_cocos("jetto")
+
+    # IMAS has no defined mechanism for storing coil types
+    exclusions = ["coil_types"]
+
+    # Some versions of IMAS cannot store coil geometry
+    if not coil_comparison:
+        exclusions += ["dzc", "Ic", "dxc", "xc", "zc"]
 
     assert compare_dicts(
         eqdsk.to_dict(),
         new_eqdsk.to_dict(),
         verbose=True,
         almost_equal=True,
-        exclude=["coil_types"],
+        exclude=exclusions,
     )

@@ -26,6 +26,8 @@ IMAS_RECTANGULAR_PF_COIL_GEOMETRY_ID = 2
 stored as a rectangle.
 """
 
+ASSUMED_IMAS_VERSION = "4.1.0"
+
 
 def _unwrap_imas_value(value: IDSPrimitive, /, *, default=None):
     if value.has_value:
@@ -64,7 +66,7 @@ def from_imas(  # noqa: PLR0914
         If the IMAS database does not contain the 'equilibrium' top level IDS.
     """
     try:
-        equilibrium_top_level = db.get("equilibrium")
+        equilibrium_top_level = convert_ids(db.get("equilibrium"), ASSUMED_IMAS_VERSION)
     except IDSNameError as e:
         raise RuntimeError(
             "'equilibrium' top-level IDS is not present in the database"
@@ -73,7 +75,10 @@ def from_imas(  # noqa: PLR0914
     # It should not be an issue if the limiter is not in the database
     # handle it by not returning limiter quantities
     try:
-        limiter = db.get("wall").description_2d[0].limiter.unit[0].outline
+        # TODO @timothy-nunn: this IDS should be converted to the assumed version
+        # but this causes an exception
+        wall_ids = db.get("wall")
+        limiter = wall_ids.description_2d[0].limiter.unit[0].outline
 
         xlim = _unwrap_imas_value(limiter.r, default=np.array([]))
         zlim = _unwrap_imas_value(limiter.z, default=np.array([]))
@@ -120,7 +125,7 @@ def from_imas(  # noqa: PLR0914
     # Again, its not critical if we cannot access the PF coil
     # data so provide sensible empty entries.
     with suppress(DataEntryException, IDSNameError):
-        pf_top_level = db.get("pf_active")
+        pf_top_level = convert_ids(db.get("pf_active"), ASSUMED_IMAS_VERSION)
 
         for coil in pf_top_level.coil:
             if (
@@ -132,16 +137,13 @@ def from_imas(  # noqa: PLR0914
                 xc.append(_unwrap_imas_value(coil.geometry.rectangle.r))
                 zc.append(_unwrap_imas_value(coil.geometry.rectangle.z))
                 ic.append(coil.current.data[0])
-                coil_names.append(_unwrap_imas_value(coil.name))
-                coil_types.append("PF")
+            coil_names.append(_unwrap_imas_value(coil.name))
+            coil_types.append("PF")
 
     ncoil = len(coil_names)
 
     psibdry = _unwrap_imas_value(global_quantities.psi_boundary)
-    psimag = _unwrap_imas_value(
-        global_quantities.psi_axis,
-        default=_unwrap_imas_value(global_quantities.psi_magnetic_axis),
-    )
+    psimag = _unwrap_imas_value(global_quantities.psi_magnetic_axis)
     psinorm = _unwrap_imas_value(eq_profiles_1d.psi_norm)
     if psinorm is None and psibdry is not None and psinorm is not None:
         psi1d = _unwrap_imas_value(eq_profiles_1d.psi)
@@ -197,7 +199,6 @@ def to_imas(  # noqa: PLR0915
     time_index: int = 0,
     profiles_2d_index: int = 0,
     ids_factory_kwargs=None,
-    imas_dd_version: str | None = None,
 ):
     """Writes EQDSK data into an IMAS database.
 
@@ -213,14 +214,16 @@ def to_imas(  # noqa: PLR0915
         The 2D profiles index to write the psi data to.
     ids_factory_kwargs:
         A dictionary of keyword arguments to pass into the IDSFactory constructor.
-    imas_dd_version:
-        A specific IMAS data dictionary version to convert the new top level IDS' into.
     """
+    imas_dd_version = imas.util.get_data_dictionary_version(db)
+
     # create all entries assuming IMAS data dictionary 4 and let
     # IMAS-Python convert the IDS structure and COCOS later
     eqdsk = eqdsk.to_cocos(KnownCOCOS.IMAS_4)
 
-    ids_factory = imas.IDSFactory(**(ids_factory_kwargs or {}))
+    ids_factory = imas.IDSFactory(
+        **(ids_factory_kwargs or {"version": ASSUMED_IMAS_VERSION})
+    )
 
     equilibrium_ids = ids_factory.equilibrium()
     vacuum_toroidal_field = equilibrium_ids.vacuum_toroidal_field
@@ -244,7 +247,6 @@ def to_imas(  # noqa: PLR0915
     vacuum_toroidal_field.b0[time_index] = np.array([eqdsk.bcentre] * (time_index + 1))
     vacuum_toroidal_field.r0 = eqdsk.xcentre
     global_quantities.psi_boundary = eqdsk.psibdry
-    global_quantities.psi_axis = eqdsk.psimag
     global_quantities.psi_magnetic_axis = eqdsk.psimag
     global_quantities.magnetic_axis.r = eqdsk.xmag
     global_quantities.magnetic_axis.z = eqdsk.zmag
@@ -264,8 +266,7 @@ def to_imas(  # noqa: PLR0915
     boundary_outline.r = eqdsk.xbdry
     boundary_outline.z = eqdsk.zbdry
 
-    if imas_dd_version is not None:
-        equilibrium_ids = convert_ids(equilibrium_ids, imas_dd_version)
+    equilibrium_ids = convert_ids(equilibrium_ids, imas_dd_version)
 
     db.put(equilibrium_ids)
 
@@ -283,8 +284,7 @@ def to_imas(  # noqa: PLR0915
         outline.r = eqdsk.xlim
         outline.z = eqdsk.zlim
 
-        if imas_dd_version is not None:
-            limiter_ids = convert_ids(limiter_ids, imas_dd_version)
+        limiter_ids = convert_ids(limiter_ids, imas_dd_version)
 
         db.put(limiter_ids)
 
@@ -308,39 +308,6 @@ def to_imas(  # noqa: PLR0915
             geometry.rectangle.r = eqdsk.xc[coil_id]
             geometry.rectangle.z = eqdsk.zc[coil_id]
 
-        if imas_dd_version is not None:
-            pf_active_ids = convert_ids(pf_active_ids, imas_dd_version)
+        pf_active_ids = convert_ids(pf_active_ids, imas_dd_version)
 
         db.put(pf_active_ids)
-
-
-def get_imas_cocos(db: imas.DBEntry):
-    """Get the COCOS of an IMAS database.
-
-    Parameters
-    ----------
-    db:
-        The IMAS database connection.
-
-    Returns
-    -------
-    :
-        The COCOS of the database.
-
-    Raises
-    ------
-    ValueError
-        If the data dictionary is not version 3 or 4.
-    """
-    version = imas.util.get_data_dictionary_version(db)
-    major_version = version.split(".")[0]
-
-    if major_version == "3":
-        return KnownCOCOS.IMAS_3
-
-    if major_version == "4":
-        return KnownCOCOS.IMAS_4
-
-    raise ValueError(
-        f"No known COCOS for major data dictionary version {major_version} ({version})."
-    )
