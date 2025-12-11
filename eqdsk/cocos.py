@@ -235,7 +235,8 @@ class KnownCOCOS(Enum):
     JETTO = (auto(), COCOS.C11)
     CREATE = (auto(), COCOS.C11)
     FIESTA = (auto(), COCOS.C17)
-    IMAS = (auto(), COCOS.C1)
+    IMAS_3 = (auto(), COCOS.C11)
+    IMAS_4 = (auto(), COCOS.C17)
 
     def __new__(cls, value: int, cocos: COCOS):
         """A little hack to have different enums with the same COCOS

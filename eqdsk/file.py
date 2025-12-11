@@ -27,7 +27,7 @@ from eqdsk.models import Sign
 from eqdsk.tools import is_num, json_writer
 
 try:
-    from eqdsk.imas import from_imas, to_imas
+    from eqdsk.imas import from_imas, get_imas_cocos, to_imas
 
     IMAS_AVAIL = True
 except ImportError:
@@ -335,7 +335,7 @@ Grid properties:
 
         inst = cls(**from_imas(db, time_index, profiles_2d_index, time))
 
-        inst.identify(17)
+        inst.identify(get_imas_cocos(db))
         return inst
 
     @property

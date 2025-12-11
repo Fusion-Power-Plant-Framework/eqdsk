@@ -12,6 +12,9 @@ from typing import TYPE_CHECKING
 import imas
 import numpy as np
 from imas.exception import DataEntryException, IDSNameError
+from imas.ids_convert import convert_ids
+
+from .cocos import KnownCOCOS
 
 if TYPE_CHECKING:
     from imas.ids_primitive import IDSPrimitive
@@ -159,11 +162,15 @@ def from_imas(
 def to_imas(
     db: imas.DBEntry,
     eqdsk: EQDSKInterface,
+    *,
     time_index: int = 0,
     profiles_2d_index: int = 0,
     ids_factory_kwargs=None,
+    imas_dd_version: str | None = None,
 ):
-    eqdsk = eqdsk.to_cocos(17)
+    # create all entries assuming IMAS data dictionary 4 and let
+    # IMAS-Python convert the IDS structure and COCOS later
+    eqdsk = eqdsk.to_cocos(KnownCOCOS.IMAS_4)
 
     ids_factory = imas.IDSFactory(**(ids_factory_kwargs or {}))
 
@@ -209,6 +216,9 @@ def to_imas(
     boundary_outline.r = eqdsk.xbdry
     boundary_outline.z = eqdsk.zbdry
 
+    if imas_dd_version is not None:
+        equilibrium_ids = convert_ids(equilibrium_ids, imas_dd_version)
+
     db.put(equilibrium_ids)
 
     if eqdsk.nlim > 0:
@@ -224,6 +234,9 @@ def to_imas(
         limiter_ids.ids_properties.homogeneous_time = 1
         outline.r = eqdsk.xlim
         outline.z = eqdsk.zlim
+
+        if imas_dd_version is not None:
+            limiter_ids = convert_ids(limiter_ids, imas_dd_version)
 
         db.put(limiter_ids)
 
@@ -247,4 +260,39 @@ def to_imas(
             geometry.rectangle.r = eqdsk.xc[coil_id]
             geometry.rectangle.z = eqdsk.zc[coil_id]
 
+        if imas_dd_version is not None:
+            pf_active_ids = convert_ids(pf_active_ids, imas_dd_version)
+
         db.put(pf_active_ids)
+
+
+def get_imas_cocos(db: imas.DBEntry):
+    """Get the COCOS of an IMAS database.
+
+    Parameters
+    ----------
+    db:
+        The IMAS database connection.
+
+    Returns
+    -------
+    :
+        The COCOS of the database.
+
+    Raises
+    ------
+    ValueError
+        If the data dictionary is not version 3 or 4.
+    """
+    version = imas.util.get_data_dictionary_version(db)
+    major_version = version.split(".")[0]
+
+    if major_version == "3":
+        return KnownCOCOS.IMAS_3
+
+    if major_version == "4":
+        return KnownCOCOS.IMAS_4
+
+    raise ValueError(
+        f"No known COCOS for major data dictionary version {major_version} ({version})."
+    )
