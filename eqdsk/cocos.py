@@ -9,6 +9,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum, auto, unique
+from types import DynamicClassAttribute
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -231,6 +232,8 @@ class COCOS(Enum):
 class KnownCOCOS(Enum):
     """A enum of known COCOS outputs of codes"""
 
+    _cocos_: COCOS
+
     BLUEMIRA = (auto(), COCOS.C3)
     JETTO = (auto(), COCOS.C1)
     CREATE = (auto(), COCOS.C11)
@@ -248,8 +251,13 @@ class KnownCOCOS(Enum):
         """
         obj = object.__new__(cls)
         obj._value_ = value
-        obj.cocos = cocos
+        obj._cocos_ = cocos
         return obj
+
+    @DynamicClassAttribute
+    def cocos(self) -> COCOS:
+        """COCOS of code"""
+        return self._cocos_
 
 
 @dataclass(frozen=True)
