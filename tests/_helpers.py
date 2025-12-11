@@ -123,6 +123,7 @@ def compare_dicts(
     verbose: bool = True,
     rtol: float = 1e-5,
     atol: float = 1e-8,
+    exclude: list[str] | None = None,
 ) -> bool:
     """
     Compares two dictionaries. Will print information about the differences
@@ -143,12 +144,16 @@ def compare_dicts(
         The relative tolerance parameter, used if ``almost_equal`` is True
     atol:
         The absolute tolerance parameter, used if ``almost_equal`` is True
+    exclude:
+        A list of keys to exclude from the comparison.
 
     Returns
     -------
     :
         Whether or not the dictionaries are the same
     """
+    exclude = exclude or []
+
     nkey_diff = len(d1) - len(d2)
     k1 = set(d1.keys())
     k2 = set(d2.keys())
@@ -170,7 +175,14 @@ def compare_dicts(
         )
 
     def array_almost_eq(val1, val2):
-        return np.allclose(val1, val2, rtol, atol)
+        v1, v2 = np.asarray(val1), np.asarray(val2)
+
+        # Fallback to simple equality checks if the arrays
+        # do not contain numbers
+        try:
+            return np.allclose(v1, v2, rtol, atol)
+        except np.exceptions.DTypePromotionError:
+            return array_is_eq(val1, val2)
 
     def num_almost_eq(val1, val2):
         return np.isclose(val1, val2, rtol, atol)
@@ -203,6 +215,9 @@ def compare_dicts(
 
     # Do the comparison
     for k in intersect:
+        if k in exclude:
+            continue
+
         v1, v2 = d1[k], d2[k]
         try:
             if comp_map[k](v1, v2):
