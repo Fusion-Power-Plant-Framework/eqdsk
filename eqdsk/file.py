@@ -481,7 +481,7 @@ Grid properties:
 
     def write(
         self,
-        file_path: str | Path,  # TODO: type should include IMAS DB
+        file_path: str | Path | DBEntry,
         file_format: str = "json",
         json_kwargs: dict | None = None,
         imas_kwargs: dict | None = None,
@@ -494,7 +494,7 @@ Grid properties:
         Parameters
         ----------
         file_path:
-            Path to where the file should be written.
+            Path to where the file should be written or the IMAS database connection.
         file_format:
             The format to save the file in. One of 'json', 'eqdsk', or
             'geqdsk'.
@@ -506,6 +506,12 @@ Grid properties:
             5e16.9, disabling this changes the format to 5ES23.16e2
         write_comment:
             write any comments to file
+
+        Raises
+        ------
+        ImportError
+            If optional 'imas' dependencies are not installed but imas format
+            is requested.
         """
         if file_format == "json":
             json_kwargs = {} if json_kwargs is None else json_kwargs
@@ -524,7 +530,7 @@ Grid properties:
             )
         elif file_format == "imas":
             if not IMAS_AVAIL:
-                raise ImportError("imas not found")
+                raise ImportError("Optional 'imas' dependencies not found.")
 
             to_imas(file_path, self, **(imas_kwargs or {}))
 

@@ -14,12 +14,17 @@ import numpy as np
 from imas.exception import DataEntryException, IDSNameError
 from imas.ids_convert import convert_ids
 
-from .cocos import KnownCOCOS
+from eqdsk.cocos import KnownCOCOS
 
 if TYPE_CHECKING:
     from imas.ids_primitive import IDSPrimitive
 
     from eqdsk.file import EQDSKInterface
+
+IMAS_RECTANGULAR_PF_COIL_GEOMETRY_ID = 2
+"""The 'geometry_type' that identifies a PF coil's geometry is
+stored as a rectangle.
+"""
 
 
 def _unwrap_imas_value(value: IDSPrimitive, /, *, default=None):
@@ -29,12 +34,35 @@ def _unwrap_imas_value(value: IDSPrimitive, /, *, default=None):
     return default
 
 
-def from_imas(
+def from_imas(  # noqa: PLR0914
     db: imas.DBEntry,
     time_index: int = 0,
     profiles_2d_index: int = 0,
     time: float | None = None,
 ) -> dict:
+    """Extracts EQDSK data from the IMAS database into a dictionary.
+
+    Parameters
+    ----------
+    db:
+        The IMAS database connection.
+    time_index:
+        The IMAS time index to gather equilibrium data at.
+    profiles_2d_index:
+        The index of the profiles to use to get the 2D psi map.
+    time:
+        The actual time to gather equilibrium data at (overwrites time_index).
+
+    Returns
+    -------
+    :
+        A dictionary containing the EQDSK data.
+
+    Raises
+    ------
+    RuntimeError
+        If the IMAS database does not contain the 'equilibrium' top level IDS.
+    """
     try:
         equilibrium_top_level = db.get("equilibrium")
     except IDSNameError as e:
@@ -95,7 +123,10 @@ def from_imas(
         pf_top_level = db.get("pf_active")
 
         for coil in pf_top_level.coil:
-            if _unwrap_imas_value(coil.geometry.geometry_type) == 2:
+            if (
+                _unwrap_imas_value(coil.geometry.geometry_type)
+                == IMAS_RECTANGULAR_PF_COIL_GEOMETRY_ID
+            ):
                 dxc.append(_unwrap_imas_value(coil.geometry.rectangle.width) / 2)
                 dzc.append(_unwrap_imas_value(coil.geometry.rectangle.height) / 2)
                 xc.append(_unwrap_imas_value(coil.geometry.rectangle.r))
@@ -159,7 +190,7 @@ def from_imas(
     }
 
 
-def to_imas(
+def to_imas(  # noqa: PLR0915
     db: imas.DBEntry,
     eqdsk: EQDSKInterface,
     *,
@@ -168,6 +199,23 @@ def to_imas(
     ids_factory_kwargs=None,
     imas_dd_version: str | None = None,
 ):
+    """Writes EQDSK data into an IMAS database.
+
+    Parameters
+    ----------
+    db:
+        An IMAS database connection.
+    eqdsk:
+        An EQDSKInterface containing the EQDSK information to be written.
+    time_index:
+        The equilibrium time index to write the EQDSK to.
+    profiles_2d_index:
+        The 2D profiles index to write the psi data to.
+    ids_factory_kwargs:
+        A dictionary of keyword arguments to pass into the IDSFactory constructor.
+    imas_dd_version:
+        A specific IMAS data dictionary version to convert the new top level IDS' into.
+    """
     # create all entries assuming IMAS data dictionary 4 and let
     # IMAS-Python convert the IDS structure and COCOS later
     eqdsk = eqdsk.to_cocos(KnownCOCOS.IMAS_4)
