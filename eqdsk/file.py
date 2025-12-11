@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from io import TextIOWrapper
 
     import numpy.typing as npt
+    from imas import DBEntry
 
 
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
@@ -285,13 +286,52 @@ Grid properties:
     @classmethod
     def from_imas(
         cls,
-        db,
+        db: DBEntry,
+        *,
         time_index: int = 0,
         profiles_2d_index: int = 0,
         time: float | None = None,
     ):
+        """Create an EQDSKInterface object from an IMAS database.
+
+        Parameters
+        ----------
+        db:
+            An IMAS database connection.
+        time_index:
+            The IMAS time index to gather equilibrium data at.
+        profiles_2d_index:
+            The index of the profiles to use to get the 2D psi map.
+            More information can be found at https://imas-data-dictionary.readthedocs.io/
+            and searching for 'equilibrium_profiles_2d_identifier'.
+        time:
+            The actual time to gather equilibrium data at.
+
+        Notes
+        -----
+        Specifying a 'time' will overwrite the provided 'time_index'.
+
+        When a 'time' is specified, the closest time index will be used if that exact
+        time does not exist in the database.
+
+        Returns
+        -------
+        :
+            An instance of this class containing the extracted EQDSK data.
+
+        Raises
+        ------
+        ImportError
+            If optional 'imas' dependencies are not installed.
+        """
         if not IMAS_AVAIL:
-            raise ImportError("imas not found")
+            raise ImportError("Optional 'imas' dependencies not found.")
+
+        if time_index != 0 and time is not None:
+            eqdsk_warn(
+                "It appears that a 'time_index' and 'time' has been specified in"
+                "'from_imas'. Specifying a 'time' overwrites the provided 'time_index'."
+            )
 
         inst = cls(**from_imas(db, time_index, profiles_2d_index, time))
 
