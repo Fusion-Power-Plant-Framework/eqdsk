@@ -30,16 +30,16 @@ if not IMAS_AVAIL:
         ("4.1.0", True),
     ],
 )
-def test_imas_write_read(file, cocos, imas_dd_version, coil_comparison):
+def test_imas_write_read(tmp_path, file, cocos, imas_dd_version, coil_comparison):
     """Test an eqdsk file can be read and then written to IMAS"""
     eqdsk = EQDSKInterface.from_file(
         DATA_DIR / file, from_cocos=cocos, qpsi_positive=False
     )
 
-    with DBEntry("test.nc", "w", dd_version=imas_dd_version) as db:
+    with DBEntry(tmp_path / "test.nc", "w", dd_version=imas_dd_version) as db:
         eqdsk.write(db, file_format="imas")
 
-    with DBEntry("test.nc", "r", dd_version=imas_dd_version) as db:
+    with DBEntry(tmp_path / "test.nc", "r", dd_version=imas_dd_version) as db:
         new_eqdsk = EQDSKInterface.from_imas(db).to_cocos("jetto")
 
     # IMAS has no defined mechanism for storing coil types
