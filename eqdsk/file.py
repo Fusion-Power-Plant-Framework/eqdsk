@@ -27,6 +27,8 @@ from eqdsk.models import Sign
 from eqdsk.tools import is_num, json_writer
 
 try:
+    from imas import DBEntry
+
     from eqdsk.imas import from_imas, to_imas
 
     IMAS_AVAIL = True
@@ -38,7 +40,6 @@ if TYPE_CHECKING:
     from io import TextIOWrapper
 
     import numpy.typing as npt
-    from imas import DBEntry
 
 
 EQDSK_EXTENSIONS = [".eqdsk", ".eqdsk_out", ".geqdsk"]
@@ -484,7 +485,7 @@ Grid properties:
     def write(
         self,
         file_path: str | Path | DBEntry,
-        file_format: str = "json",
+        file_format: str | None = None,
         json_kwargs: dict | None = None,
         imas_kwargs: dict | None = None,
         *,
@@ -498,8 +499,9 @@ Grid properties:
         file_path:
             Path to where the file should be written or the IMAS database connection.
         file_format:
-            The format to save the file in. One of 'json', 'eqdsk', or
-            'geqdsk'.
+            The format to save the file in. One of 'json', 'eqdsk', 'geqdsk', or
+            'imas'. If no format is provided, it defaults to 'json' unless
+            'file_path' is an IMAS database connection when it will default to 'imas'.
         json_kwargs:
             Key word arguments to pass to the ``json.dump`` call. Only
             used if ``format`` is 'json'.
@@ -515,6 +517,11 @@ Grid properties:
             If optional 'imas' dependencies are not installed but imas format
             is requested.
         """
+        if file_format is None and IMAS_AVAIL and isinstance(file_path, DBEntry):
+            file_format = "imas"
+        elif file_format is None:
+            file_format = "json"
+
         if file_format == "json":
             json_kwargs = {} if json_kwargs is None else json_kwargs
             json_writer(
