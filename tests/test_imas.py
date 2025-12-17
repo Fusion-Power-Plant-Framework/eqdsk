@@ -5,7 +5,6 @@
 from pathlib import Path
 
 import pytest
-from imas import DBEntry
 
 from eqdsk.file import IMAS_AVAIL, EQDSKInterface
 
@@ -15,6 +14,8 @@ DATA_DIR = Path(__file__).parent / "test_data"
 
 if not IMAS_AVAIL:
     pytest.skip("IMAS is unavailable", allow_module_level=True)
+else:
+    from imas import DBEntry
 
 
 @pytest.mark.parametrize(
