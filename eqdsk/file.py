@@ -336,9 +336,13 @@ Grid properties:
 
         inst = cls(**from_imas(db, time_index, profiles_2d_index, time))
 
-        # from_imas converts everything to IMAS 4.x.y. This also converts the COCOS
-        # to that used by IMAS 4.
-        inst.identify(KnownCOCOS.IMAS_4)
+        # from_imas converts everything to IMAS 4.1.0 because the function uses the API
+        # specification for that version. Therefore we can identify this object as having
+        # a known COCOS version (the version IMAS 4.x.y uses) and also set the
+        # appropriate qpsi_positive and clockwise_phi for this COCOS version.
+        # If an error occurs here then it is because the user has not specified the
+        # correct dd_version when opening the database!
+        inst.identify(KnownCOCOS.IMAS_4, qpsi_positive=True, clockwise_phi=False)
         return inst
 
     @property
