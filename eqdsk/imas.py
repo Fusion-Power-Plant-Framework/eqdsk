@@ -190,6 +190,7 @@ def from_imas(  # noqa: PLR0914
         "qpsi": _unwrap_imas_value(eq_profiles_1d.q),
         "coil_names": coil_names or None,
         "coil_types": coil_types or None,
+        "comment": _unwrap_imas_value(equilibrium_top_level.ids_properties.comment),
     }
 
 
@@ -240,7 +241,7 @@ def to_imas(  # noqa: PLR0915
 
     equilibrium_ids.time.resize(time_index + 1)
     equilibrium_ids.time = np.arange(time_index + 1.0)
-    equilibrium_ids.ids_properties.comment = "eqdsk python package"
+    equilibrium_ids.ids_properties.comment = eqdsk.comment or "eqdsk python package"
     equilibrium_ids.ids_properties.name = eqdsk.name
     equilibrium_ids.ids_properties.homogeneous_time = 1
     global_quantities.ip = eqdsk.cplasma
