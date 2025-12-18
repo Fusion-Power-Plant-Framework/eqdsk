@@ -513,7 +513,7 @@ Grid properties:
             As https://w3.pppl.gov/ntcc/TORAY/G_EQDSK.pdf arrays have the format
             5e16.9, disabling this changes the format to 5ES23.16e2
         write_comment:
-            write any comments to file
+            write any comments to file (is not considered when writing to IMAS).
 
         Raises
         ------
