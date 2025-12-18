@@ -239,7 +239,7 @@ def to_imas(  # noqa: PLR0915
     profiles_2d = profiles_2d[profiles_2d_index]
 
     equilibrium_ids.time.resize(time_index + 1)
-    equilibrium_ids.time = np.array(list(range(time_index + 1))) + 0.0
+    equilibrium_ids.time = np.arange(time_index + 1.0)
     equilibrium_ids.ids_properties.comment = "eqdsk python package"
     equilibrium_ids.ids_properties.name = eqdsk.name
     equilibrium_ids.ids_properties.homogeneous_time = 1
