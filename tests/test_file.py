@@ -98,15 +98,17 @@ class TestEQDSKInterface:
             ("DN-DEMO_eqref.json", "json", 3),
             ("eqref_OOB.json", "json", 7),
             ("DN-DEMO_eqref_withCoilNames.json", "json", 3),
+            ("DN-DEMO_eqref_withCoilNames.json", None, 3),
         ],
     )
     def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path, capsys):
+        data_file = self.data_dir / file
         eqd_default = EQDSKInterface.from_file(
-            self.data_dir / file,
+            data_file,
             from_cocos=ind,
             qpsi_positive=False,
         )
-        eqd_default_nc = EQDSKInterface.from_file(self.data_dir / file, no_cocos=True)
+        eqd_default_nc = EQDSKInterface.from_file(data_file, no_cocos=True)
         if ind != 11:
             assert not compare_dicts(
                 eqd_default.to_dict(), eqd_default_nc.to_dict(), verbose=True
@@ -128,7 +130,9 @@ class TestEQDSKInterface:
 
         eqd_default.write(tmp_path / "test", file_format=ftype)
 
-        eqd_test = EQDSKInterface.from_file(tmp_path / f"test.{ftype}", no_cocos=True)
+        eqd_test = EQDSKInterface.from_file(
+            tmp_path / f"test.{ftype or data_file.suffix.strip('.')}", no_cocos=True
+        )
         eqd_test_d = eqd_test.to_dict()
         eqd_def = eqd_default.to_dict()
 

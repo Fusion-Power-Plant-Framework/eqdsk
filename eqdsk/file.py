@@ -26,6 +26,15 @@ from eqdsk.log import eqdsk_print, eqdsk_warn
 from eqdsk.models import Sign
 from eqdsk.tools import is_num, json_writer
 
+try:
+    from imas import DBEntry
+
+    from eqdsk.imas import from_imas, to_imas
+
+    IMAS_AVAIL = True
+except ImportError:
+    IMAS_AVAIL = False
+
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sized
     from io import TextIOWrapper
@@ -275,6 +284,67 @@ Grid properties:
 
         return inst
 
+    @classmethod
+    def from_imas(
+        cls,
+        db: DBEntry,
+        *,
+        time_index: int = 0,
+        profiles_2d_index: int = 0,
+        time: float | None = None,
+    ):
+        """Create an EQDSKInterface object from an IMAS database.
+
+        Parameters
+        ----------
+        db:
+            An IMAS database connection.
+        time_index:
+            The IMAS time index to gather equilibrium data at.
+        profiles_2d_index:
+            The index of the profiles to use to get the 2D psi map.
+            More information can be found at https://imas-data-dictionary.readthedocs.io/
+            and searching for 'equilibrium_profiles_2d_identifier'.
+        time:
+            The actual time to gather equilibrium data at.
+
+        Notes
+        -----
+        Specifying a 'time' will overwrite the provided 'time_index'.
+
+        When a 'time' is specified, the closest time index will be used if that exact
+        time does not exist in the database.
+
+        Returns
+        -------
+        :
+            An instance of this class containing the extracted EQDSK data.
+
+        Raises
+        ------
+        ImportError
+            If optional 'imas' dependencies are not installed.
+        """
+        if not IMAS_AVAIL:
+            raise ImportError("Optional 'imas' dependencies not found.")
+
+        if time_index != 0 and time is not None:
+            eqdsk_warn(
+                "It appears that a 'time_index' and 'time' has been specified in"
+                "'from_imas'. Specifying a 'time' overwrites the provided 'time_index'."
+            )
+
+        inst = cls(**from_imas(db, time_index, profiles_2d_index, time))
+
+        # from_imas converts everything to IMAS 4.1.0 because the function uses the API
+        # specification for that version. Therefore we can identify this object as having
+        # a known COCOS version (the version IMAS 4.x.y uses) and also set the
+        # appropriate qpsi_positive and clockwise_phi for this COCOS version.
+        # If an error occurs here then it is because the user has not specified the
+        # correct dd_version when opening the database!
+        inst.identify(KnownCOCOS.IMAS_4, qpsi_positive=True, clockwise_phi=False)
+        return inst
+
     @property
     def cocos(self) -> COCOS:
         """Return the COCOS for this eqdsk.
@@ -418,9 +488,10 @@ Grid properties:
 
     def write(
         self,
-        file_path: str | Path,
-        file_format: str = "json",
+        file_path: str | Path | DBEntry,
+        file_format: str | None = None,
         json_kwargs: dict | None = None,
+        imas_kwargs: dict | None = None,
         *,
         strict_spec: bool = True,
         write_comment: bool = False,
@@ -430,10 +501,11 @@ Grid properties:
         Parameters
         ----------
         file_path:
-            Path to where the file should be written.
+            Path to where the file should be written or the IMAS database connection.
         file_format:
-            The format to save the file in. One of 'json', 'eqdsk', or
-            'geqdsk'.
+            The format to save the file in. One of 'json', 'eqdsk', 'geqdsk', or
+            'imas'. If no format is provided, it defaults to 'json' unless
+            'file_path' is an IMAS database connection when it will default to 'imas'.
         json_kwargs:
             Key word arguments to pass to the ``json.dump`` call. Only
             used if ``format`` is 'json'.
@@ -442,7 +514,18 @@ Grid properties:
             5e16.9, disabling this changes the format to 5ES23.16e2
         write_comment:
             write any comments to file
+
+        Raises
+        ------
+        ImportError
+            If optional 'imas' dependencies are not installed but imas format
+            is requested.
         """
+        if file_format is None and IMAS_AVAIL and isinstance(file_path, DBEntry):
+            file_format = "imas"
+        elif file_format is None:
+            file_format = "json"
+
         if file_format == "json":
             json_kwargs = {} if json_kwargs is None else json_kwargs
             json_writer(
@@ -458,6 +541,11 @@ Grid properties:
                 self.to_dict(with_comment=write_comment),
                 strict_spec=strict_spec,
             )
+        elif file_format == "imas":
+            if not IMAS_AVAIL:
+                raise ImportError("Optional 'imas' dependencies not found.")
+
+            to_imas(file_path, self, **(imas_kwargs or {}))
 
     def update(self, eqdsk_data: dict[str, Any]):
         """Update this object's data with values from a dictionary.

@@ -107,3 +107,35 @@ You may want to read an eqdsk file and access the raw data, without any kind of 
 from eqdsk import EQDSKInterface
 ed = EQDSKInterface.from_file(file_path, no_cocos=True)
 ```
+
+## Using the IMAS interface
+
+The IMAS interface allows EQDSK data to be read in/written to an IMAS database connection.
+To enable this functionality, the optional `imas` dependencies should be install by running `pip install eqdsk[imas]`.
+
+IMAS data can be read in as follows:
+``` py title="main.py"
+from imas import DBEntry
+from eqdsk import EQDSKInterface
+with DBEntry("example.nc", "r", dd_version=...) as db:
+    ed = EQDSKInterface.from_imas(db)
+```
+The `from_imas` method handles setting and converting the COCOS version as the COCOS is fixed and known for a given version of the IMAS data dictionary.
+This example uses the NetCDF backend of IMAS but should support using other backends of `DBEntry`, please see the [IMAS-Python docs](https://imas-python.readthedocs.io/en/stable/).
+The `ed` object can now be used as in previous examples to view the data, convert the COCOS, and write the EQDSK to other supported formats.
+
+!!! note
+    You can use the `dd_version` keyword argument of `DBEntry` to specify the data dictionary version of the database.
+    **It is strongly advised** to use this argument and ensure it is correct because different versions of the data dictionary follow different COCOS conventions.
+    Not specifying a `dd_version` causes a default version to be used, which may be inappropriate for the data format in your database, causing errors when calling `from_imas`.
+
+
+You can also use the interface to write EQDSK data into an IMAS database. This follows a similar format:
+``` py title="main.py"
+from imas import DBEntry
+from eqdsk import EQDSKInterface
+eq = EQDSKInterface.from_file("/path/to/file.eqdsk")
+with DBEntry("example.nc", "w", dd_version=...) as db:
+    ed.write(db, file_format="imas")
+```
+Again, ensure you specify the correct `dd_version` for the database you are writing to.

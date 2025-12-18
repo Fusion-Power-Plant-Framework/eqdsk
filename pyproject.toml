@@ -55,6 +55,7 @@ docs = [
 ]
 lint = ["ruff", "mypy"]
 cli = ["matplotlib"]
+imas = ["imas-python[netcdf]>=2.0"]
 
 [project.scripts]
 eqdsk = "eqdsk.cli:cli"
@@ -65,7 +66,7 @@ features = ["dev", "test", "docs", "lint"]
 
 # env: test
 [tool.hatch.envs.test]
-features = ["test"]
+features = ["test", "imas"]
 [[tool.hatch.envs.test.matrix]]
 python = ["3.10", "3.11", "3.12", "3.13"]
 [tool.hatch.envs.test.scripts]
