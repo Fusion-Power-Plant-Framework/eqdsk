@@ -7,7 +7,7 @@
 
 An EQDSK reader and writer for GEQDSK (more soon), with COCOS identification and conversion.
 
-There is support for writing an eqdsk to a JSON format (which is now preferred).
+There is support for writing an eqdsk to a JSON format (which is now preferred) and an IMAS database integration.
 
 We have extended the EQDSK standard to optionally allow for the definition of a CoilSet.
 
