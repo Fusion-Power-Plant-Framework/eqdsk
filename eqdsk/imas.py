@@ -146,7 +146,7 @@ def from_imas(  # noqa: PLR0914
     psibdry = _unwrap_imas_value(global_quantities.psi_boundary)
     psimag = _unwrap_imas_value(global_quantities.psi_magnetic_axis)
     psinorm = _unwrap_imas_value(eq_profiles_1d.psi_norm)
-    if psinorm is None and psibdry is not None and psinorm is not None:
+    if psinorm is None and psibdry is not None and psimag is not None:
         psi1d = _unwrap_imas_value(eq_profiles_1d.psi)
         if psi1d is not None:
             psinorm = (psi1d - psimag) / (psibdry - psimag)
