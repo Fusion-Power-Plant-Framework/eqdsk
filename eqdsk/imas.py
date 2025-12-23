@@ -245,7 +245,7 @@ def to_imas(  # noqa: PLR0915
     equilibrium_ids.ids_properties.homogeneous_time = 1
     global_quantities.ip = eqdsk.cplasma
     vacuum_toroidal_field.b0.resize(time_index + 1)
-    vacuum_toroidal_field.b0[time_index] = np.array([eqdsk.bcentre] * (time_index + 1))
+    vacuum_toroidal_field.b0 = np.array([eqdsk.bcentre] * (time_index + 1))
     vacuum_toroidal_field.r0 = eqdsk.xcentre
     global_quantities.psi_boundary = eqdsk.psibdry
     global_quantities.psi_magnetic_axis = eqdsk.psimag
