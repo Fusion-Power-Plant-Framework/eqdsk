@@ -75,10 +75,7 @@ def from_imas(  # noqa: PLR0914
     # It should not be an issue if the limiter is not in the database
     # handle it by not returning limiter quantities
     try:
-        # TODO(@timothy-nunn): https://github.com/Fusion-Power-Plant-Framework/eqdsk/issues/100
-        # this IDS should be converted to the assumed version but this causes
-        # an exception
-        wall_ids = db.get("wall")
+        wall_ids = convert_ids(db.get("wall"), ASSUMED_IMAS_VERSION)
         limiter = wall_ids.description_2d[0].limiter.unit[0].outline
 
         xlim = _unwrap_imas_value(limiter.r, default=np.array([]))
