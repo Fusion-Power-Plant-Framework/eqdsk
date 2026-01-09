@@ -75,10 +75,7 @@ def from_imas(  # noqa: PLR0914
     # It should not be an issue if the limiter is not in the database
     # handle it by not returning limiter quantities
     try:
-        # TODO(@timothy-nunn): https://github.com/Fusion-Power-Plant-Framework/eqdsk/issues/100
-        # this IDS should be converted to the assumed version but this causes
-        # an exception
-        wall_ids = db.get("wall")
+        wall_ids = convert_ids(db.get("wall"), ASSUMED_IMAS_VERSION)
         limiter = wall_ids.description_2d[0].limiter.unit[0].outline
 
         xlim = _unwrap_imas_value(limiter.r, default=np.array([]))
@@ -146,7 +143,7 @@ def from_imas(  # noqa: PLR0914
     psibdry = _unwrap_imas_value(global_quantities.psi_boundary)
     psimag = _unwrap_imas_value(global_quantities.psi_magnetic_axis)
     psinorm = _unwrap_imas_value(eq_profiles_1d.psi_norm)
-    if psinorm is None and psibdry is not None and psinorm is not None:
+    if psinorm is None and psibdry is not None and psimag is not None:
         psi1d = _unwrap_imas_value(eq_profiles_1d.psi)
         if psi1d is not None:
             psinorm = (psi1d - psimag) / (psibdry - psimag)
@@ -190,6 +187,7 @@ def from_imas(  # noqa: PLR0914
         "qpsi": _unwrap_imas_value(eq_profiles_1d.q),
         "coil_names": coil_names or None,
         "coil_types": coil_types or None,
+        "comment": _unwrap_imas_value(equilibrium_top_level.ids_properties.comment),
     }
 
 
@@ -240,12 +238,12 @@ def to_imas(  # noqa: PLR0915
 
     equilibrium_ids.time.resize(time_index + 1)
     equilibrium_ids.time = np.arange(time_index + 1.0)
-    equilibrium_ids.ids_properties.comment = "eqdsk python package"
+    equilibrium_ids.ids_properties.comment = eqdsk.comment or "eqdsk python package"
     equilibrium_ids.ids_properties.name = eqdsk.name
     equilibrium_ids.ids_properties.homogeneous_time = 1
     global_quantities.ip = eqdsk.cplasma
     vacuum_toroidal_field.b0.resize(time_index + 1)
-    vacuum_toroidal_field.b0[time_index] = np.array([eqdsk.bcentre] * (time_index + 1))
+    vacuum_toroidal_field.b0 = np.array([eqdsk.bcentre] * (time_index + 1))
     vacuum_toroidal_field.r0 = eqdsk.xcentre
     global_quantities.psi_boundary = eqdsk.psibdry
     global_quantities.psi_magnetic_axis = eqdsk.psimag
