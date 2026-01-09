@@ -232,7 +232,7 @@ class KnownCOCOS(Enum):
     """A enum of known COCOS outputs of codes"""
 
     BLUEMIRA = (auto(), COCOS.C3)
-    JETTO = (auto(), COCOS.C11)
+    JETTO = (auto(), COCOS.C1)
     CREATE = (auto(), COCOS.C11)
     FIESTA = (auto(), COCOS.C17)
     IMAS_3 = (auto(), COCOS.C11)
