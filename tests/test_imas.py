@@ -37,14 +37,14 @@ def test_imas_write_read(
 ):
     """Test an eqdsk file can be read and then written to IMAS"""
     eqdsk = EQDSKInterface.from_file(
-        DATA_DIR / file, from_cocos=cocos, qpsi_positive=False
+        DATA_DIR / file, from_cocos=cocos, to_cocos=11, qpsi_positive=False
     )
 
     with DBEntry(tmp_path / "test.nc", "w", dd_version=imas_dd_version) as db:
         eqdsk.write(db, file_format=file_format)
 
     with DBEntry(tmp_path / "test.nc", "r", dd_version=imas_dd_version) as db:
-        new_eqdsk = EQDSKInterface.from_imas(db).to_cocos("jetto")
+        new_eqdsk = EQDSKInterface.from_imas(db).to_cocos(11)
 
     # IMAS has no defined mechanism for storing coil types
     exclusions = ["coil_types"]
