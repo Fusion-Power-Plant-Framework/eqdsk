@@ -36,7 +36,9 @@ def private_files() -> list[tuple[Path, str, int]]:
 
     def _cocos(pth):
         pth = Path(*pth.parts[-2:]).as_posix()
-        if "jetto" in pth or "COCOS11" in pth:
+        if "jetto" in pth:
+            return 1
+        if "COCOS11" in pth:
             return 11
         if ("STEP" in pth and "BLUEPRINT" not in pth) or "DEMO" in pth:
             return 7
@@ -57,9 +59,13 @@ class TestEQDSKInterface:
     def setup_class(cls):
         cls.data_dir = Path(__file__).parent / "test_data"
 
-    @pytest.mark.parametrize("cocos", [11, "jetto", "C11"])
+    @pytest.mark.parametrize("cocos", [11, "C11"])
     def test_read_default_cocos(self, cocos, caplog):
-        """Read and return the COCOS for the eqdsk."""
+        """Read and return the COCOS for the eqdsk.
+
+        NOTE: This test is reading a JETTO eqdsk file as C11 despite JETTO files being
+        in C1. This does not impact the test due to the assertions it is making.
+        """
         caplog.set_level("INFO")
 
         eqd_default = EQDSKInterface.from_file(
@@ -94,7 +100,7 @@ class TestEQDSKInterface:
     @pytest.mark.parametrize(
         ("file", "ftype", "ind"),
         [
-            ("jetto.eqdsk_out", "eqdsk", 11),
+            ("jetto.eqdsk_out", "eqdsk", 1),
             ("DN-DEMO_eqref.json", "json", 3),
             ("eqref_OOB.json", "json", 7),
             ("DN-DEMO_eqref_withCoilNames.json", "json", 3),
@@ -116,19 +122,21 @@ class TestEQDSKInterface:
             capture = capsys.readouterr()
 
             x_diff_k = {"ffprime", "pprime", "psi", "psibdry", "psimag"}
-            if ind != 7:
+            if ind not in {1, 7}:
                 x_diff_k |= {"qpsi", "fpol"}
 
             assert not get_differences_from_capture(capture.out) ^ x_diff_k
 
         if ind < 10:
-            assert abs(eqd_default.psimag) == pytest.approx(
-                eqd_default_nc.psimag * 2 * np.pi
+            # -1 => decreasing psi_ref (because COCOS 11 psi_ref is increasing)
+            multiplier = -1 if ind in {3, 4, 7, 8} else 1
+            assert eqd_default.psimag == pytest.approx(
+                multiplier * eqd_default_nc.psimag * 2 * np.pi
             )
         else:
             assert eqd_default.psimag == pytest.approx(eqd_default_nc.psimag)
 
-        eqd_default.write(tmp_path / "test", file_format=ftype)
+        eqd_default.write(tmp_path / "test", file_format=ftype, strict_spec=False)
 
         eqd_test = EQDSKInterface.from_file(
             tmp_path / f"test.{ftype or data_file.suffix.strip('.')}", no_cocos=True
@@ -268,7 +276,7 @@ class TestEQDSKInterface:
 
     def test_read_matches_values_in_file(self):
         eq = EQDSKInterface.from_file(
-            Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=11
+            Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=1
         )
 
         assert eq.nz == 151
