@@ -288,6 +288,7 @@ Grid properties:
     def from_imas(
         cls,
         db: DBEntry,
+        to_cocos: int | str | COCOS | KnownCOCOS | None = DEFAULT_COCOS,
         *,
         time_index: int = 0,
         profiles_2d_index: int = 0,
@@ -343,6 +344,9 @@ Grid properties:
         # If an error occurs here then it is because the user has not specified the
         # correct dd_version when opening the database!
         inst.identify(KnownCOCOS.IMAS_4, qpsi_positive=True, clockwise_phi=False)
+
+        if to_cocos is not None:
+            return inst.to_cocos(to_cocos)
         return inst
 
     @property
