@@ -123,7 +123,7 @@ class TestEQDSKInterface:
 
             x_diff_k = {"ffprime", "pprime", "psi", "psibdry", "psimag"}
             if ind not in {1, 7}:
-                x_diff_k |= {"qpsi", "fpol"}
+                x_diff_k |= {"qpsi"}
 
             assert not get_differences_from_capture(capture.out) ^ x_diff_k
 
