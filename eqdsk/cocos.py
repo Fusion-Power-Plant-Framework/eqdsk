@@ -435,7 +435,7 @@ def transform_cocos(from_cocos_index: int, to_cocos_index: int) -> COCOSTransfor
         plasma_current=eff_R_phi_Z,
         b_toroidal=eff_R_phi_Z,
         coil_current=eff_R_phi_Z,
-        poloidal_current=eff_rho_theta_phi,
+        poloidal_current=eff_R_phi_Z,
         psi=eff_bp * eff_R_phi_Z * pi_factor,
         prime=eff_bp * eff_R_phi_Z * (1 / pi_factor),
         q=eff_rho_theta_phi,
