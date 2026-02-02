@@ -281,7 +281,7 @@ def convert(  # noqa: PLR0913, PLR0917
             if format_ == "imas":
                 eqdsk_warn("Using IMAS db COCOS for output, ignoring '--to' argument")
             else:
-                eq.to_cocos(COCOS(to))
+                eq = eq.to_cocos(COCOS(to))
     elif from_ and to:
         # does validation of from and to values
         cc_fr = COCOS(from_)
@@ -293,7 +293,8 @@ def convert(  # noqa: PLR0913, PLR0917
             to_cocos=cc_to.index,
             qpsi_positive=qsp,
         )
-    elif (from_ and to is None) or (from_ is None and to):
+    elif (from_ and to is None and format_ != "imas") or (from_ is None and to):
+        # from_ imas check is not needed as it should be captured by first if
         raise click.BadParameter("Both --from and --to must be provided")
     else:
         eq = EQDSKInterface.from_file(filepath, no_cocos=True)
