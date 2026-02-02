@@ -6,8 +6,8 @@
 
 from pathlib import Path
 
-import mkdocs_gen_files  # type: ignore[unresolved-import]
-from mkdocs_gen_files.nav import Nav # type: ignore[unresolved-import]
+import mkdocs_gen_files
+from mkdocs_gen_files.nav import Nav
 
 nav = Nav()
 
