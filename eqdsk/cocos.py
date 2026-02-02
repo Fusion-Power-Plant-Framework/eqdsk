@@ -17,6 +17,8 @@ import numpy as np
 from eqdsk.models import Sign, ZeroOne
 
 if TYPE_CHECKING:
+    import numpy.typing as npt
+
     from eqdsk.file import EQDSKInterface
 
 
@@ -256,7 +258,7 @@ class KnownCOCOS(Enum):
 
     @DynamicClassAttribute
     def cocos(self) -> COCOS:
-        """COCOS of code"""
+        """COCOS of setting"""
         return self._cocos_
 
 
@@ -348,7 +350,7 @@ def identify_cocos(
     b_toroidal: float,
     psi_at_boundary: float,
     psi_at_mag_axis: float,
-    q_psi: np.ndarray,
+    q_psi: npt.NDArray,
     *,
     phi_clockwise_from_top: bool,
     volt_seconds_per_radian: bool,

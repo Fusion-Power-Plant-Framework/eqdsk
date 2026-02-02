@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from numbers import Number
 from typing import Any, TypeVar
 
 
@@ -35,9 +36,6 @@ class ZeroOne(Enum):
         )
 
 
-SIGN_T = TypeVar("SIGN_T")
-
-
 class Sign(Enum):
     """An enum representing the positive or negative sign of
     a COCOS parameter.
@@ -64,7 +62,7 @@ class Sign(Enum):
             return Sign.POSITIVE if value else Sign.NEGATIVE
         raise ValueError(f"'{value}' not a known Sign") from None
 
-    def __mul__(self, other: SIGN_T) -> SIGN_T | Sign:
+    def __mul__(self, other: SignT) -> SignT | Sign:
         """
         Returns
         -------
@@ -79,3 +77,8 @@ class Sign(Enum):
         if type(other) is Sign:
             return Sign(self.value * other.value)
         return self.value * other
+
+    __rmul__ = __mul__
+
+
+SignT = TypeVar("SignT", bound=Number | Sign)
