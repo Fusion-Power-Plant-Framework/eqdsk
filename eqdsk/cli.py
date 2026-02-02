@@ -234,8 +234,8 @@ class IMASPath(click.Path):
     help="Profiles index in/out",
 )
 def convert(  # noqa: PLR0913, PLR0917
-    filepath: str,
-    format_: str,
+    filepath_or_uri: str,
+    format_: Literal["eqdsk", "json"],
     from_: str | None,
     to: str | None,
     qpsi_sign: Literal["1", "-1"] | None,
@@ -272,8 +272,8 @@ def convert(  # noqa: PLR0913, PLR0917
 
     For imas output --imas-uri-out must be specified
     """  # noqa: DOC501
-    if filepath.startswith("imas:") or filepath.endswith(".nc"):
-        with DBEntry(uri=filepath, mode="r") as db:
+    if filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc"):
+        with DBEntry(uri=filepath_or_uri, mode="r") as db:
             eq = EQDSKInterface.from_imas(
                 db, time_index=t_ind[0], profiles_2d_index=p_ind[0], time=time[0]
             )
@@ -288,7 +288,7 @@ def convert(  # noqa: PLR0913, PLR0917
         cc_to = COCOS(to)
         qsp = None if qpsi_sign is None else int(qpsi_sign) == 1
         eq = EQDSKInterface.from_file(
-            filepath,
+            filepath_or_uri,
             from_cocos=cc_fr.index,
             to_cocos=cc_to.index,
             qpsi_positive=qsp,
@@ -297,7 +297,7 @@ def convert(  # noqa: PLR0913, PLR0917
         # from_ imas check is not needed as it should be captured by first if
         raise click.BadParameter("Both --from and --to must be provided")
     else:
-        eq = EQDSKInterface.from_file(filepath, no_cocos=True)
+        eq = EQDSKInterface.from_file(filepath_or_uri, no_cocos=True)
 
     if format_ == "imas":
         if uri is None:
@@ -313,5 +313,9 @@ def convert(  # noqa: PLR0913, PLR0917
                 },
             )
     else:
-        output_path = Path(filepath).with_stem(f"{Path(filepath).stem}_out").as_posix()
+        output_path = (
+            Path(filepath_or_uri)
+            .with_stem(f"{Path(filepath_or_uri).stem}_out")
+            .as_posix()
+        )
         eq.write(output_path, file_format=format_)
