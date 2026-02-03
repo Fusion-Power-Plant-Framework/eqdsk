@@ -201,7 +201,7 @@ def compare_dicts(
     comp_map = {
         key: (
             array_eq
-            if isinstance(val, npt.NDArray | list)
+            if isinstance(val, np.ndarray | list)
             else (
                 dict_eq
                 if isinstance(val, dict)
