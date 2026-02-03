@@ -853,7 +853,7 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
     if file_path.suffix not in EQDSK_EXTENSIONS:
         file_path = file_path.with_suffix(".eqdsk")
 
-    with Path(file_path).open("w") as file:
+    with Path(file_path).open("w") as file:  # noqa: FURB103 false positive
 
         def write_header(
             fortran_format: ff.FortranRecordWriter,
