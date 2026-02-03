@@ -23,7 +23,7 @@ class NumpyJSONEncoder(JSONEncoder):
         :
             The object in a format json can handle
         """
-        if isinstance(o, npt.NDArray):
+        if isinstance(o, np.ndarray):
             return o.tolist()
         return super().default(o)
 
