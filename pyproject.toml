@@ -85,9 +85,9 @@ deploy = "mkdocs gh-deploy"
 # env: lint
 [tool.hatch.envs.lint]
 detached     = true                           # Don't inherit from default (does not download project dependencies)
-dependencies = ["ruff", "mypy", "pre-commit"]
+dependencies = ["ruff", "ty", "pre-commit"]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:eqdsk tests}"
+typing = "ty {args:check .}"
 style  = ["ruff {args:check .}"]
 fmt    = ["pre-commit run --all-files --hook-stage manual {args:}"]
 all    = ["style", "typing"]
@@ -175,6 +175,9 @@ max-locals     = 18
 
 [tool.ruff.lint.flake8-copyright]
 notice-rgx = "(?i)# SPDX-FileCopyrightText:\\s\\d{4}(-(\\d{4}|present))*"
+
+[tool.ty.rules]
+unresolved-import = "ignore"
 
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
