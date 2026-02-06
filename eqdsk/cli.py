@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Eqdsk CLI"""
-from typing import Literal
 
 from pathlib import Path
+from typing import Literal
 
 import click
 import numpy as np
@@ -235,7 +235,7 @@ class IMASPath(click.Path):
 )
 def convert(  # noqa: PLR0913, PLR0917
     filepath_or_uri: str,
-    format_: Literal["eqdsk", "json"],
+    format_: Literal["eqdsk", "json", "imas"],
     from_: str | None,
     to: str | None,
     qpsi_sign: Literal["1", "-1"] | None,
