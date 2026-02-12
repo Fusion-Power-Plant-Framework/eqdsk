@@ -316,7 +316,8 @@ class TestEQDSKInterface:
             )
         with pytest.raises(ValueError, match="not a known"):
             EQDSKInterface.from_file(
-                Path(self.data_dir, "jetto.eqdsk_out"), from_cocos=b"hi"
+                Path(self.data_dir, "jetto.eqdsk_out"),
+                from_cocos=b"hi",  # type: ignore[invalid-argument-type]
             )
         with pytest.raises(ValueError, match="Convention number"):
             EQDSKInterface.from_file(

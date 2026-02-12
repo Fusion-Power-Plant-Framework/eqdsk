@@ -4,6 +4,7 @@
 """Eqdsk CLI"""
 
 from pathlib import Path
+from typing import Literal
 
 import click
 import numpy as np
@@ -126,7 +127,7 @@ class COCOSOptionsHelp(click.Command):
 
     def format_help(self, ctx, formatter):
         """Format the help with the Known COCOS options"""
-        self.help = self.help.format(
+        self.help = (self.help or "").format(
             "'" + "', '".join(KnownCOCOS.__members__.keys()) + "'"
         )
         super().format_help(ctx, formatter)
@@ -137,6 +138,7 @@ class COCOSOptionsHelp(click.Command):
 @click.option(
     "-fmt",
     "--format",
+    "format_",
     type=click.Choice(["json", "eqdsk"]),
     default="json",
     help="Format to save the eqdsk file in.",
@@ -161,10 +163,10 @@ class COCOSOptionsHelp(click.Command):
 )
 def convert(
     filepath: str,
-    format: str,  # noqa: A002
+    format_: Literal["eqdsk", "json"],
     from_: str | None,
     to: str | None,
-    qpsi_sign: str | None,
+    qpsi_sign: Literal["1", "-1"] | None,
 ):
     """
     Conversion utilities for the eqdsk file.
@@ -205,4 +207,4 @@ def convert(
         eq = EQDSKInterface.from_file(filepath, no_cocos=True)
 
     output_path = Path(filepath).with_stem(f"{Path(filepath).stem}_out").as_posix()
-    eq.write(output_path, file_format=format)
+    eq.write(output_path, file_format=format_)
