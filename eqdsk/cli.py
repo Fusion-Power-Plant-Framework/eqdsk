@@ -16,6 +16,51 @@ from eqdsk.log import eqdsk_banner, eqdsk_warn
 if IMAS_AVAIL:
     from eqdsk.file import DBEntry
 
+ti = click.option(
+    "-ti",
+    "--imas-time",
+    "time",
+    default=0,
+    type=float,
+    help="Time in",
+)
+tind = click.option(
+    "-t-ind",
+    "--imas-time-index",
+    "t_ind",
+    default=0,
+    type=int,
+    help="Time index",
+)
+pind = click.option(
+    "-p-ind",
+    "--imas-profile-2d-index",
+    "p_ind",
+    default=0,
+    type=int,
+    help="Profiles index",
+)
+
+dd = click.option(
+    "-d",
+    "--imas-dd-version",
+    "dd_version",
+    help="Data dictionary version",
+)
+
+
+class IMASPath(click.Path):
+    """Path existence checking with imas avoidance"""
+
+    def convert(self, value: str, *args, **kwargs):
+        """Override Path check for imas databases"""  # noqa: DOC201
+        if value.startswith("imas:"):
+            return value
+        return super().convert(value, *args, **kwargs)
+
+
+filepath = click.argument("filepath_or_uri", type=IMASPath(exists=True))
+
 
 def _setup_plotting(eq: EQDSKInterface):
     try:
@@ -50,25 +95,42 @@ def cli():
     """
 
 
+def _imas_read(filepath_or_uri, tind, pind, time, dd_version):
+    with DBEntry(uri=filepath_or_uri, dd_version=dd_version, mode="r") as db:
+        return EQDSKInterface.from_imas(
+            db, time_index=tind, profiles_2d_index=pind, time=time, to_cocos=None
+        )
+
+
 @cli.command("show", no_args_is_help=True)
-@click.argument("filepath", type=click.Path(exists=True))
-def show(filepath):
+@filepath
+@ti
+@tind
+@pind
+@dd
+def show(filepath_or_uri, time, t_ind, p_ind, dd_version):
     """Reads and prints important parameters of the eqdsk."""
-    eq = EQDSKInterface.from_file(filepath, no_cocos=True)
+    if filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc"):
+        eq = _imas_read(filepath_or_uri, t_ind, p_ind, time, dd_version)
+    else:
+        eq = EQDSKInterface.from_file(filepath_or_uri, no_cocos=True)
 
     print(eqdsk_banner())  # noqa: T201
     print(eq)  # noqa: T201
 
 
 @cli.command("plot", no_args_is_help=True)
-@click.argument("filepath", type=click.Path(exists=True))
-def plot_bdry(filepath):
+@filepath
+@ti
+@tind
+@pind
+def plot_bdry(filepath_or_uri):
     """
     Plot the eqdsk plasma boundary.
 
     matplotlib is required for plotting.
     """
-    eq = EQDSKInterface.from_file(filepath, no_cocos=True)
+    eq = EQDSKInterface.from_file(filepath_or_uri, no_cocos=True)
 
     _fig, ax, show = _setup_plotting(eq)
 
@@ -87,6 +149,9 @@ def plot_bdry(filepath):
 
 @cli.command("plot-psi", no_args_is_help=True)
 @click.argument("filepath", type=click.Path(exists=True))
+@ti
+@tind
+@pind
 def plot_psi(filepath):
     """
     Plot the eqdsk psi map.
@@ -156,18 +221,12 @@ class COCOSOptionsHelp(click.Command):
                 formatter.write_dl(imas_opts)
 
 
-class IMASPath(click.Path):
-    """Path existence checking with imas avoidance"""
-
-    def convert(self, value: str, *args, **kwargs):
-        """Override Path check for imas databases"""  # noqa: DOC201
-        if value.startswith("imas:"):
-            return value
-        return super().convert(value, *args, **kwargs)
+def _dd_callback(ctx, param, value):  # noqa: ARG001
+    return value.split(":")
 
 
 @cli.command("convert", no_args_is_help=True, cls=COCOSOptionsHelp)
-@click.argument("filepath_or_uri", type=IMASPath(exists=True))
+@filepath
 @click.option(
     "-fmt",
     "--format",
@@ -205,17 +264,18 @@ class IMASPath(click.Path):
 )
 @click.option(
     "-d",
-    "--imas-dd-version-out",
+    "--imas-dd-version",
     "dd_version",
-    help="Output Data dictionary version",
+    callback=_dd_callback,
+    help="I/O Data dictionary versions, I/O split with ':' eg '3.42.0:4.0.0'",
 )
 @click.option(
     "-ti",
     "--imas-time",
     "time",
-    default=(0, 0),
-    type=(float, float),
-    help="Time in/out",
+    default=0,
+    type=float,
+    help="Time in",
 )
 @click.option(
     "-t-ind",
@@ -241,8 +301,8 @@ def convert(  # noqa: PLR0913, PLR0917
     qpsi_sign: Literal["1", "-1"] | None,
     uri: str,
     mode: str,
-    dd_version: str | None,
-    time: tuple[float, float],
+    dd_version: tuple[str, ...] | None,
+    time: float,
     t_ind: tuple[int, int],
     p_ind: tuple[int, int],
 ):
@@ -260,6 +320,8 @@ def convert(  # noqa: PLR0913, PLR0917
 
       Strings: {}
 
+    The saved file will have '_out' suffixed to the filename.
+
     For non imas I/O:
 
         If -f and -t are not provided, the file will be read without COCOS.
@@ -268,14 +330,14 @@ def convert(  # noqa: PLR0913, PLR0917
 
         Use the `eqdsk show` command to see the valid COCOS's for file.
 
-        The saved file will have '_out' suffixed to the filename.
-
-    For imas output --imas-uri-out must be specified
+    For imas output --imas-uri-out can be specified to save to a specific database
     """  # noqa: DOC501
     if filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc"):
-        with DBEntry(uri=filepath_or_uri, mode="r") as db:
+        if from_:
+            eqdsk_warn("from is not used as IMAS has a fixed COCOS")
+        with DBEntry(uri=filepath_or_uri, mode="r", dd_version=dd_version[0]) as db:
             eq = EQDSKInterface.from_imas(
-                db, time_index=t_ind[0], profiles_2d_index=p_ind[0], time=time[0]
+                db, time_index=t_ind[0], profiles_2d_index=p_ind[0], time=time
             )
         if to is not None:
             if format_ == "imas":
@@ -301,15 +363,19 @@ def convert(  # noqa: PLR0913, PLR0917
 
     if format_ == "imas":
         if uri is None:
-            raise click.BadParameter("--imas-uri-out must be specified")
-        with DBEntry(uri=uri, mode=mode, dd_version=dd_version) as db:
+            uri = (
+                Path(filepath_or_uri)
+                .with_stem(f"{Path(filepath_or_uri).stem}_out")
+                .as_posix()
+                + ".nc"
+            )
+        with DBEntry(uri=uri, mode=mode, dd_version=dd_version[-1]) as db:
             eq.write(
                 db,
                 file_format=format_,
                 imas_kwargs={
                     "time_index": t_ind[1],
                     "profiles_2d_index": p_ind[1],
-                    "time": time[1],
                 },
             )
     else:
