@@ -95,11 +95,13 @@ def cli():
     """
 
 
-def _imas_read(filepath_or_uri, tind, pind, time, dd_version):
-    with DBEntry(uri=filepath_or_uri, dd_version=dd_version, mode="r") as db:
-        return EQDSKInterface.from_imas(
-            db, time_index=tind, profiles_2d_index=pind, time=time, to_cocos=None
-        )
+def _imas_or_file_read(filepath_or_uri, tind, pind, time, dd_version):
+    if filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc"):
+        with DBEntry(uri=filepath_or_uri, dd_version=dd_version, mode="r") as db:
+            return EQDSKInterface.from_imas(
+                db, time_index=tind, profiles_2d_index=pind, time=time, to_cocos=None
+            )
+    return EQDSKInterface.from_file(filepath_or_uri, no_cocos=True)
 
 
 @cli.command("show", no_args_is_help=True)
@@ -110,11 +112,7 @@ def _imas_read(filepath_or_uri, tind, pind, time, dd_version):
 @dd
 def show(filepath_or_uri, time, t_ind, p_ind, dd_version):
     """Reads and prints important parameters of the eqdsk."""
-    if filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc"):
-        eq = _imas_read(filepath_or_uri, t_ind, p_ind, time, dd_version)
-    else:
-        eq = EQDSKInterface.from_file(filepath_or_uri, no_cocos=True)
-
+    eq = _imas_or_file_read(filepath_or_uri, t_ind, p_ind, time, dd_version)
     print(eqdsk_banner())  # noqa: T201
     print(eq)  # noqa: T201
 
@@ -124,13 +122,13 @@ def show(filepath_or_uri, time, t_ind, p_ind, dd_version):
 @ti
 @tind
 @pind
-def plot_bdry(filepath_or_uri):
+def plot_bdry(filepath_or_uri, t_ind, p_ind, time, dd_version):
     """
     Plot the eqdsk plasma boundary.
 
     matplotlib is required for plotting.
     """
-    eq = EQDSKInterface.from_file(filepath_or_uri, no_cocos=True)
+    eq = _imas_or_file_read(filepath_or_uri, t_ind, p_ind, time, dd_version)
 
     _fig, ax, show = _setup_plotting(eq)
 
@@ -148,17 +146,17 @@ def plot_bdry(filepath_or_uri):
 
 
 @cli.command("plot-psi", no_args_is_help=True)
-@click.argument("filepath", type=click.Path(exists=True))
+@filepath
 @ti
 @tind
 @pind
-def plot_psi(filepath):
+def plot_psi(filepath_or_uri, t_ind, p_ind, time, dd_version):
     """
     Plot the eqdsk psi map.
 
     matplotlib is required for plotting.
     """
-    eq = EQDSKInterface.from_file(filepath, no_cocos=True)
+    eq = _imas_or_file_read(filepath_or_uri, t_ind, p_ind, time, dd_version)
 
     _fig, ax, show = _setup_plotting(eq)
 
