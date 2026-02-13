@@ -320,9 +320,7 @@ def identify_eqdsk(
             b_toroidal=eqdsk.bcentre,
             psi_at_boundary=eqdsk.psibdry,
             psi_at_mag_axis=eqdsk.psimag,
-            q_psi=np.asarray(1 if qpsi_positive else -1)
-            if eqdsk.qpsi is None
-            else eqdsk.qpsi,
+            q_psi=qpsi_positive if qpsi_positive else eqdsk.qpsi,
             phi_clockwise_from_top=cw_phi,
             volt_seconds_per_radian=vs_pr,
         )

@@ -432,6 +432,7 @@ Grid properties:
             self,
             clockwise_phi=clockwise_phi,
             volt_seconds_per_radian=volt_seconds_per_radian,
+            qpsi_positive=qpsi_sign
         )
 
         def _id():
