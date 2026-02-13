@@ -16,37 +16,28 @@ from eqdsk.log import eqdsk_banner, eqdsk_warn
 if IMAS_AVAIL:
     from eqdsk.file import DBEntry
 
-ti = click.option(
-    "-ti",
-    "--imas-time",
-    "time",
-    default=0,
-    type=float,
-    help="Time in",
-)
-tind = click.option(
-    "-t-ind",
-    "--imas-time-index",
-    "t_ind",
-    default=0,
-    type=int,
-    help="Time index",
-)
-pind = click.option(
-    "-p-ind",
-    "--imas-profile-2d-index",
-    "p_ind",
-    default=0,
-    type=int,
-    help="Profiles index",
-)
 
-dd = click.option(
-    "-d",
-    "--imas-dd-version",
-    "dd_version",
-    help="Data dictionary version",
-)
+def _imas_decoration(func):
+    ti = click.option(
+        "-ti", "--imas-time", "time", default=0, type=float, help="Time in"
+    )
+    tind = click.option(
+        "-t-ind", "--imas-time-index", "t_ind", default=0, type=int, help="Time index"
+    )
+    pind = click.option(
+        "-p-ind",
+        "--imas-profile-2d-index",
+        "p_ind",
+        default=0,
+        type=int,
+        help="Profiles index",
+    )
+
+    dd = click.option(
+        "-d", "--imas-dd-version", "dd_version", help="Data dictionary version"
+    )
+
+    return filepath(ti(tind(pind(dd(func)))))
 
 
 class IMASPath(click.Path):
@@ -105,11 +96,7 @@ def _imas_or_file_read(filepath_or_uri, tind, pind, time, dd_version):
 
 
 @cli.command("show", no_args_is_help=True)
-@filepath
-@ti
-@tind
-@pind
-@dd
+@_imas_decoration
 def show(filepath_or_uri, time, t_ind, p_ind, dd_version):
     """Reads and prints important parameters of the eqdsk."""
     eq = _imas_or_file_read(filepath_or_uri, t_ind, p_ind, time, dd_version)
@@ -118,10 +105,7 @@ def show(filepath_or_uri, time, t_ind, p_ind, dd_version):
 
 
 @cli.command("plot", no_args_is_help=True)
-@filepath
-@ti
-@tind
-@pind
+@_imas_decoration
 def plot_bdry(filepath_or_uri, t_ind, p_ind, time, dd_version):
     """
     Plot the eqdsk plasma boundary.
@@ -146,10 +130,7 @@ def plot_bdry(filepath_or_uri, t_ind, p_ind, time, dd_version):
 
 
 @cli.command("plot-psi", no_args_is_help=True)
-@filepath
-@ti
-@tind
-@pind
+@_imas_decoration
 def plot_psi(filepath_or_uri, t_ind, p_ind, time, dd_version):
     """
     Plot the eqdsk psi map.
@@ -233,17 +214,8 @@ def _dd_callback(ctx, param, value):  # noqa: ARG001
     default="json",
     help="Format to save the eqdsk file in.",
 )
-@click.option(
-    "-f",
-    "--from",
-    "from_",
-    help="COCOS format to read the eqdsk as.",
-)
-@click.option(
-    "-t",
-    "--to",
-    help="COCOS format to convert the eqdsk to.",
-)
+@click.option("-f", "--from", "from_", help="COCOS format to read the eqdsk as.")
+@click.option("-t", "--to", help="COCOS format to convert the eqdsk to.")
 @click.option(
     "-q",
     "--qpsi-sign",
@@ -267,14 +239,7 @@ def _dd_callback(ctx, param, value):  # noqa: ARG001
     callback=_dd_callback,
     help="I/O Data dictionary versions, I/O split with ':' eg '3.42.0:4.0.0'",
 )
-@click.option(
-    "-ti",
-    "--imas-time",
-    "time",
-    default=0,
-    type=float,
-    help="Time in",
-)
+@click.option("-ti", "--imas-time", "time", default=0, type=float, help="Time in")
 @click.option(
     "-t-ind",
     "--imas-time-index",
