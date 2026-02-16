@@ -29,7 +29,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Physics",
 ]
 
-dependencies = ["fortranformat", "numpy", "click"]
+dependencies = ["fortranformat", "numpy", "click<=8.1"]
 
 [project.urls]
 Source        = "https://github.com/Fusion-Power-Plant-Framework/eqdsk"
