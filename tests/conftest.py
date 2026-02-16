@@ -57,9 +57,11 @@ def _plot_show_and_close(request):
     -----
     Does not do anything if testclass marked with 'classplot'
     """
-    with suppress(ImportError):
+    try:
         import matplotlib.pyplot as plt  # noqa: PLC0415
-
+    except ImportError:
+        yield
+    else:
         cls = request.node.getparent(pytest.Class)
 
         yield
