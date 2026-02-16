@@ -186,3 +186,5 @@ log_cli        = true
 log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s"
 log_cli_level  = "INFO"
 markers = ["private: Tests using private data"]
+filterwarnings = ['ignore:Matplotlib is currently using agg:UserWarning',
+                  'ignore:FigureCanvasAgg is non-interactive:UserWarning']

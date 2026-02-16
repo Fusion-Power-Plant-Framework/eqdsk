@@ -102,7 +102,10 @@ def _imas_or_file_read(filepath_or_uri, tind, pind, time, dd_version):
 @cli.command("show", no_args_is_help=True)
 @_imas_decoration
 def show(filepath_or_uri, time, t_ind, p_ind, dd_version):
-    """Reads and prints important parameters of the eqdsk."""
+    """Reads and prints important parameters of the eqdsk.
+
+    The below options only change how imas files are read.
+    """
     eq = _imas_or_file_read(filepath_or_uri, t_ind, p_ind, time, dd_version)
     print(eqdsk_banner())  # noqa: T201
     print(eq)  # noqa: T201
@@ -115,6 +118,8 @@ def plot_bdry(filepath_or_uri, t_ind, p_ind, time, dd_version):
     Plot the eqdsk plasma boundary.
 
     matplotlib is required for plotting.
+
+    The below options only change how imas files are read.
     """
     eq = _imas_or_file_read(filepath_or_uri, t_ind, p_ind, time, dd_version)
 
@@ -150,6 +155,8 @@ def plot_psi(filepath_or_uri, t_ind, p_ind, time, dd_version):
     Plot the eqdsk psi map.
 
     matplotlib is required for plotting.
+
+    The below options only change how imas files are read.
     """
     eq = _imas_or_file_read(filepath_or_uri, t_ind, p_ind, time, dd_version)
 
@@ -213,7 +220,7 @@ class COCOSOptionsHelp(click.Command):
 
 
 def _dd_callback(ctx, param, value):  # noqa: ARG001
-    return value.split(":")
+    return value.split(":") if isinstance(value, str) else value
 
 
 @cli.command("convert", no_args_is_help=True, cls=COCOSOptionsHelp)
@@ -310,7 +317,8 @@ def convert(  # noqa: PLR0913, PLR0917
     if filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc"):
         if from_:
             eqdsk_warn("from is not used as IMAS has a fixed COCOS")
-        with DBEntry(uri=filepath_or_uri, mode="r", dd_version=dd_version[0]) as db:
+        dv = dd_version[0] if isinstance(dd_version, tuple) else None
+        with DBEntry(uri=filepath_or_uri, mode="r", dd_version=dv) as db:
             eq = EQDSKInterface.from_imas(
                 db, time_index=t_ind[0], profiles_2d_index=p_ind[0], time=time
             )
@@ -344,7 +352,8 @@ def convert(  # noqa: PLR0913, PLR0917
                 .as_posix()
                 + ".nc"
             )
-        with DBEntry(uri=uri, mode=mode, dd_version=dd_version[-1]) as db:
+        dv = dd_version[-1] if isinstance(dd_version, tuple) else None
+        with DBEntry(uri=uri, mode=mode, dd_version=dv) as db:
             eq.write(
                 db,
                 file_format=format_,
