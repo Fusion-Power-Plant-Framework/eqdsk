@@ -54,6 +54,7 @@ class TestCli:
         assert result.exit_code == 0
         assert not result.output
 
+    @pytest.mark.xfail(reason="click bug on v8.2/3 #3110 and #824")
     @pytest.mark.parametrize("to", [5, 17])
     @pytest.mark.parametrize(
         ("filename", "fc"), [("jetto.eqdsk_out", 1), ("DN-DEMO_eqref.json", 3)]
@@ -83,6 +84,7 @@ class TestCli:
         assert (data_folder / new_name).is_file()
         assert not result.output
 
+    @pytest.mark.xfail(reason="click bug on v8.2/3 #3110 and #824")
     @pytest.mark.parametrize("filename", ["jetto.eqdsk_out", "DN-DEMO_eqref.json"])
     @staticmethod
     def test_convert_eqdsk_no_cocos(filename, data_folder):
