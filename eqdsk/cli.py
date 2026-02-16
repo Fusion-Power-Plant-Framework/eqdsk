@@ -72,7 +72,11 @@ def _setup_plotting(eq: EQDSKInterface):
     ax.set_aspect("equal")
 
     # plot mag center
-    ax.plot(eq.xmag, eq.zmag, color="red", marker="o")
+    if None in {eq.xmag, eq.zmag}:
+        eqdsk_warn("No xmag and zmag in eqdsk")
+    else:
+        ax.plot(eq.xmag, eq.zmag, color="red", marker="o", label="Magnetic centre")
+        ax.legend(loc="upper right")
 
     return fig, ax, plt.show
 
@@ -116,16 +120,26 @@ def plot_bdry(filepath_or_uri, t_ind, p_ind, time, dd_version):
 
     _fig, ax, show = _setup_plotting(eq)
 
-    ax.plot(eq.xbdry, eq.zbdry, color="blue", linestyle="-", linewidth=2)
-    ax.legend(["Magnetic center", "Plasma Boundary"], loc="upper right")
+    if 0 in {eq.xbdry.size, eq.zbdry.size}:
+        eqdsk_warn("No xbdry and zbrdy in eqdsk")
+    else:
+        ax.plot(
+            eq.xbdry,
+            eq.zbdry,
+            color="blue",
+            linestyle="-",
+            linewidth=2,
+            label="Plasma Boundary",
+        )
 
-    zoom = 1.1
-    plot_max_x = max(eq.xbdry) * zoom
-    plot_max_z = max(eq.zbdry) * zoom
+        zoom = 1.1
+        plot_max_x = max(eq.xbdry) * zoom
+        plot_max_z = max(eq.zbdry) * zoom
 
-    ax.set_xlim(0, plot_max_x)
-    ax.set_ylim(-plot_max_z, plot_max_z)
+        ax.set_xlim(0, plot_max_x)
+        ax.set_ylim(-plot_max_z, plot_max_z)
 
+        ax.legend(loc="upper right")
     show()
 
 
@@ -158,13 +172,11 @@ def plot_psi(filepath_or_uri, t_ind, p_ind, time, dd_version):
     cont = ax.contour(psi_x, psi_z, eq.psi, levels=30, cmap="viridis")
     ax.clabel(cont, inline=True, fontsize=8, fmt="%d", colors="black")
 
-    ax.legend(["Magnetic center"], loc="upper right")
-
-    plot_max_x = eq.xmag + (eq.xdim / 2)
-    plot_max_z = eq.zmag + (eq.zdim / 2)
+    plot_max_x = None if eq.xmag is None else eq.xmag + (eq.xdim / 2)
+    plot_max_z = None if eq.zmag is None else eq.zmag + (eq.zdim / 2)
 
     ax.set_xlim(0, plot_max_x)
-    ax.set_ylim(-plot_max_z, plot_max_z)
+    ax.set_ylim(None if eq.zmag is None else -plot_max_z, plot_max_z)
 
     show()
 
