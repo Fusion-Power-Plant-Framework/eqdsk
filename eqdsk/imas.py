@@ -254,8 +254,10 @@ def to_imas(  # noqa: PLR0915
     vacuum_toroidal_field.r0 = eqdsk.xcentre
     global_quantities.psi_boundary = eqdsk.psibdry
     global_quantities.psi_magnetic_axis = eqdsk.psimag
-    global_quantities.magnetic_axis.r = eqdsk.xmag
-    global_quantities.magnetic_axis.z = eqdsk.zmag
+    if eqdsk.xmag is not None:
+        global_quantities.magnetic_axis.r = eqdsk.xmag
+    if eqdsk.zmag is not None:
+        global_quantities.magnetic_axis.z = eqdsk.zmag
     profiles_1d.psi_norm = eqdsk.psinorm
     profiles_1d.psi = (eqdsk.psibdry - eqdsk.psimag) * eqdsk.psinorm + eqdsk.psimag
     profiles_1d.f_df_dpsi = eqdsk.ffprime

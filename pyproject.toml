@@ -171,6 +171,7 @@ ignore-names = ["*Bp*", "*R_phi_Z*", "*B0*", "*Ip*", "*CSTM"]
 max-args       = 7
 max-statements = 61
 max-locals     = 18
+max-branches   = 13
 
 
 [tool.ruff.lint.flake8-copyright]

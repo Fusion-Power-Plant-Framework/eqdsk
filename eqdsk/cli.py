@@ -342,10 +342,18 @@ def convert(  # noqa: PLR0913, PLR0917
     elif (from_ and to is None and format_ != "imas") or (from_ is None and to):
         # from_ imas check is not needed as it should be captured by first if
         raise click.BadParameter("Both --from and --to must be provided")
+
     else:
         eq = EQDSKInterface.from_file(filepath_or_uri, no_cocos=True)
 
     if format_ == "imas":
+        if from_ is None and not (
+            filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc")
+        ):
+            raise click.BadParameter("--from must be provided for conversion to imas")
+        if eq._cocos is None:  # noqa: SLF001
+            eq.identify(as_cocos=from_)
+
         if uri is None:
             uri = (
                 Path(filepath_or_uri)
@@ -364,9 +372,6 @@ def convert(  # noqa: PLR0913, PLR0917
                 },
             )
     else:
-        output_path = (
-            Path(filepath_or_uri.replace("imas:hdf5?path=", ""))
-            .with_stem(f"{Path(filepath_or_uri).stem}_out")
-            .as_posix()
-        )
+        fp = Path(filepath_or_uri.replace("imas:hdf5?path=", ""))
+        output_path = fp.with_stem(f"{fp.stem}_out").as_posix()
         eq.write(output_path, file_format=format_)
