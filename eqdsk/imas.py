@@ -127,8 +127,8 @@ def from_imas(  # noqa: PLR0914
     # data so provide sensible empty entries.
     with suppress(DataEntryException, IDSNameError):
         pf_top_level = convert_ids(db.get("pf_active"), ASSUMED_IMAS_VERSION)
-
         for coil in pf_top_level.coil:
+            # Only tracking rectangular coils (added in IMAS 4)
             if (
                 _unwrap_imas_value(coil.geometry.geometry_type)
                 == IMAS_RECTANGULAR_PF_COIL_GEOMETRY_ID
@@ -138,8 +138,10 @@ def from_imas(  # noqa: PLR0914
                 xc.append(_unwrap_imas_value(coil.geometry.rectangle.r))
                 zc.append(_unwrap_imas_value(coil.geometry.rectangle.z))
                 ic.append(coil.current.data[0])
-            coil_names.append(_unwrap_imas_value(coil.name))
-            coil_types.append("PF")
+
+                # if the coil names are stored with no data we dont add them
+                coil_names.append(_unwrap_imas_value(coil.name))
+                coil_types.append("PF")
 
     ncoil = len(coil_names)
 
