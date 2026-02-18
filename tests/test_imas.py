@@ -51,7 +51,7 @@ def test_imas_write_read(
 
     # Some versions of IMAS cannot store coil geometry
     if not coil_comparison:
-        exclusions += ["dzc", "Ic", "dxc", "xc", "zc"]
+        exclusions += ["ncoil", "coil_names", "dzc", "Ic", "dxc", "xc", "zc"]
 
     assert compare_dicts(
         eqdsk.to_dict(),
