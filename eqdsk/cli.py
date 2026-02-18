@@ -346,6 +346,8 @@ def convert(  # noqa: PLR0913, PLR0917
     else:
         eq = EQDSKInterface.from_file(filepath_or_uri, no_cocos=True)
 
+    fp = Path(filepath_or_uri.replace("imas:hdf5?path=", ""))
+    output_path = fp.with_stem(f"{fp.stem}_out")
     if format_ == "imas":
         if from_ is None and not (
             filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc")
@@ -355,12 +357,7 @@ def convert(  # noqa: PLR0913, PLR0917
             eq.identify(as_cocos=from_)
 
         if uri is None:
-            uri = (
-                Path(filepath_or_uri.replace("imas:hdf5?path=", ""))
-                .with_stem(f"{Path(filepath_or_uri).stem}_out")
-                .as_posix()
-                + ".nc"
-            )
+            uri = output_path.with_suffix(".nc").as_posix()
         dv = dd_version[-1] if isinstance(dd_version, Sequence) else None
         with DBEntry(uri=uri, mode=mode, dd_version=dv) as db:
             eq.write(
@@ -372,6 +369,4 @@ def convert(  # noqa: PLR0913, PLR0917
                 },
             )
     else:
-        fp = Path(filepath_or_uri.replace("imas:hdf5?path=", ""))
-        output_path = fp.with_stem(f"{fp.stem}_out").as_posix()
-        eq.write(output_path, file_format=format_)
+        eq.write(output_path.as_posix(), file_format=format_)
