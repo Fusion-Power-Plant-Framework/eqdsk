@@ -124,8 +124,8 @@ def from_imas(  # noqa: PLR0914
     # data so provide sensible empty entries.
     with suppress(DataEntryException, IDSNameError):
         pf_top_level = convert_ids(db.get("pf_active"), ASSUMED_IMAS_VERSION)
-
         for coil in pf_top_level.coil:
+            # Only tracking rectangular coils (added in IMAS 4)
             if (
                 _unwrap_imas_value(coil.geometry.geometry_type)
                 == IMAS_RECTANGULAR_PF_COIL_GEOMETRY_ID
@@ -135,8 +135,10 @@ def from_imas(  # noqa: PLR0914
                 xc.append(_unwrap_imas_value(coil.geometry.rectangle.r))
                 zc.append(_unwrap_imas_value(coil.geometry.rectangle.z))
                 ic.append(coil.current.data[0])
-            coil_names.append(_unwrap_imas_value(coil.name))
-            coil_types.append("PF")
+
+                # if the coil names are stored with no data we dont add them
+                coil_names.append(_unwrap_imas_value(coil.name))
+                coil_types.append("PF")
 
     ncoil = len(coil_names)
 
@@ -153,7 +155,7 @@ def from_imas(  # noqa: PLR0914
         "cplasma": _unwrap_imas_value(global_quantities.ip),
         "dxc": np.array(dxc),
         "dzc": np.array(dzc),
-        "ffprime": _unwrap_imas_value(eq_profiles_1d.f_df_dpsi),
+        "ffprime": _unwrap_imas_value(eq_profiles_1d.f_df_dpsi, default=np.array([])),
         "fpol": _unwrap_imas_value(eq_profiles_1d.f, default=np.array([])),
         "Ic": np.array(ic),
         "name": _unwrap_imas_value(
@@ -165,10 +167,12 @@ def from_imas(  # noqa: PLR0914
         "nlim": len(xlim),
         "nx": gridx.size,
         "nz": gridz.size,
-        "pprime": _unwrap_imas_value(eq_profiles_1d.dpressure_dpsi),
-        "pressure": _unwrap_imas_value(eq_profiles_1d.pressure),
+        "pprime": _unwrap_imas_value(
+            eq_profiles_1d.dpressure_dpsi, default=np.array([])
+        ),
+        "pressure": _unwrap_imas_value(eq_profiles_1d.pressure, default=np.array([])),
         "psinorm": psinorm,
-        "psi": _unwrap_imas_value(eq_profiles_2d.psi),
+        "psi": _unwrap_imas_value(eq_profiles_2d.psi, default=np.array([])),
         "psibdry": psibdry,
         "psimag": psimag,
         "xbdry": _unwrap_imas_value(boundary_outline.r, default=np.array([])),
@@ -184,7 +188,7 @@ def from_imas(  # noqa: PLR0914
         "zlim": zlim,
         "zmag": _unwrap_imas_value(global_quantities.magnetic_axis.z),
         "zmid": (max(gridz) + min(gridz)) / 2,
-        "qpsi": _unwrap_imas_value(eq_profiles_1d.q),
+        "qpsi": _unwrap_imas_value(eq_profiles_1d.q, default=np.array([])),
         "coil_names": coil_names or None,
         "coil_types": coil_types or None,
         "comment": _unwrap_imas_value(equilibrium_top_level.ids_properties.comment),
@@ -247,8 +251,10 @@ def to_imas(  # noqa: PLR0915
     vacuum_toroidal_field.r0 = eqdsk.xcentre
     global_quantities.psi_boundary = eqdsk.psibdry
     global_quantities.psi_magnetic_axis = eqdsk.psimag
-    global_quantities.magnetic_axis.r = eqdsk.xmag
-    global_quantities.magnetic_axis.z = eqdsk.zmag
+    if eqdsk.xmag is not None:
+        global_quantities.magnetic_axis.r = eqdsk.xmag
+    if eqdsk.zmag is not None:
+        global_quantities.magnetic_axis.z = eqdsk.zmag
     profiles_1d.psi_norm = eqdsk.psinorm
     profiles_1d.psi = (eqdsk.psibdry - eqdsk.psimag) * eqdsk.psinorm + eqdsk.psimag
     profiles_1d.f_df_dpsi = eqdsk.ffprime
