@@ -414,7 +414,14 @@ Grid properties:
                     f"`qpsi_positive={qpsi_positive}` provided. "
                     f"Setting qpsi to array of {qpsi_sign.value}'s."
                 )
-                self.qpsi = np.ones(self.nx) * qpsi_sign.value
+                self.qpsi = (
+                    np.ones(num_psinorm_elements := self.psinorm.shape) * qpsi_sign.value
+                )
+                if num_psinorm_elements != self.nx:
+                    eqdsk_warn(
+                        f"psinorm's length ({num_psinorm_elements}) is different from "
+                        f"nx ({self.nx}). This is atypical behaviour."
+                    )
             else:
                 raise MissingQpsiDataError(
                     message_extra="To resolve this, set the `qpsi_positive` parameter. "
