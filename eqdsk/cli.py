@@ -365,7 +365,7 @@ def convert(  # noqa: PLR0913, PLR0917
             )
     else:
         output_path = (
-            Path(filepath_or_uri)
+            Path(filepath_or_uri.replace("imas:hdf5?path=", ""))
             .with_stem(f"{Path(filepath_or_uri).stem}_out")
             .as_posix()
         )
