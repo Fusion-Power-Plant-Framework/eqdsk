@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Eqdsk CLI"""
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Literal
 
@@ -219,7 +220,7 @@ class COCOSOptionsHelp(click.Command):
                 formatter.write_dl(imas_opts)
 
 
-def _dd_callback(ctx, param, value):  # noqa: ARG001
+def _dd_callback(ctx, param, value) -> list[str] | None:  # noqa: ARG001
     return value.split(":") if isinstance(value, str) else value
 
 
@@ -317,7 +318,7 @@ def convert(  # noqa: PLR0913, PLR0917
     if filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc"):
         if from_:
             eqdsk_warn("from is not used as IMAS has a fixed COCOS")
-        dv = dd_version[0] if isinstance(dd_version, tuple) else None
+        dv = dd_version[0] if isinstance(dd_version, Sequence) else None
         with DBEntry(uri=filepath_or_uri, mode="r", dd_version=dv) as db:
             eq = EQDSKInterface.from_imas(
                 db, time_index=t_ind[0], profiles_2d_index=p_ind[0], time=time
@@ -352,7 +353,7 @@ def convert(  # noqa: PLR0913, PLR0917
                 .as_posix()
                 + ".nc"
             )
-        dv = dd_version[-1] if isinstance(dd_version, tuple) else None
+        dv = dd_version[-1] if isinstance(dd_version, Sequence) else None
         with DBEntry(uri=uri, mode=mode, dd_version=dv) as db:
             eq.write(
                 db,
