@@ -158,7 +158,7 @@ def from_imas(  # noqa: PLR0914
         "cplasma": _unwrap_imas_value(global_quantities.ip),
         "dxc": np.array(dxc),
         "dzc": np.array(dzc),
-        "ffprime": _unwrap_imas_value(eq_profiles_1d.f_df_dpsi),
+        "ffprime": _unwrap_imas_value(eq_profiles_1d.f_df_dpsi, default=np.array([])),
         "fpol": _unwrap_imas_value(eq_profiles_1d.f, default=np.array([])),
         "Ic": np.array(ic),
         "name": _unwrap_imas_value(
@@ -170,10 +170,12 @@ def from_imas(  # noqa: PLR0914
         "nlim": len(xlim),
         "nx": gridx.size,
         "nz": gridz.size,
-        "pprime": _unwrap_imas_value(eq_profiles_1d.dpressure_dpsi),
-        "pressure": _unwrap_imas_value(eq_profiles_1d.pressure),
+        "pprime": _unwrap_imas_value(
+            eq_profiles_1d.dpressure_dpsi, default=np.array([])
+        ),
+        "pressure": _unwrap_imas_value(eq_profiles_1d.pressure, default=np.array([])),
         "psinorm": psinorm,
-        "psi": _unwrap_imas_value(eq_profiles_2d.psi),
+        "psi": _unwrap_imas_value(eq_profiles_2d.psi, default=np.array([])),
         "psibdry": psibdry,
         "psimag": psimag,
         "xbdry": _unwrap_imas_value(boundary_outline.r, default=np.array([])),
@@ -189,7 +191,7 @@ def from_imas(  # noqa: PLR0914
         "zlim": zlim,
         "zmag": _unwrap_imas_value(global_quantities.magnetic_axis.z),
         "zmid": (max(gridz) + min(gridz)) / 2,
-        "qpsi": _unwrap_imas_value(eq_profiles_1d.q),
+        "qpsi": _unwrap_imas_value(eq_profiles_1d.q, default=np.array([])),
         "coil_names": coil_names or None,
         "coil_types": coil_types or None,
         "comment": _unwrap_imas_value(equilibrium_top_level.ids_properties.comment),
