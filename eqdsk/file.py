@@ -134,9 +134,9 @@ class EQDSKInterface:
     """Safety factor values on the 1-D flux grid [dimensionless]."""
     file_name: str = ""
     """The EQDSK file the data originates from."""
-    coil_names: list[str] | None = None
+    coil_names: list[str] = field(default_factory=list)
     """Name of the coils"""
-    coil_types: list[str] | None = None
+    coil_types: list[str] = field(default_factory=list)
     """Type of the coils"""
     comment: str | None = None
     """Any comment stored on file"""
@@ -151,6 +151,10 @@ class EQDSKInterface:
             self.z = _derive_z(self.zmid, self.zdim, self.nz)
         if self.psinorm.size == 0:
             self.psinorm = _derive_psinorm(self.fpol)
+        if self.coil_names is None:
+            self.coil_names = []
+        if self.coil_types is None:
+            self.coil_types = []
         self._cocos = None
 
     def __repr__(self) -> str:  # noqa: D105

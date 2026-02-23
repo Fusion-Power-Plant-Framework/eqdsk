@@ -45,7 +45,7 @@ class Sign(Enum):
     NEGATIVE = -1
 
     @classmethod
-    def _missing_(cls, value) -> Sign:
+    def _missing_(cls, value: Any) -> Sign:
         """
 
         Returns

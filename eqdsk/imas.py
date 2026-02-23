@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import imas
 import numpy as np
@@ -28,8 +28,13 @@ stored as a rectangle.
 
 ASSUMED_IMAS_VERSION = "4.1.0"
 
+DefIMASVarT = TypeVar("DefIMASVarT", Any, None)
+IMASVarT = TypeVar("IMASVarT")
 
-def _unwrap_imas_value(value: IDSPrimitive, /, *, default=None):
+
+def _unwrap_imas_value(
+    value: IDSPrimitive[IMASVarT], /, *, default: DefIMASVarT = None
+) -> IMASVarT | DefIMASVarT:
     if value.has_value:
         return value.value
 
@@ -189,8 +194,8 @@ def from_imas(  # noqa: PLR0914
         "zmag": _unwrap_imas_value(global_quantities.magnetic_axis.z),
         "zmid": (max(gridz) + min(gridz)) / 2,
         "qpsi": _unwrap_imas_value(eq_profiles_1d.q, default=np.array([])),
-        "coil_names": coil_names or None,
-        "coil_types": coil_types or None,
+        "coil_names": coil_names,
+        "coil_types": coil_types,
         "comment": _unwrap_imas_value(equilibrium_top_level.ids_properties.comment),
     }
 

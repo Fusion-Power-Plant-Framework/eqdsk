@@ -25,7 +25,7 @@ def eqdsk_print(*args, **kwargs):
     logger.info(*args, stacklevel=stacklevel, **kwargs)
 
 
-def eqdsk_banner():
+def eqdsk_banner() -> str:
     """
     Returns
     -------

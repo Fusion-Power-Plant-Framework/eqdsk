@@ -10,7 +10,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum, auto, unique
 from types import DynamicClassAttribute
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -167,7 +167,7 @@ class COCOS(Enum):
         self.sign_rho_theta_phi = c.sign_rho_theta_phi
 
     @classmethod
-    def _missing_(cls, value) -> COCOS:
+    def _missing_(cls, value: Any) -> COCOS:
         if isinstance(value, KnownCOCOS):
             return value.cocos
 

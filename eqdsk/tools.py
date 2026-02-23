@@ -14,7 +14,7 @@ import numpy.typing as npt
 class NumpyJSONEncoder(JSONEncoder):
     """A JSON encoder that can handle numpy arrays."""
 
-    def default(self, o: Any):
+    def default(self, o: Any) -> Any:
         """Override the JSONEncoder default object handling behaviour
         for np.arrays.
 
@@ -70,7 +70,7 @@ def json_writer(
     return the_json
 
 
-def is_num(thing) -> bool:
+def is_num(thing: Any) -> bool:
     """Determine whether or not the input is a number.
 
     Parameters

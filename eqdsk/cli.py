@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Eqdsk CLI"""
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Literal
 
@@ -18,7 +18,7 @@ if IMAS_AVAIL:
     from eqdsk.file import DBEntry
 
 
-def _imas_decoration(func):
+def _imas_decoration(func: Callable[..., None]) -> Callable[..., None]:
     ti = click.option(
         "-ti", "--imas-time", "time", default=0, type=float, help="Time in"
     )
@@ -91,7 +91,9 @@ def cli():
     """
 
 
-def _imas_or_file_read(filepath_or_uri, tind, pind, time, dd_version):
+def _imas_or_file_read(
+    filepath_or_uri: str, tind: int, pind: int, time: float, dd_version: str
+) -> EQDSKInterface:
     if filepath_or_uri.startswith("imas:") or filepath_or_uri.endswith(".nc"):
         with DBEntry(uri=filepath_or_uri, dd_version=dd_version, mode="r") as db:
             return EQDSKInterface.from_imas(
@@ -102,7 +104,7 @@ def _imas_or_file_read(filepath_or_uri, tind, pind, time, dd_version):
 
 @cli.command("show", no_args_is_help=True)
 @_imas_decoration
-def show(filepath_or_uri, time, t_ind, p_ind, dd_version):
+def show(filepath_or_uri: str, time: float, t_ind: int, p_ind: int, dd_version: str):
     """Reads and prints important parameters of the eqdsk.
 
     The below options only change how imas files are read.
@@ -114,7 +116,9 @@ def show(filepath_or_uri, time, t_ind, p_ind, dd_version):
 
 @cli.command("plot", no_args_is_help=True)
 @_imas_decoration
-def plot_bdry(filepath_or_uri, t_ind, p_ind, time, dd_version):
+def plot_bdry(
+    filepath_or_uri: str, t_ind: int, p_ind: int, time: float, dd_version: str
+):
     """
     Plot the eqdsk plasma boundary.
 
@@ -151,7 +155,7 @@ def plot_bdry(filepath_or_uri, t_ind, p_ind, time, dd_version):
 
 @cli.command("plot-psi", no_args_is_help=True)
 @_imas_decoration
-def plot_psi(filepath_or_uri, t_ind, p_ind, time, dd_version):
+def plot_psi(filepath_or_uri: str, t_ind: int, p_ind: int, time: float, dd_version: str):
     """
     Plot the eqdsk psi map.
 
@@ -184,7 +188,7 @@ def plot_psi(filepath_or_uri, t_ind, p_ind, time, dd_version):
     plot_max_z = None if eq.zmag is None else eq.zmag + (eq.zdim / 2)
 
     ax.set_xlim(0, plot_max_x)
-    ax.set_ylim(None if eq.zmag is None else -plot_max_z, plot_max_z)
+    ax.set_ylim(None if plot_max_z is None else -plot_max_z, plot_max_z)
 
     show()
 
@@ -220,7 +224,7 @@ class COCOSOptionsHelp(click.Command):
                 formatter.write_dl(imas_opts)
 
 
-def _dd_callback(ctx, param, value) -> list[str] | None:  # noqa: ARG001
+def _dd_callback(ctx: click.Context, param, value: str | None) -> list[str] | None:  # noqa: ARG001
     return value.split(":") if isinstance(value, str) else value
 
 
