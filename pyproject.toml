@@ -37,7 +37,7 @@ Documentation = "https://github.com/Fusion-Power-Plant-Framework/eqdsk#readme"
 Issues        = "https://github.com/Fusion-Power-Plant-Framework/eqdsk/issues"
 
 [project.optional-dependencies]
-dev = ["pre-commit"]
+dev = ["ty>=0.0.18", "pre-commit"]
 test = [
   "pytest",
   "pytest-cov",
