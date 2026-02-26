@@ -194,8 +194,8 @@ def from_imas(  # noqa: PLR0914
         "zmag": _unwrap_imas_value(global_quantities.magnetic_axis.z),
         "zmid": (max(gridz) + min(gridz)) / 2,
         "qpsi": _unwrap_imas_value(eq_profiles_1d.q, default=np.array([])),
-        "coil_names": coil_names,
-        "coil_types": coil_types,
+        "coil_names": coil_names or None,
+        "coil_types": coil_types or None,
         "comment": _unwrap_imas_value(equilibrium_top_level.ids_properties.comment),
     }
 
@@ -298,7 +298,7 @@ def to_imas(  # noqa: PLR0915
 
         db.put(limiter_ids)
 
-    if eqdsk.ncoil > 0:
+    if eqdsk.ncoil > 0 and eqdsk.coil_names is not None:
         pf_active_ids = ids_factory.pf_active()
 
         pf_active_ids.ids_properties.homogeneous_time = 1
