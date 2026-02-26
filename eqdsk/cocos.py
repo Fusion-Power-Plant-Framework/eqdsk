@@ -9,13 +9,16 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum, auto, unique
-from typing import TYPE_CHECKING
+from types import DynamicClassAttribute
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from eqdsk.models import Sign, ZeroOne
 
 if TYPE_CHECKING:
+    import numpy.typing as npt
+
     from eqdsk.file import EQDSKInterface
 
 
@@ -164,7 +167,7 @@ class COCOS(Enum):
         self.sign_rho_theta_phi = c.sign_rho_theta_phi
 
     @classmethod
-    def _missing_(cls, value) -> COCOS:
+    def _missing_(cls, value: Any) -> COCOS:
         if isinstance(value, KnownCOCOS):
             return value.cocos
 
@@ -231,6 +234,8 @@ class COCOS(Enum):
 class KnownCOCOS(Enum):
     """A enum of known COCOS outputs of codes"""
 
+    _cocos_: COCOS
+
     BLUEMIRA = (auto(), COCOS.C3)
     JETTO = (auto(), COCOS.C1)
     CREATE = (auto(), COCOS.C11)
@@ -248,8 +253,13 @@ class KnownCOCOS(Enum):
         """
         obj = object.__new__(cls)
         obj._value_ = value
-        obj.cocos = cocos
+        obj._cocos_ = cocos
         return obj
+
+    @DynamicClassAttribute
+    def cocos(self) -> COCOS:
+        """COCOS of setting"""
+        return self._cocos_
 
 
 @dataclass(frozen=True)
@@ -340,7 +350,7 @@ def identify_cocos(
     b_toroidal: float,
     psi_at_boundary: float,
     psi_at_mag_axis: float,
-    q_psi: np.ndarray,
+    q_psi: npt.NDArray,
     *,
     phi_clockwise_from_top: bool,
     volt_seconds_per_radian: bool,

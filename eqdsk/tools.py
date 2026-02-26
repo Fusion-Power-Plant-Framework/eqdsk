@@ -5,6 +5,7 @@
 
 from json import JSONEncoder, dumps
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -13,7 +14,7 @@ import numpy.typing as npt
 class NumpyJSONEncoder(JSONEncoder):
     """A JSON encoder that can handle numpy arrays."""
 
-    def default(self, obj):
+    def default(self, o: Any) -> Any:
         """Override the JSONEncoder default object handling behaviour
         for np.arrays.
 
@@ -22,9 +23,9 @@ class NumpyJSONEncoder(JSONEncoder):
         :
             The object in a format json can handle
         """
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return super().default(obj)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        return super().default(o)
 
 
 def json_writer(
@@ -69,7 +70,7 @@ def json_writer(
     return the_json
 
 
-def is_num(thing) -> bool:
+def is_num(thing: Any) -> bool:
     """Determine whether or not the input is a number.
 
     Parameters

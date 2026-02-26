@@ -10,9 +10,9 @@ import json
 import os
 import re
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
 
 import fortranformat as ff
 import numpy as np
@@ -65,15 +65,15 @@ class EQDSKInterface:
     """Vacuum toroidal Magnetic field at the reference radius [T]."""
     cplasma: float
     """Plasma current [A]."""
-    dxc: np.ndarray
+    dxc: npt.NDArray
     """X half-thicknesses of the coils [m]."""
-    dzc: np.ndarray
+    dzc: npt.NDArray
     """Z half-thicknesses of the coils [m]."""
-    ffprime: np.ndarray
+    ffprime: npt.NDArray
     """FF' function on 1-D flux grid [m.T^2/V.s/rad]."""
-    fpol: np.ndarray
+    fpol: npt.NDArray
     """Poloidal current function f = R*B on 1-D flux [T.m]."""
-    Ic: np.ndarray
+    Ic: npt.NDArray
     """Coil currents [A]."""
     name: str
     """Name of the equilibrium EQDSK [dimensionless]."""
@@ -87,20 +87,20 @@ class EQDSKInterface:
     """Number of grid points in the radial direction [dimensionless]."""
     nz: int
     """Number of grid points in the vertical direction [dimensionless]."""
-    pprime: np.ndarray
+    pprime: npt.NDArray
     """P' function on 1-D flux grid [N/m^2/V.s/rad]."""
-    pressure: np.ndarray
+    pressure: npt.NDArray
     """Plasma pressure function on 1-D flux grid [N/m^2]."""
-    psi: np.ndarray
+    psi: npt.NDArray
     """Poloidal magnetic flux on the 2-D grid
     [V.s/rad (COCOS 1-8) or V.s (COCOS 11-18)]."""
     psibdry: float
     """Poloidal flux at the plasma boundary (LCFS) [V.s/rad]."""
     psimag: float
     """Poloidal flux at the magnetic axis [V.s/rad]."""
-    xbdry: np.ndarray
+    xbdry: npt.NDArray
     """X coordinates of the plasma boundary [m]."""
-    xc: np.ndarray
+    xc: npt.NDArray
     """X coordinates of the coils [m]."""
     xcentre: float
     """Radius of the reference toroidal magnetic [m]."""
@@ -108,29 +108,29 @@ class EQDSKInterface:
     """Horizontal dimension of the spatial grid [m]."""
     xgrid1: float
     """Minimum radius of the spatial grid [m]."""
-    xlim: np.ndarray
+    xlim: npt.NDArray
     """X coordinates of the limiters [m]."""
     xmag: float
     """Radius of the magnetic axis [m]."""
-    zbdry: np.ndarray
+    zbdry: npt.NDArray
     """Z coordinates of the plasma boundary [m]."""
-    zc: np.ndarray
+    zc: npt.NDArray
     """Z coordinates of the coils [m]."""
     zdim: float
     """Vertical dimension of the spatial grid [m]."""
-    zlim: np.ndarray
+    zlim: npt.NDArray
     """Z coordinates of the limiters [m]."""
     zmag: float
     """Z coordinate of the magnetic axis [m]."""
     zmid: float
     """Z coordinate of the middle of the spatial grid [m]."""
-    x: np.ndarray | None = None
+    x: npt.NDArray = field(default_factory=lambda: np.array([]))
     """X 1-D vector [m] (calculated if not given)."""
-    z: np.ndarray | None = None
+    z: npt.NDArray = field(default_factory=lambda: np.array([]))
     """Z 1-D vector [m] (calculated if not given)."""
-    psinorm: np.ndarray | None = None
+    psinorm: npt.NDArray = field(default_factory=lambda: np.array([]))
     """Normalised psi vector [A] (calculated if not given)."""
-    qpsi: np.ndarray | None = None
+    qpsi: npt.NDArray | None = None
     """Safety factor values on the 1-D flux grid [dimensionless]."""
     file_name: str | None = None
     """The EQDSK file the data originates from."""
@@ -140,16 +140,16 @@ class EQDSKInterface:
     """Type of the coils"""
     comment: str | None = None
     """Any comment stored on file"""
-    unprocessed_data: np.ndarray | None = None
+    unprocessed_data: npt.NDArray | None = None
     """Any unprocessed data from raw eqdsks"""
 
     def __post_init__(self):
         """Calculate derived parameters if they're not given."""
-        if self.x is None:
+        if self.x.size == 0:
             self.x = _derive_x(self.xgrid1, self.xdim, self.nx)
-        if self.z is None:
+        if self.z.size == 0:
             self.z = _derive_z(self.zmid, self.zdim, self.nz)
-        if self.psinorm is None:
+        if self.psinorm.size == 0:
             self.psinorm = _derive_psinorm(self.fpol)
         self._cocos = None
 
@@ -500,7 +500,7 @@ Grid properties:
     def write(
         self,
         file_path: str | Path | DBEntry,
-        file_format: str | None = None,
+        file_format: Literal["eqdsk", "geqdsk", "json", "imas"] | None = None,
         json_kwargs: dict | None = None,
         imas_kwargs: dict | None = None,
         *,
@@ -540,7 +540,9 @@ Grid properties:
         if file_format == "json":
             json_kwargs = {} if json_kwargs is None else json_kwargs
             json_writer(
-                self.to_dict(with_comment=write_comment), file_path, **json_kwargs
+                self.to_dict(with_comment=write_comment),
+                cast("str | Path", file_path),
+                **json_kwargs,
             )
         elif file_format in {"eqdsk", "geqdsk"}:
             eqdsk_warn(
@@ -548,7 +550,7 @@ Grid properties:
                 "Are you sure you want to be making an EDQSK in this day and age?"
             )
             _write_eqdsk(
-                file_path,
+                cast("str | Path", file_path),
                 self.to_dict(with_comment=write_comment),
                 strict_spec=strict_spec,
             )
@@ -556,7 +558,7 @@ Grid properties:
             if not IMAS_AVAIL:
                 raise ImportError("Optional 'imas' dependencies not found.")
 
-            to_imas(file_path, self, **(imas_kwargs or {}))
+            to_imas(cast("DBEntry", file_path), self, **(imas_kwargs or {}))
 
     def update(self, eqdsk_data: dict[str, Any]):
         """Update this object's data with values from a dictionary.
@@ -795,7 +797,9 @@ def _read_eqdsk(file_path: Path) -> dict:
     return data
 
 
-def _get_coils_from_eqdsk(ncoil: int, tokens: Iterator[str]) -> tuple[list[float], ...]:
+def _get_coils_from_eqdsk(
+    ncoil: int, tokens: Iterator[str]
+) -> tuple[npt.NDArray[float], ...]:
     x_c = np.zeros(ncoil)
     z_c = np.zeros(ncoil)
     dxc = np.zeros(ncoil)
@@ -910,7 +914,7 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
             file.write(fortran_format.write(line))
             file.write("\n")
 
-        def write_array(fortran_format: ff.FortranRecordWriter, array: np.ndarray):
+        def write_array(fortran_format: ff.FortranRecordWriter, array: npt.NDArray):
             """Write a numpy array out to a G-EQDSK file.
 
             Parameters

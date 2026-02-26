@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import imas
 import numpy as np
@@ -28,8 +28,13 @@ stored as a rectangle.
 
 ASSUMED_IMAS_VERSION = "4.1.0"
 
+DefIMASVarT = TypeVar("DefIMASVarT", Any, None)
+IMASVarT = TypeVar("IMASVarT")
 
-def _unwrap_imas_value(value: IDSPrimitive, /, *, default=None):
+
+def _unwrap_imas_value(
+    value: IDSPrimitive[IMASVarT], /, *, default: DefIMASVarT = None
+) -> IMASVarT | DefIMASVarT:
     if value.has_value:
         return value.value
 
@@ -293,7 +298,7 @@ def to_imas(  # noqa: PLR0915
 
         db.put(limiter_ids)
 
-    if eqdsk.ncoil > 0:
+    if eqdsk.ncoil > 0 and eqdsk.coil_names is not None:
         pf_active_ids = ids_factory.pf_active()
 
         pf_active_ids.ids_properties.homogeneous_time = 1

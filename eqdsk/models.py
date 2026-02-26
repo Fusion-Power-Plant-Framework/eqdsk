@@ -7,7 +7,8 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
+from numbers import Number
+from typing import Any, TypeVar
 
 
 class ZeroOne(Enum):
@@ -44,7 +45,7 @@ class Sign(Enum):
     NEGATIVE = -1
 
     @classmethod
-    def _missing_(cls, value) -> Sign:
+    def _missing_(cls, value: Any) -> Sign:
         """
 
         Returns
@@ -61,7 +62,7 @@ class Sign(Enum):
             return Sign.POSITIVE if value else Sign.NEGATIVE
         raise ValueError(f"'{value}' not a known Sign") from None
 
-    def __mul__(self, other: Any) -> Sign | int:
+    def __mul__(self, other: SignT) -> SignT | Sign:
         """
         Returns
         -------
@@ -76,3 +77,8 @@ class Sign(Enum):
         if type(other) is Sign:
             return Sign(self.value * other.value)
         return self.value * other
+
+    __rmul__ = __mul__
+
+
+SignT = TypeVar("SignT", bound=Number | Sign)
