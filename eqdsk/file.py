@@ -309,13 +309,6 @@ Grid properties:
         time:
             The actual time to gather equilibrium data at.
 
-        Notes
-        -----
-        Specifying a 'time' will overwrite the provided 'time_index'.
-
-        When a 'time' is specified, the closest time index will be used if that exact
-        time does not exist in the database.
-
         Returns
         -------
         :
@@ -325,6 +318,13 @@ Grid properties:
         ------
         ImportError
             If optional 'imas' dependencies are not installed.
+
+        Notes
+        -----
+        Specifying a 'time' will overwrite the provided 'time_index'.
+
+        When a 'time' is specified, the closest time index will be used if that exact
+        time does not exist in the database.
         """
         if not IMAS_AVAIL:
             raise ImportError("Optional 'imas' dependencies not found.")
