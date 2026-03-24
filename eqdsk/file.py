@@ -7,10 +7,10 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 import time
 from dataclasses import asdict, dataclass, field
+from itertools import takewhile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
 
@@ -36,7 +36,7 @@ except ImportError:
     IMAS_AVAIL = False
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Sized
+    from collections.abc import Iterator, Sequence, Sized
     from io import TextIOWrapper
 
     import numpy.typing as npt
@@ -846,6 +846,15 @@ def _derive_psinorm(fpol: Sized) -> npt.NDArray[float]:
     return np.linspace(0, 1, len(fpol))
 
 
+def _commonprefix(strings: Sequence[str]) -> str:
+    return "".join(
+        ch[0]
+        for ch in takewhile(
+            lambda x: all(c == x[0] for c in x), zip(*strings, strict=True)
+        )
+    )
+
+
 def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True):  # noqa: PLR0915
     """Write data out to a text file in G-EQDSK format.
 
@@ -892,7 +901,7 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
                 variables to add to the header following the id_string.
                 Empty strings will be recorded as 0.
             """
-            line = [id_string]
+            line: list[str | int] = [id_string]
             line += [data[v] if v else 0 for v in var_list]
             file.write(fortran_format.write(line))
             file.write("\n")
@@ -996,7 +1005,7 @@ def _write_eqdsk(file_path: str | Path, data: dict, *, strict_spec: bool = True)
         if comment := data.get("comment"):
             cl = list(filter(lambda x: x.strip(), comment.split("\n")))[1:]
             if len(cl) > 1:
-                comment_char = os.path.commonprefix(cl) or " " * 4
+                comment_char = _commonprefix(cl) or " " * 4
                 if not comment.startswith(comment_char):
                     comment = f"{comment_char}{comment}"
             file.write(f"\n{comment}\n")
