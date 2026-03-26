@@ -359,5 +359,5 @@ class TestEQDSKInterface:
     def test_eqdsk_unrecognised_file_format(self):
         data_file = self.data_dir / "eqref_OOB.json"
         eq = EQDSKInterface.from_file(data_file, from_cocos=7)
-        with pytest.raises(ValueError):
-            eq.write("fail_ff.qwerty", file_format="qwerty")  # type: ignore[invalid-argument-type]
+        with pytest.raises(ValueError, match="Unrecognised file format"):
+            eq.write("fail_ff.qwerty", file_format="qwerty")  # type: ignore[ty:invalid-argument-type]
