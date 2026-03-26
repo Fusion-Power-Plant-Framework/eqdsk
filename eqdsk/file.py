@@ -24,7 +24,7 @@ from eqdsk.errors import (
 )
 from eqdsk.log import eqdsk_print, eqdsk_warn
 from eqdsk.models import Sign
-from eqdsk.tools import is_num, json_writer
+from eqdsk.tools import is_num, json_writer, present_century
 
 try:
     from imas import DBEntry
@@ -500,7 +500,10 @@ Grid properties:
     def write(
         self,
         file_path: str | Path | DBEntry,
-        file_format: Literal["eqdsk", "geqdsk", "json", "imas"] | None = None,
+        file_format: Literal[
+            "eqdsk", "geqdsk", "json", "imas", "EQDSK", "GEQDSK", "JSON", "IMAS"
+        ]
+        | None = None,
         json_kwargs: dict | None = None,
         imas_kwargs: dict | None = None,
         *,
@@ -531,34 +534,40 @@ Grid properties:
         ImportError
             If optional 'imas' dependencies are not installed but imas format
             is requested.
+        ValueError
+            If an unrecognised file format is specified
         """
         if file_format is None and IMAS_AVAIL and isinstance(file_path, DBEntry):
             file_format = "imas"
         elif file_format is None:
             file_format = "json"
 
-        if file_format == "json":
+        file_format_lc = file_format.lower()
+
+        if file_format_lc == "json":
             json_kwargs = {} if json_kwargs is None else json_kwargs
             json_writer(
                 self.to_dict(with_comment=write_comment),
                 cast("str | Path", file_path),
                 **json_kwargs,
             )
-        elif file_format in {"eqdsk", "geqdsk"}:
+        elif file_format_lc in {"eqdsk", "geqdsk"}:
             eqdsk_warn(
-                "You are in the 21st century. "
-                "Are you sure you want to be making an EDQSK in this day and age?"
+                f"You are in the {present_century()} century. "
+                "Are you sure you want to be making an EQDSK in this day and age?"
             )
             _write_eqdsk(
                 cast("str | Path", file_path),
                 self.to_dict(with_comment=write_comment),
                 strict_spec=strict_spec,
             )
-        elif file_format == "imas":
+        elif file_format_lc == "imas":
             if not IMAS_AVAIL:
                 raise ImportError("Optional 'imas' dependencies not found.")
 
             to_imas(cast("DBEntry", file_path), self, **(imas_kwargs or {}))
+        else:
+            raise ValueError(f"Unrecognised file format: {file_format}")
 
     def update(self, eqdsk_data: dict[str, Any]):
         """Update this object's data with values from a dictionary.

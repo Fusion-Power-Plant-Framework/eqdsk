@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 """Eqdsk tools"""
 
+import time
 from json import JSONEncoder, dumps
 from pathlib import Path
 from typing import Any
@@ -117,3 +118,22 @@ def floatify(x: npt.ArrayLike) -> float:
     if x is None:
         raise TypeError("The argument cannot be None")
     return np.asarray(x, dtype=float).item()
+
+
+def present_century() -> str:
+    """
+    Return the current century as a string.
+
+    Returns
+    -------
+    :
+        The present century as a str
+    """
+    year = time.localtime().tm_year
+    century = (year - 1) // 100 + 1
+    if 10 <= century % 100 <= 20:  # noqa: PLR2004
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(century % 10, "th")
+
+    return f"{century}{suffix}"

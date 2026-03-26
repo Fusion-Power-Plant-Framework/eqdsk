@@ -355,3 +355,9 @@ class TestEQDSKInterface:
                 assert not f_data.endswith(f"\n\n\n{extra}\n")
             else:
                 assert not f_data.endswith(extra)
+
+    def test_eqdsk_unrecognised_file_format(self):
+        data_file = self.data_dir / "eqref_OOB.json"
+        eq = EQDSKInterface.from_file(data_file, from_cocos=7)
+        with pytest.raises(ValueError):
+            eq.write("fail_ff.qwerty", file_format="qwerty")  # type: ignore[invalid-argument-type]
