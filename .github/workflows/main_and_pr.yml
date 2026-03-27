@@ -10,17 +10,17 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
 
       - name: Setup python and hatch
-        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@main
+        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@c6af22fc8d00be67cca53a61177301462f499fb2
         with:
           python-version: "3.11"
 
       - name: Run Hatch linting tasks
-        uses: Fusion-Power-Plant-Framework/fppf-actions/hatch-lint@main
+        uses: Fusion-Power-Plant-Framework/fppf-actions/hatch-lint@c6af22fc8d00be67cca53a61177301462f499fb2
 
   test:
     strategy:
@@ -30,15 +30,15 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
 
       - name: Setup python and hatch
-        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@main
+        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@c6af22fc8d00be67cca53a61177301462f499fb2
 
       - name: Checkout bluemira-private-data
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           repository: "Fusion-Power-Plant-Framework/bluemira-private-data"
@@ -60,12 +60,12 @@ jobs:
   docs-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
 
       - name: Setup python and hatch
-        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@main
+        uses: Fusion-Power-Plant-Framework/fppf-actions/setup-hatch@c6af22fc8d00be67cca53a61177301462f499fb2
         with:
           python-version: "3.11"
 
