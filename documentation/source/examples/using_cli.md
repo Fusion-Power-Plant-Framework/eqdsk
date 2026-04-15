@@ -70,7 +70,7 @@ The above commands can also be used on an IMAS database. To enable this function
     If converting **from** IMAS to another format, `--from` will be ignored if used because IMAS has a fixed COCOS.
     Likewise, if converting **to** IMAS, then `--to` will be ignored for the same reason.
 
-**Save to IMAS and convert between COCOS 3 to IMAS' fixed COCOS:*
+**Save to IMAS and convert between COCOS 3 to IMAS' fixed COCOS:**
 
 ```bash
 eqdsk convert path/to/eqdsk/file -fmt imas --from 3
