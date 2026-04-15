@@ -79,6 +79,6 @@ eqdsk convert path/to/eqdsk/file -fmt imas --from 3
 **Convert an IMAS database between I/O data dictionary versions. I/0 split with `:`, e.g. 3.42.0:4.0.0:**
 
 ```bash
-eqdsk convert imas:/path/to/uri --imas-dd-version 3.42.0:4.0.0
+eqdsk convert path/to/imas/database.nc --imas-dd-version 3.42.0:4.0.0
 ```
 
