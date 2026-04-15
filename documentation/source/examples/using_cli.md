@@ -81,4 +81,3 @@ eqdsk convert path/to/eqdsk/file -fmt imas --from 3
 ```bash
 eqdsk convert path/to/imas/database.nc --imas-dd-version 3.42.0:4.0.0
 ```
-
