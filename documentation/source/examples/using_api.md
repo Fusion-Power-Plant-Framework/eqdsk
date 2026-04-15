@@ -1,6 +1,6 @@
 # Using the API
 
-This packages exposes the [EQDSKInterface][eqdsk.file.EQDSKInterface] class, which is the main interface for reading and writing eqdsk files.
+This package exposes the [EQDSKInterface][eqdsk.file.EQDSKInterface] class, which is the main interface for reading and writing eqdsk files.
 
 Below are a few examples of how to use the API.
 
@@ -41,7 +41,7 @@ ed = EQDSKInterface.from_file(
 
 Will convert the eqdsk file to COCOS 13.
 
-Some known COCOS numbers from cetain code are prdovided (see [KnownCOCOS][eqdsk.cocos.KnownCOCOS]).
+Some known COCOS numbers from cetain code are provided (see [KnownCOCOS][eqdsk.cocos.KnownCOCOS]).
 
 ``` py title="main.py"
 from eqdsk import EQDSKInterface

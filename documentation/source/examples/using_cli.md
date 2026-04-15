@@ -41,19 +41,19 @@ eqdsk plot-psi path/to/eqdsk/file
 
 ## convert
 
-The `convert` command can be used to convert an eqdsk file to a different format (.json or .eqdsk)
+The `convert` command can be used to convert an eqdsk file to a different format (.json, .eqdsk or IMAS .nc)
 or between COCOS versions.
 
 **Save to .json format and convert between COCOS 1 and 2:**
 
 ```bash
-eqdsk convert path/to/eqdsk/file --fmt json --from 1 --to 2
+eqdsk convert path/to/eqdsk/file -fmt json --from 1 --to 2
 ```
 
 **Save to .eqdsk format:**
 
 ```bash
-eqdsk convert path/to/eqdsk/file --fmt eqdsk
+eqdsk convert path/to/eqdsk/file -fmt eqdsk
 ```
 
 **Convert between COCOS 1 and 2 and provide the sign of qpsi (if not present in the file):**
@@ -61,3 +61,24 @@ eqdsk convert path/to/eqdsk/file --fmt eqdsk
 ```bash
 eqdsk convert path/to/eqdsk/file --from 1 --to 2 --qpsi-sign -1
 ```
+
+## IMAS
+
+The above commands can also be used on an IMAS database. To enable this functionality, the optional `imas` dependencies should be install by running `pip install eqdsk[imas]`.
+
+!!! note
+    If converting **from** IMAS to another format, `--from` will be ignored if used because IMAS has a fixed COCOS.
+    Likewise, if converting **to** IMAS, then `--to` will be ignored for the same reason.
+
+**Save to IMAS and convert between COCOS 3 to IMAS' fixed COCOS:*
+
+```bash
+eqdsk convert path/to/eqdsk/file -fmt imas --from 3
+```
+
+**Convert an IMAS database between I/O data dictionary versions. I/0 split with `:`, e.g. 3.42.0:4.0.0:**
+
+```bash
+eqdsk convert imas:/path/to/uri --imas-dd-version 3.42.0:4.0.0
+```
+
