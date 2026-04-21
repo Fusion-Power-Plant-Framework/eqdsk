@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 
 from eqdsk.models import Sign, ZeroOne
+from eqdsk.log import eqdsk_warn
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -314,11 +315,12 @@ def identify_eqdsk(
     ValueError
         If eqdsk.qpsi is None and qpsi_positive is not provided.
     """
-    if eqdsk.qpsi is None and qpsi_positive is None:
+    qpsi_is_not_set = eqdsk.qpsi is None or np.allclose(eqdsk.qpsi, 0)
+    if qpsi_is_not_set and qpsi_positive is None:
         raise ValueError(
             "eqdsk.qpsi is None, qpsi_positive must be provided.",
         )
-
+    q_psi = np.asarray(1 if qpsi_positive else -1) if qpsi_is_not_set else eqdsk.qpsi
     cw_phi_l = [True, False] if clockwise_phi is None else [clockwise_phi]
     vs_pr_l = (
         [True, False] if volt_seconds_per_radian is None else [volt_seconds_per_radian]
@@ -330,9 +332,7 @@ def identify_eqdsk(
             b_toroidal=eqdsk.bcentre,
             psi_at_boundary=eqdsk.psibdry,
             psi_at_mag_axis=eqdsk.psimag,
-            q_psi=np.asarray(1 if qpsi_positive else -1)
-            if eqdsk.qpsi is None
-            else eqdsk.qpsi,
+            q_psi=q_psi,
             phi_clockwise_from_top=cw_phi,
             volt_seconds_per_radian=vs_pr,
         )

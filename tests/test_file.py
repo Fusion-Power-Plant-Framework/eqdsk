@@ -109,12 +109,17 @@ class TestEQDSKInterface:
     )
     def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path, capsys):
         data_file = self.data_dir / file
+        eqd_default_nc = EQDSKInterface.from_file(data_file, no_cocos=True)
+        qpsi_sign = {
+            1: True,
+            3: False,
+            7: True
+        }
         eqd_default = EQDSKInterface.from_file(
             data_file,
             from_cocos=ind,
-            qpsi_positive=False,
+            qpsi_positive=qpsi_sign[ind],
         )
-        eqd_default_nc = EQDSKInterface.from_file(data_file, no_cocos=True)
         if ind != 11:
             assert not compare_dicts(
                 eqd_default.to_dict(), eqd_default_nc.to_dict(), verbose=True
