@@ -369,3 +369,34 @@ class TestEQDSKInterface:
         eq = EQDSKInterface.from_file(data_file, from_cocos=7)
         with pytest.raises(ValueError, match="Unrecognised file format"):
             eq.write("fail_ff.qwerty", file_format="qwerty")  # type: ignore[ty:invalid-argument-type]
+
+
+class TestSignChanges:
+    """
+    Test the sign changes of parameters when switching between cocos versions
+    """
+
+    @classmethod
+    def setup_class(cls):
+        data_dir = Path(__file__).parent / "test_data"
+        data_file = data_dir / "jetto.eqdsk_out"
+        cls.eqd_default = EQDSKInterface.from_file(data_file,
+                            from_cocos=1, qpsi_positive=True)
+
+    @pytest.mark.parametrize(
+        ("cocos", "fpol_sign_change"),
+        [
+            (2, -1),
+            (3, 1),
+            (4, -1),
+            (5, 1),
+            (6, -1),
+            (7, 1),
+            (8, -1),
+        ],
+    )
+    def test_fpol(self, cocos, fpol_sign_change):
+        fpol_old = np.sign(self.eqd_default.fpol)[0]
+        eq_new = self.eqd_default.to_cocos(cocos)
+        fpol_new = np.sign(eq_new.fpol)[0]
+        assert fpol_sign_change == fpol_new * fpol_old
