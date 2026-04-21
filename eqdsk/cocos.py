@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 
 from eqdsk.models import Sign, ZeroOne
+from eqdsk.log import eqdsk_warn
 
 if TYPE_CHECKING:
     import numpy.typing as npt
