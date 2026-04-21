@@ -438,9 +438,9 @@ Grid properties:
                                               qpsi_sign.value):
             eqdsk_warn(
                 "Mismatch between eqdsk q sign and input q sign value."
-                f"The eqdsk q_psi sign of {np.sign(self.qpsi)[0]} will be"
-                f"overwritten with the input sign of {qpsi_sign.value}."
-                "This occurs because some codes used non-standard q signs."
+                f" The eqdsk q_psi sign of {np.sign(self.qpsi)[0]} will be"
+                f" overwritten with the input sign of {qpsi_sign.value}."
+                " This occurs because some codes used non-standard q signs."
             )
             self.qpsi *= -1
 
