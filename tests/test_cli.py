@@ -19,6 +19,17 @@ def data_folder(tmp_path_factory):
     return dd / "data"
 
 
+def cli_runner(method, args=None, exit_code=0):
+    """Click cli runner with test checks"""  # noqa: DOC201
+    if args is None:
+        args = []
+
+    runner = CliRunner()
+    result = runner.invoke(method, args)
+    assert result.exit_code == exit_code
+    return result
+
+
 class TestCli:
     """Test cli"""
 
@@ -31,27 +42,19 @@ class TestCli:
         [("jetto.eqdsk_out", "1, 2, 11, 12"), ("DN-DEMO_eqref.json", "7, 8, 17, 18")],
     )
     def test_show_eqdsk(self, filename, cocos):
-        runner = CliRunner()
-        result = runner.invoke(cli.cli, ["show", (self.data_dir / filename).as_posix()])
-        assert result.exit_code == 0
+        result = cli_runner(cli.cli, ["show", (self.data_dir / filename).as_posix()])
         assert f"COCOS: {cocos}" in result.output
 
     @pytest.mark.parametrize("filename", ["jetto.eqdsk_out", "DN-DEMO_eqref.json"])
     def test_plot_eqdsk(self, filename):
         pytest.importorskip("matplotlib")
-        runner = CliRunner()
-        result = runner.invoke(cli.cli, ["plot", (self.data_dir / filename).as_posix()])
-        assert result.exit_code == 0
+        result = cli_runner(cli.cli, ["plot", (self.data_dir / filename).as_posix()])
         assert not result.output
 
     @pytest.mark.parametrize("filename", ["jetto.eqdsk_out", "DN-DEMO_eqref.json"])
     def test_plotpsi_eqdsk(self, filename):
         pytest.importorskip("matplotlib")
-        runner = CliRunner()
-        result = runner.invoke(
-            cli.cli, ["plot-psi", (self.data_dir / filename).as_posix()]
-        )
-        assert result.exit_code == 0
+        result = cli_runner(cli.cli, ["plot-psi", (self.data_dir / filename).as_posix()])
         assert not result.output
 
     @pytest.mark.parametrize("to", [5, 17])
@@ -60,8 +63,7 @@ class TestCli:
     )
     @staticmethod
     def test_convert_eqdsk_with_from_to(filename, fc, to, data_folder):
-        runner = CliRunner()
-        result = runner.invoke(
+        result = cli_runner(
             cli.cli,
             [
                 "convert",
@@ -79,15 +81,13 @@ class TestCli:
 
         new_name = Path(filename).with_stem(f"{Path(filename).stem}_out")
         new_name = new_name.with_suffix(".json")
-        assert result.exit_code == 0
         assert (data_folder / new_name).is_file()
         assert not result.output
 
     @pytest.mark.parametrize("filename", ["jetto.eqdsk_out", "DN-DEMO_eqref.json"])
     @staticmethod
     def test_convert_eqdsk_no_cocos(filename, data_folder):
-        runner = CliRunner()
-        result = runner.invoke(
+        result = cli_runner(
             cli.cli,
             [
                 "convert",
@@ -101,14 +101,11 @@ class TestCli:
         new_name = new_name.with_suffix(
             ".eqdsk" if Path(filename).suffix == "json" else Path(filename).suffix
         )
-        assert result.exit_code == 0
         assert (data_folder / new_name).is_file()
         assert not result.output
 
     def test_convert_bad_option(self):
-        runner = CliRunner()
-
-        result = runner.invoke(
+        cli_runner(
             cli.cli,
             [
                 "convert",
@@ -116,10 +113,10 @@ class TestCli:
                 "1",
                 (self.data_dir / "jetto.eqdsk_out").as_posix(),
             ],
+            exit_code=2,
         )
-        assert result.exit_code == 2
 
-        result = runner.invoke(
+        cli_runner(
             cli.cli,
             [
                 "convert",
@@ -127,5 +124,5 @@ class TestCli:
                 "11",
                 (self.data_dir / "jetto.eqdsk_out").as_posix(),
             ],
+            exit_code=2,
         )
-        assert result.exit_code == 2
