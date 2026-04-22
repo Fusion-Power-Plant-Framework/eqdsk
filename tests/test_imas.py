@@ -30,7 +30,7 @@ def _imas_hdf5_uri(tmp_path):
 
 @pytest.mark.parametrize(
     ("file", "cocos"),
-    [("jetto.eqdsk_out", "jetto"), ("DN-DEMO_eqref_withCoilNames.json", 3)],
+    [("jetto.eqdsk_out", 1), ("DN-DEMO_eqref_withCoilNames.json", 3)],
 )
 @pytest.mark.parametrize(
     ("imas_dd_version", "coil_comparison"),
@@ -43,14 +43,24 @@ def _imas_hdf5_uri(tmp_path):
 )
 @pytest.mark.parametrize("file_format", ["imas", None])
 @pytest.mark.parametrize("imas_uri_fixture", ["_imas_netcdf_uri", "_imas_hdf5_uri"])
-def test_imas_write_read(
-    imas_uri_fixture, file, cocos, imas_dd_version, coil_comparison, file_format, request
+def test_imas_write_read(  # noqa: PLR0913, PLR0917
+    imas_uri_fixture,
+    file,
+    cocos,
+    imas_dd_version,
+    coil_comparison,
+    file_format,
+    request,
+    qsign_reference,
 ):
     """Test an eqdsk file can be read and then written to IMAS"""
     imas_uri = request.getfixturevalue(imas_uri_fixture)
-
+    ind_red = cocos - 10 if cocos > 10 else cocos
     eqdsk = EQDSKInterface.from_file(
-        DATA_DIR / file, from_cocos=cocos, to_cocos=11, qpsi_positive=False
+        DATA_DIR / file,
+        from_cocos=cocos,
+        to_cocos=11,
+        qpsi_positive=qsign_reference[ind_red],
     )
 
     with DBEntry(imas_uri, "w", dd_version=imas_dd_version) as db:

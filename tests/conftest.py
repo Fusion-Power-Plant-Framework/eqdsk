@@ -73,3 +73,20 @@ def _plot_show_and_close(request):
             )
         plt.show()
         plt.close()
+
+
+@pytest.fixture
+def qsign_reference():
+    """
+    Qpsi reference values from Sauter paper
+    """  # noqa: DOC201
+    return {
+        1: True,
+        2: True,
+        3: False,
+        4: False,
+        5: False,
+        6: False,
+        7: True,
+        8: True,
+    }

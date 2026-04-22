@@ -405,9 +405,9 @@ Grid properties:
             qpsi not provided or found in file and qpsi_positive is not set.
         """
         qpsi_sign = None if qpsi_positive is None else Sign(qpsi_positive)
-        qpsi_is_not_set = self.qpsi is None or np.allclose(self.qpsi, 0)
 
-        if qpsi_is_not_set:
+        # if qpsi is not set
+        if self.qpsi is None or np.allclose(self.qpsi, 0):
             if qpsi_sign:
                 eqdsk_warn(
                     "eqdsk contains no qpsi data, but "
@@ -434,6 +434,14 @@ Grid properties:
                     "You can also experiment by setting `qpsi_positive` and checking if "
                     "the resulting COCOS('s) is(are) correct.",
                 )
+        elif isinstance(qpsi_sign, Sign) and (np.sign(self.qpsi)[0] != qpsi_sign.value):
+            eqdsk_warn(
+                "Mismatch between eqdsk q sign and input q sign value."
+                f" The eqdsk q_psi sign of {np.sign(self.qpsi)[0]} will be"
+                f" overwritten with the input sign of {qpsi_sign.value}."
+                " This occurs because some codes used non-standard q signs."
+            )
+            self.qpsi *= -1
 
         conventions = identify_eqdsk(
             self,

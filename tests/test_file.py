@@ -107,14 +107,17 @@ class TestEQDSKInterface:
             ("DN-DEMO_eqref_withCoilNames.json", None, 3),
         ],
     )
-    def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path, capsys):
+    def test_read_write_doesnt_change_file(
+        self, file, ftype, ind, tmp_path, capsys, qsign_reference
+    ):
         data_file = self.data_dir / file
+        eqd_default_nc = EQDSKInterface.from_file(data_file, no_cocos=True)
+        ind_red = ind - 10 if ind > 10 else ind
         eqd_default = EQDSKInterface.from_file(
             data_file,
             from_cocos=ind,
-            qpsi_positive=False,
+            qpsi_positive=qsign_reference[ind_red],
         )
-        eqd_default_nc = EQDSKInterface.from_file(data_file, no_cocos=True)
         if ind != 11:
             assert not compare_dicts(
                 eqd_default.to_dict(), eqd_default_nc.to_dict(), verbose=True
@@ -218,11 +221,16 @@ class TestEQDSKInterface:
     @staticmethod
     @pytest.mark.private
     @pytest.mark.parametrize(("file", "ftype", "ind"), private_files())
-    def test_read_write_doesnt_change_file_private(file, ftype, ind, tmp_path):
+    def test_read_write_doesnt_change_file_private(
+        file, ftype, ind, tmp_path, qsign_reference
+    ):
         path = tmp_path / "private"
         path.mkdir(exist_ok=True)
 
-        eqd_default = EQDSKInterface.from_file(file, from_cocos=ind, qpsi_positive=False)
+        ind_red = ind - 10 if ind > 10 else ind
+        eqd_default = EQDSKInterface.from_file(
+            file, from_cocos=ind, qpsi_positive=qsign_reference[ind_red]
+        )
 
         if ind != 2 and "Random" not in file.name:
             assert eqd_default.comment is None, len(eqd_default.comment)
