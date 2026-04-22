@@ -405,9 +405,9 @@ Grid properties:
             qpsi not provided or found in file and qpsi_positive is not set.
         """
         qpsi_sign = None if qpsi_positive is None else Sign(qpsi_positive)
-        qpsi_is_not_set = self.qpsi is None or np.allclose(self.qpsi, 0)
 
-        if qpsi_is_not_set:
+        # if qpsi is not set
+        if self.qpsi is None or np.allclose(self.qpsi, 0):
             if qpsi_sign:
                 eqdsk_warn(
                     "eqdsk contains no qpsi data, but "
