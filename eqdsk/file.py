@@ -434,8 +434,7 @@ Grid properties:
                     "You can also experiment by setting `qpsi_positive` and checking if "
                     "the resulting COCOS('s) is(are) correct.",
                 )
-        elif isinstance(qpsi_sign, Sign) and (np.sign(self.qpsi)[0] !=
-                                              qpsi_sign.value):
+        elif isinstance(qpsi_sign, Sign) and (np.sign(self.qpsi)[0] != qpsi_sign.value):
             eqdsk_warn(
                 "Mismatch between eqdsk q sign and input q sign value."
                 f" The eqdsk q_psi sign of {np.sign(self.qpsi)[0]} will be"

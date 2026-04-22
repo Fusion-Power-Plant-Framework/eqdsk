@@ -8,6 +8,7 @@ import pytest
 from click.testing import CliRunner
 
 from eqdsk import cli
+from eqdsk.models import Sign
 
 
 @pytest.fixture(scope="module")
@@ -62,7 +63,8 @@ class TestCli:
         ("filename", "fc"), [("jetto.eqdsk_out", 1), ("DN-DEMO_eqref.json", 3)]
     )
     @staticmethod
-    def test_convert_eqdsk_with_from_to(filename, fc, to, data_folder):
+    def test_convert_eqdsk_with_from_to(filename, fc, to, data_folder, qsign_reference):
+        ind_red = fc - 10 if fc > 10 else fc
         result = cli_runner(
             cli.cli,
             [
@@ -74,7 +76,7 @@ class TestCli:
                 "-t",
                 f"{to}",
                 "-q",
-                "-1",
+                f"{Sign(qsign_reference[ind_red]).value}",
                 (data_folder / filename).as_posix(),
             ],
         )

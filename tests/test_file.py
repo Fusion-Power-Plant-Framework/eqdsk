@@ -107,24 +107,16 @@ class TestEQDSKInterface:
             ("DN-DEMO_eqref_withCoilNames.json", None, 3),
         ],
     )
-    def test_read_write_doesnt_change_file(self, file, ftype, ind, tmp_path, capsys):
+    def test_read_write_doesnt_change_file(
+        self, file, ftype, ind, tmp_path, capsys, qsign_reference
+    ):
         data_file = self.data_dir / file
         eqd_default_nc = EQDSKInterface.from_file(data_file, no_cocos=True)
-        qpsi_sign = {
-            1: True,
-            2: True,
-            3: False,
-            4: False,
-            5: False,
-            6: False,
-            7: True,
-            8: True,
-        }
         ind_red = ind - 10 if ind > 10 else ind
         eqd_default = EQDSKInterface.from_file(
             data_file,
             from_cocos=ind,
-            qpsi_positive=qpsi_sign[ind_red],
+            qpsi_positive=qsign_reference[ind_red],
         )
         if ind != 11:
             assert not compare_dicts(
@@ -244,8 +236,9 @@ class TestEQDSKInterface:
             8: True,
         }
         ind_red = ind - 10 if ind > 10 else ind
-        eqd_default = EQDSKInterface.from_file(file, from_cocos=ind,
-                                               qpsi_positive=qpsi_sign[ind_red])
+        eqd_default = EQDSKInterface.from_file(
+            file, from_cocos=ind, qpsi_positive=qpsi_sign[ind_red]
+        )
 
         if ind != 2 and "Random" not in file.name:
             assert eqd_default.comment is None, len(eqd_default.comment)

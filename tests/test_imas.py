@@ -43,24 +43,24 @@ def _imas_hdf5_uri(tmp_path):
 )
 @pytest.mark.parametrize("file_format", ["imas", None])
 @pytest.mark.parametrize("imas_uri_fixture", ["_imas_netcdf_uri", "_imas_hdf5_uri"])
-def test_imas_write_read(
-    imas_uri_fixture, file, cocos, imas_dd_version, coil_comparison, file_format, request
+def test_imas_write_read(  # noqa: PLR0913, PLR0917
+    imas_uri_fixture,
+    file,
+    cocos,
+    imas_dd_version,
+    coil_comparison,
+    file_format,
+    request,
+    qsign_reference,
 ):
     """Test an eqdsk file can be read and then written to IMAS"""
     imas_uri = request.getfixturevalue(imas_uri_fixture)
-    qpsi_sign = {
-            1: True,
-            2: True,
-            3: False,
-            4: False,
-            5: False,
-            6: False,
-            7: True,
-            8: True,
-        }
     ind_red = cocos - 10 if cocos > 10 else cocos
     eqdsk = EQDSKInterface.from_file(
-        DATA_DIR / file, from_cocos=cocos, to_cocos=11, qpsi_positive=qpsi_sign[ind_red]
+        DATA_DIR / file,
+        from_cocos=cocos,
+        to_cocos=11,
+        qpsi_positive=qsign_reference[ind_red],
     )
 
     with DBEntry(imas_uri, "w", dd_version=imas_dd_version) as db:
