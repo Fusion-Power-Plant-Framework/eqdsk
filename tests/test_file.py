@@ -380,8 +380,9 @@ class TestSignChanges:
     def setup_class(cls):
         data_dir = Path(__file__).parent / "test_data"
         data_file = data_dir / "jetto.eqdsk_out"
-        cls.eqd_default = EQDSKInterface.from_file(data_file,
-                            from_cocos=1, qpsi_positive=True)
+        cls.eqd_default = EQDSKInterface.from_file(
+            data_file, from_cocos=1, qpsi_positive=True
+        )
 
     @pytest.mark.parametrize(
         ("cocos", "fpol_sign_change"),
