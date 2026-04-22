@@ -221,23 +221,15 @@ class TestEQDSKInterface:
     @staticmethod
     @pytest.mark.private
     @pytest.mark.parametrize(("file", "ftype", "ind"), private_files())
-    def test_read_write_doesnt_change_file_private(file, ftype, ind, tmp_path):
+    def test_read_write_doesnt_change_file_private(
+        file, ftype, ind, tmp_path, qsign_reference
+    ):
         path = tmp_path / "private"
         path.mkdir(exist_ok=True)
-        ###
-        qpsi_sign = {
-            1: True,
-            2: True,
-            3: False,
-            4: False,
-            5: False,
-            6: False,
-            7: True,
-            8: True,
-        }
+
         ind_red = ind - 10 if ind > 10 else ind
         eqd_default = EQDSKInterface.from_file(
-            file, from_cocos=ind, qpsi_positive=qpsi_sign[ind_red]
+            file, from_cocos=ind, qpsi_positive=qsign_reference[ind_red]
         )
 
         if ind != 2 and "Random" not in file.name:
