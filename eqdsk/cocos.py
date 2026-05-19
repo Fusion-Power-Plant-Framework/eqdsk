@@ -243,7 +243,7 @@ class KnownCOCOS(Enum):
     IMAS_3 = (auto(), COCOS.C11)
     IMAS_4 = (auto(), COCOS.C17)
 
-    def __new__(cls, value: int, cocos: COCOS):
+    def __new__(cls, value: auto | int, cocos: COCOS):
         """A little hack to have different enums with the same COCOS
 
         Returns
