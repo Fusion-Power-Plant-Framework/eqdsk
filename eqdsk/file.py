@@ -12,7 +12,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from itertools import takewhile
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypedDict, cast
 
 import fortranformat as ff
 import numpy as np
@@ -713,7 +713,52 @@ def _eqdsk_out_of_spec_generator(
             yield line
 
 
-def _read_eqdsk(file_path: Path) -> dict:
+class _EQDSKDict(TypedDict, total=False):
+    name: str
+    comment: str
+
+    nx: int
+    nz: int
+    nbdry: int
+    nlim: int
+    ncoil: int
+
+    xdim: float
+    zdim: float
+    xcentre: float
+    xgrid1: float
+    zmid: float
+    xmag: float
+    zmag: float
+    psimag: float
+    psibdry: float
+    bcentre: float
+    cplasma: float
+
+    psi: Sequence[float]
+    qpsi: Sequence[float] | None
+    xbdry: Sequence[float]
+    zbdry: Sequence[float]
+    xlim: Sequence[float]
+    zlim: Sequence[float]
+    x: Sequence[float]
+    z: Sequence[float]
+    psinorm: Sequence[float]
+    fpol: Sequence[float]
+    pressure: Sequence[float]
+    ffprime: Sequence[float]
+    pprime: Sequence[float]
+
+    xc: Sequence[float]
+    zc: Sequence[float]
+    dxc: Sequence[float]
+    dzc: Sequence[float]
+    Ic: Sequence[float]
+
+    unprocessed_data: Sequence[float] | None
+
+
+def _read_eqdsk(file_path: Path) -> _EQDSKDict:
     with file_path.open("r") as file:
         description = file.readline()
         if not description:
@@ -726,15 +771,14 @@ def _read_eqdsk(file_path: Path) -> dict:
                 f"Should be at least 3 numbers in the first line of the EQDSK {file}.",
             )
 
-        data = {}
+        data: _EQDSKDict = {"name": description[0]}
         n_x = int(ints[-2])
         n_z = int(ints[-1])
-        data["name"] = description[0]
         data["nx"] = n_x
         data["nz"] = n_z
 
         tokens = _eqdsk_generator(file)
-        for name in [
+        for name in (
             "xdim",
             "zdim",
             "xcentre",
@@ -755,13 +799,13 @@ def _read_eqdsk(file_path: Path) -> dict:
             "psibdry",
             None,
             None,
-        ]:
-            if name is not None:  # Lots of dummies and duplication
-                data[name] = float(next(tokens))
-            else:
+        ):
+            if name is None:  # Lots of dummies and duplication
                 next(tokens)  # Dummy
+            else:
+                data[name] = float(next(tokens))
 
-        for name in ["fpol", "pressure", "ffprime", "pprime"]:
+        for name in ("fpol", "pressure", "ffprime", "pprime"):
             data[name] = _read_array(tokens, n_x, name)
 
         data["psi"] = _read_2d_array(tokens, n_x, n_z, "psi")
