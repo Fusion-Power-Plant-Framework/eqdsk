@@ -124,7 +124,7 @@ class TestEQDSKInterface:
             )
             capture = capsys.readouterr()
 
-            x_diff_k = {"ffprime", "pprime", "psi", "psibdry", "psimag"}
+            x_diff_k = {"_cocos", "ffprime", "pprime", "psi", "psibdry", "psimag"}
             if ind not in {1, 7}:
                 x_diff_k |= {"qpsi"}
 
@@ -152,6 +152,9 @@ class TestEQDSKInterface:
 
         eqd_def.pop("name")
         eqd_test_d.pop("name")
+        eqd_def.pop("_cocos")
+        eqd_test_d.pop("_cocos")
+
         assert compare_dicts(eqd_def, eqd_test_d, verbose=True)
 
     def test_read_wrong_cocos_raises_ValueError(self):
