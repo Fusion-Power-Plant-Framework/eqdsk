@@ -536,10 +536,6 @@ Grid properties:
         del d["unprocessed_data"]
         if not with_comment:
             d.pop("comment")
-        elif "comment" in d and d["comment"] is not None:
-            d["comment"] += f"; cocos: {self.cocos.index}"
-        else:
-            d["comment"] = f"cocos: {self.cocos.index}"
 
         return d
 
@@ -622,10 +618,6 @@ Grid properties:
             5e16.9, disabling this changes the format to 5ES23.16e2
         write_comment:
             write any comments to file (is not considered when writing to IMAS).
-            if True, the comment will be written to file and the COCOS index will
-            be appended to any existing comment.
-            if False and cocos index is already identified, the comment will only
-            include the COCOS index.
 
         Raises
         ------

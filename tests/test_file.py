@@ -352,17 +352,15 @@ class TestEQDSKInterface:
             with path.open() as file:
                 f_data = json.load(file)
             if comment:
-                assert f_data["comment"] == extra[1:] + f"; cocos: {eqdsk.cocos.index}"
+                assert f_data["comment"] == extra[1:]
             else:
                 assert f_data.get("comment") is None
 
         elif ftype == "eqdsk":
             f_data = path.read_text()
             if comment:
-                assert f_data.endswith(f"\n\n{extra}; cocos: {eqdsk.cocos.index}\n")
-                assert not f_data.endswith(
-                    f"\n\n\n{extra}; cocos: {eqdsk.cocos.index}\n"
-                )
+                assert f_data.endswith(f"\n\n{extra}\n")
+                assert not f_data.endswith(f"\n\n\n{extra}\n")
             else:
                 assert not f_data.endswith(extra)
 
