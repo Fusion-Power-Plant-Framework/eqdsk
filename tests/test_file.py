@@ -370,6 +370,13 @@ class TestEQDSKInterface:
         with pytest.raises(ValueError, match="Unrecognised file format"):
             eq.write("fail_ff.qwerty", file_format="qwerty")  # type: ignore[ty:invalid-argument-type]
 
+    def test_from_dict_identical_to_dict(self):
+        eq = EQDSKInterface.from_file(self.data_dir / "jetto.eqdsk_out", from_cocos=1)
+
+        new_eq = EQDSKInterface.from_dict(eq.to_dict(), from_cocos=eq.cocos)
+
+        assert compare_dicts(eq.to_dict(), new_eq.to_dict())
+
 
 class TestSignChanges:
     """
