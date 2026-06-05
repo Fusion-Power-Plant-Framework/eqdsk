@@ -258,10 +258,44 @@ Grid properties:
         if file_extension.lower() in EQDSK_EXTENSIONS:
             inst = cls(file_name=file_name, **_read_eqdsk(file_path))
         elif file_extension.lower() == ".json":
-            inst = cls(file_name=file_name, **_read_json(file_path))
+            with file_path.open() as file:
+                data = json.load(file)
+            inst = cls.from_dict(
+                data,
+                from_cocos=from_cocos,
+                to_cocos=to_cocos,
+                clockwise_phi=clockwise_phi,
+                volt_seconds_per_radian=volt_seconds_per_radian,
+                qpsi_positive=qpsi_positive,
+                no_cocos=no_cocos,
+            )
+            inst.file_name = file_name
+            return inst
         else:
             raise ValueError(f"Unrecognised file format '{file_extension}'.")
 
+        return cls._handle_identification_on_creation(
+            inst,
+            from_cocos=from_cocos,
+            to_cocos=to_cocos,
+            clockwise_phi=clockwise_phi,
+            volt_seconds_per_radian=volt_seconds_per_radian,
+            qpsi_positive=qpsi_positive,
+            no_cocos=no_cocos,
+        )
+
+    @classmethod
+    def _handle_identification_on_creation(
+        cls,
+        inst: EQDSKInterface,
+        from_cocos: int | str | COCOS | KnownCOCOS | None = None,
+        to_cocos: int | str | COCOS | KnownCOCOS | None = DEFAULT_COCOS,
+        *,
+        clockwise_phi: bool | None = None,
+        volt_seconds_per_radian: bool | None = None,
+        qpsi_positive: bool | None = None,
+        no_cocos: bool = False,
+    ):
         if no_cocos:
             return inst
 
@@ -477,7 +511,7 @@ Grid properties:
         Returns
         -------
         :
-             A copy of this eqdsk converted to the given COCOS.
+            A copy of this eqdsk converted to the given COCOS.
 
         Note
         ----
@@ -504,6 +538,54 @@ Grid properties:
             d.pop("comment")
 
         return d
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: dict[str, Any],
+        from_cocos: int | str | COCOS | KnownCOCOS | None = None,
+        to_cocos: int | str | COCOS | KnownCOCOS | None = DEFAULT_COCOS,
+        *,
+        clockwise_phi: bool | None = None,
+        volt_seconds_per_radian: bool | None = None,
+        qpsi_positive: bool | None = None,
+        no_cocos: bool = False,
+    ) -> EQDSKInterface:
+        """Load EQDSK data from a dictionary.
+
+        For documentation on the arguments please see EQDSKInterface.from_file.
+
+        Returns
+        -------
+        :
+            The EQDSK data from the dictionary as an EQDSKInterface object.
+
+        Notes
+        -----
+        The data is expected to contain entries for all required attributes of
+        the EQDSKInterface (with name matching exactly that in EQDSKInterface).
+        The data should also be of the correct type specified by the EQDSKInterface.
+        """
+        for k, value in data.items():
+            if isinstance(value, list) and k not in {"coil_type", "coil_names"}:
+                data[k] = np.asarray(value)
+
+        # For backward compatibility where 'psinorm' was sometimes 'pnorm'
+        if "pnorm" in data:
+            if "psinorm" in data:
+                del data["pnorm"]
+            else:
+                data["psinorm"] = data.pop("pnorm")
+
+        return cls._handle_identification_on_creation(
+            cls(**data),
+            from_cocos=from_cocos,
+            to_cocos=to_cocos,
+            clockwise_phi=clockwise_phi,
+            volt_seconds_per_radian=volt_seconds_per_radian,
+            qpsi_positive=qpsi_positive,
+            no_cocos=no_cocos,
+        )
 
     def write(
         self,
@@ -598,24 +680,6 @@ Grid properties:
                 raise ValueError(
                     f"Cannot update EQDSKInterface from dict. Unrecognised key '{key}'.",
                 )
-
-
-def _read_json(file_path: Path) -> dict[str, Any]:
-    with file_path.open() as file:
-        data = json.load(file)
-
-    for k, value in data.items():
-        if isinstance(value, list) and k not in {"coil_type", "coil_names"}:
-            data[k] = np.asarray(value)
-
-    # For backward compatibility where 'psinorm' was sometimes 'pnorm'
-    if "pnorm" in data:
-        if "psinorm" in data:
-            del data["pnorm"]
-        else:
-            data["psinorm"] = data.pop("pnorm")
-
-    return data
 
 
 def _read_array(
