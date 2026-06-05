@@ -260,7 +260,7 @@ Grid properties:
         elif file_extension.lower() == ".json":
             with file_path.open() as file:
                 data = json.load(file)
-            return cls.from_dict(
+            inst = cls.from_dict(
                 data,
                 from_cocos=from_cocos,
                 to_cocos=to_cocos,
@@ -269,6 +269,8 @@ Grid properties:
                 qpsi_positive=qpsi_positive,
                 no_cocos=no_cocos,
             )
+            inst.file_name = file_name
+            return inst
         else:
             raise ValueError(f"Unrecognised file format '{file_extension}'.")
 
