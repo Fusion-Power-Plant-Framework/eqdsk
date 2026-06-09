@@ -140,6 +140,8 @@ class EQDSKInterface:
     """Type of the coils"""
     comment: str | None = None
     """Any comment stored on file"""
+    _cocos: COCOS | None = None
+    """The COCOS convention this eqdsk follows. This is set by the `identify` method."""
     unprocessed_data: npt.NDArray | None = None
     """Any unprocessed data from raw eqdsks"""
 
@@ -534,7 +536,8 @@ Grid properties:
         # Remove the file name as this is metadata, not EQDSK data
         del d["file_name"]
         del d["unprocessed_data"]
-        d["_cocos"] = self._cocos.index if self._cocos else None
+        if self._cocos is not None:
+            d["_cocos"] = self._cocos.index
         if not with_comment:
             d.pop("comment")
 
@@ -577,9 +580,6 @@ Grid properties:
                 del data["pnorm"]
             else:
                 data["psinorm"] = data.pop("pnorm")
-
-        # do not read _cocos id from file as that is only for ref
-        data.pop("_cocos", None)
 
         return cls._handle_identification_on_creation(
             cls(**data),
