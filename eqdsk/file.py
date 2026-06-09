@@ -140,6 +140,8 @@ class EQDSKInterface:
     """Type of the coils"""
     comment: str | None = None
     """Any comment stored on file"""
+    _cocos: COCOS | None = None
+    """The COCOS convention this eqdsk follows. This is set by the `identify` method."""
     unprocessed_data: npt.NDArray | None = None
     """Any unprocessed data from raw eqdsks"""
 
@@ -534,6 +536,8 @@ Grid properties:
         # Remove the file name as this is metadata, not EQDSK data
         del d["file_name"]
         del d["unprocessed_data"]
+        if self._cocos is not None:
+            d["_cocos"] = self._cocos.index
         if not with_comment:
             d.pop("comment")
 
