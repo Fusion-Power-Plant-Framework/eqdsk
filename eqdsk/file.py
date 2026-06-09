@@ -534,7 +534,8 @@ Grid properties:
         # Remove the file name as this is metadata, not EQDSK data
         del d["file_name"]
         del d["unprocessed_data"]
-        d["_cocos"] = self._cocos.index if self._cocos else None
+        if self._cocos:
+            d["_cocos"] = self._cocos.index
         if not with_comment:
             d.pop("comment")
 
