@@ -578,6 +578,9 @@ Grid properties:
             else:
                 data["psinorm"] = data.pop("pnorm")
 
+        # do not read _cocos id from file as that is only for ref
+        data.pop("_cocos", None)
+
         return cls._handle_identification_on_creation(
             cls(**data),
             from_cocos=from_cocos,
