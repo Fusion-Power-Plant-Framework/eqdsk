@@ -257,7 +257,9 @@ class TestEQDSKInterface:
         assert eqd_test._cocos is COCOS.C11  # noqa: SLF001
 
         eqd_def.pop("name")
+        eqd_def.pop("_cocos")
         eqd_test_d.pop("name")
+        eqd_test_d.pop("_cocos")
         assert compare_dicts(eqd_def, eqd_test_d, verbose=True)
 
     def test_derived_field_is_calculated_if_not_given(self):
