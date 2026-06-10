@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -567,6 +567,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#imas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IMAS
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -996,6 +1007,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#imas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IMAS
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1091,16 +1113,37 @@
 <p>The <code>plot-psi</code> command requires the <code>matplotlib</code> package to be installed.</p>
 </div>
 <h2 id="convert">convert</h2>
-<p>The <code>convert</code> command can be used to convert an eqdsk file to a different format (.json or .eqdsk)
+<p>The <code>convert</code> command can be used to convert an eqdsk file to a different format (.json, .eqdsk or IMAS .nc)
 or between COCOS versions.</p>
 <p><strong>Save to .json format and convert between COCOS 1 and 2:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>eqdsk<span class="w"> </span>convert<span class="w"> </span>path/to/eqdsk/file<span class="w"> </span>--fmt<span class="w"> </span>json<span class="w"> </span>--from<span class="w"> </span><span class="m">1</span><span class="w"> </span>--to<span class="w"> </span><span class="m">2</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>eqdsk<span class="w"> </span>convert<span class="w"> </span>path/to/eqdsk/file<span class="w"> </span>-fmt<span class="w"> </span>json<span class="w"> </span>--from<span class="w"> </span><span class="m">1</span><span class="w"> </span>--to<span class="w"> </span><span class="m">2</span>
 </span></code></pre></div>
 <p><strong>Save to .eqdsk format:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>eqdsk<span class="w"> </span>convert<span class="w"> </span>path/to/eqdsk/file<span class="w"> </span>--fmt<span class="w"> </span>eqdsk
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>eqdsk<span class="w"> </span>convert<span class="w"> </span>path/to/eqdsk/file<span class="w"> </span>-fmt<span class="w"> </span>eqdsk
 </span></code></pre></div>
 <p><strong>Convert between COCOS 1 and 2 and provide the sign of qpsi (if not present in the file):</strong></p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>eqdsk<span class="w"> </span>convert<span class="w"> </span>path/to/eqdsk/file<span class="w"> </span>--from<span class="w"> </span><span class="m">1</span><span class="w"> </span>--to<span class="w"> </span><span class="m">2</span><span class="w"> </span>--qpsi-sign<span class="w"> </span>-1
+</span></code></pre></div>
+<h2 id="imas">IMAS</h2>
+<p>The above commands can also be used on an IMAS database. To enable this functionality, the optional <code>imas</code> dependencies should be install by running <code>pip install eqdsk[imas]</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If converting <strong>from</strong> IMAS to another format, <code>--from</code> will be ignored if used because IMAS has a fixed COCOS.
+Likewise, if converting <strong>to</strong> IMAS, then <code>--to</code> will be ignored for the same reason.</p>
+</div>
+<p><strong>Convert an EQDSK file to IMAS:</strong></p>
+<p>In this example, the EQDSK file has COCOS 3. We do not specify a <code>--to</code> because IMAS has a fixed COCOS, which is handled within <code>eqdsk</code>. The file will be written to the default IMAS format which is a NETCDF (.nc) file.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>eqdsk<span class="w"> </span>convert<span class="w"> </span>path/to/eqdsk/file<span class="w"> </span>-fmt<span class="w"> </span>imas<span class="w"> </span>--from<span class="w"> </span><span class="m">3</span>
+</span></code></pre></div>
+<p>There is also the option to specify the location of the NETCDF file or a URI specifying the HDF5 database.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>eqdsk<span class="w"> </span>convert<span class="w"> </span>path/to/eqdsk/file<span class="w"> </span>-fmt<span class="w"> </span>imas<span class="w"> </span>--from<span class="w"> </span><span class="m">3</span><span class="w"> </span>--imas-uri-out<span class="w"> </span>converted/imas/file.nc
+</span></code></pre></div>
+<p><strong>Convert a NETCDF IMAS database between I/O data dictionary versions:</strong></p>
+<p>I/0 is split with <code>:</code>, in this example <code>database.nc</code> has data dictionary version <code>3.42.0</code> and <code>new_database.nc</code> has data dictionary version <code>4.0.0</code>.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>eqdsk<span class="w"> </span>convert<span class="w"> </span>path/to/imas/database.nc<span class="w"> </span>--imas-dd-version<span class="w"> </span><span class="m">3</span>.42.0:4.0.0<span class="w"> </span>--imas-uri-out<span class="w"> </span>path/to/imas/new_database.nc
+</span></code></pre></div>
+<p>Either filepath could also be replaced with a valid IMAS URI to specify use of the HDF5 backend:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>eqdsk<span class="w"> </span>convert<span class="w"> </span>imas:hdf5?path<span class="o">=</span>/path/to/hdf5/database<span class="w"> </span>--imas-dd-version<span class="w"> </span><span class="m">3</span>.42.0:4.0.0<span class="w"> </span>--imas-uri-out<span class="w"> </span>imas:hdf5?path<span class="o">=</span>/path/to/hdf5/new_database
 </span></code></pre></div>
 
 
