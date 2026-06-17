@@ -49,7 +49,7 @@ def pytest_configure(config):
             mpl.use("Agg")
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True)  # noqa: RUF076
 def _plot_show_and_close(request):
     """Fixture to show and close plots
 
