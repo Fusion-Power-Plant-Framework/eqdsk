@@ -451,7 +451,8 @@ Grid properties:
                     f"Setting qpsi to array of {qpsi_sign.value}'s."
                 )
                 self.qpsi = (
-                    np.ones(num_psinorm_elements := self.psinorm.shape) * qpsi_sign.value
+                    np.ones(num_psinorm_elements := max(self.psinorm.shape))
+                    * qpsi_sign.value
                 )
                 if num_psinorm_elements != self.nx:
                     eqdsk_warn(
