@@ -387,7 +387,7 @@ Grid properties:
 
     @property
     def cocos(self) -> COCOS:
-        """Return the COCOS for this eqdsk.
+        """The COCOS for this eqdsk.
 
         Raises
         ------
