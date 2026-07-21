@@ -132,6 +132,9 @@ ignore = [
   "PTH123",  # use Path.open
   "TRY003",  # put error messages in error class
   "FURB152", # 3.14 != pi
+  "RUF105", # keep error codes
+  "RUF106",
+  "RUF201",
 ]
 
 [tool.ruff.lint.isort]
