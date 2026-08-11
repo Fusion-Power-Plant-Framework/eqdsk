@@ -97,6 +97,7 @@ all    = ["style", "typing"]
 target-version = "py310"
 line-length = 89
 output-format = "concise"
+output-prefer-rule-codes = true
 exclude = [
   ".git",
   "__pycache__",
