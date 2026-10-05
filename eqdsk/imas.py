@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 import imas
 import numpy as np
@@ -33,7 +33,7 @@ IMASVarT = TypeVar("IMASVarT")
 
 
 def _unwrap_imas_value(
-    value: IDSPrimitive[IMASVarT], /, *, default: DefIMASVarT = None
+    value: IDSPrimitive, /, *, default: DefIMASVarT = None
 ) -> IMASVarT | DefIMASVarT:
     if value.has_value:
         return value.value
@@ -89,10 +89,11 @@ def from_imas(  # noqa: PLR0914
         xlim = np.array([])
         zlim = np.array([])
 
-    time_index = (
+    time_index = cast(
+        "int",
         time_index
         if time is None
-        else np.argmin(np.abs(_unwrap_imas_value(equilibrium_top_level.time) - time))
+        else np.argmin(np.abs(_unwrap_imas_value(equilibrium_top_level.time) - time)),
     )
     eq_time = equilibrium_top_level.time_slice[time_index]
     eq_vtf = equilibrium_top_level.vacuum_toroidal_field

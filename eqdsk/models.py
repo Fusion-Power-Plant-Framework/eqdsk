@@ -76,7 +76,7 @@ class Sign(Enum):
         """
         if type(other) is Sign:
             return Sign(self.value * other.value)
-        return self.value * other
+        return self.value * other  # type: ignore [ty:unsupported-operator] # false positive 4300
 
     __rmul__ = __mul__
 

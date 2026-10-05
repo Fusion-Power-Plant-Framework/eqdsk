@@ -687,9 +687,7 @@ Grid properties:
                 )
 
 
-def _read_array(
-    tokens: Iterator[str], n: int, name: str = "Unknown"
-) -> npt.NDArray[float]:
+def _read_array(tokens: Iterator[str], n: int, name: str = "Unknown") -> npt.NDArray:
     data = np.zeros([n])
     try:
         for i in np.arange(n):
@@ -701,7 +699,7 @@ def _read_array(
 
 def _read_2d_array(
     tokens: Iterator[str], n_x: int, n_y: int, name: str = "Unknown"
-) -> npt.NDArray[float]:
+) -> npt.NDArray:
     data = np.zeros([n_y, n_x])
     for i in np.arange(n_y):
         data[i, :] = _read_array(tokens, n_x, f"{name}[{i!s}]]")
@@ -804,27 +802,27 @@ class _EQDSKDict(TypedDict, total=False):
     bcentre: float
     cplasma: float
 
-    psi: Sequence[float]
-    qpsi: Sequence[float] | None
-    xbdry: Sequence[float]
-    zbdry: Sequence[float]
-    xlim: Sequence[float]
-    zlim: Sequence[float]
-    x: Sequence[float]
-    z: Sequence[float]
-    psinorm: Sequence[float]
-    fpol: Sequence[float]
-    pressure: Sequence[float]
-    ffprime: Sequence[float]
-    pprime: Sequence[float]
+    psi: npt.NDArray
+    qpsi: npt.NDArray | None
+    xbdry: npt.NDArray
+    zbdry: npt.NDArray
+    xlim: npt.NDArray
+    zlim: npt.NDArray
+    x: npt.NDArray
+    z: npt.NDArray
+    psinorm: npt.NDArray
+    fpol: npt.NDArray
+    pressure: npt.NDArray
+    ffprime: npt.NDArray
+    pprime: npt.NDArray
 
-    xc: Sequence[float]
-    zc: Sequence[float]
-    dxc: Sequence[float]
-    dzc: Sequence[float]
-    Ic: Sequence[float]
+    xc: npt.NDArray
+    zc: npt.NDArray
+    dxc: npt.NDArray
+    dzc: npt.NDArray
+    Ic: npt.NDArray
 
-    unprocessed_data: Sequence[float] | None
+    unprocessed_data: npt.NDArray | None
 
 
 def _read_eqdsk(file_path: Path) -> _EQDSKDict:
@@ -927,9 +925,7 @@ def _read_eqdsk(file_path: Path) -> _EQDSKDict:
     return data
 
 
-def _get_coils_from_eqdsk(
-    ncoil: int, tokens: Iterator[str]
-) -> tuple[npt.NDArray[float], ...]:
+def _get_coils_from_eqdsk(ncoil: int, tokens: Iterator[str]) -> tuple[npt.NDArray, ...]:
     x_c = np.zeros(ncoil)
     z_c = np.zeros(ncoil)
     dxc = np.zeros(ncoil)
@@ -944,7 +940,7 @@ def _get_coils_from_eqdsk(
     return x_c, z_c, dxc, dzc, i_c
 
 
-def _get_extra_data(tokens: Iterator[str]) -> npt.NDArray[float]:
+def _get_extra_data(tokens: Iterator[str]) -> npt.NDArray:
     data = []
     try:
         while d := float(next(tokens)):
@@ -964,15 +960,15 @@ def _get_comment(tokens: Iterator[str]) -> str:
     return "".join(comments).strip("\n")
 
 
-def _derive_x(xgrid1: float, xdim: float, nx: int) -> npt.NDArray[float]:
+def _derive_x(xgrid1: float, xdim: float, nx: int) -> npt.NDArray:
     return np.linspace(xgrid1, xgrid1 + xdim, nx)
 
 
-def _derive_z(zmid: float, zdim: float, nz: int) -> npt.NDArray[float]:
+def _derive_z(zmid: float, zdim: float, nz: int) -> npt.NDArray:
     return np.linspace(zmid - zdim / 2, zmid + zdim / 2, nz)
 
 
-def _derive_psinorm(fpol: Sized) -> npt.NDArray[float]:
+def _derive_psinorm(fpol: Sized) -> npt.NDArray:
     return np.linspace(0, 1, len(fpol))
 
 

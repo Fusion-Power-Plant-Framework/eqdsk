@@ -136,6 +136,7 @@ ignore = [
   "RUF105", # keep error codes
   "RUF106",
   "RUF201",
+  "pytest-fixture-autouse",
 ]
 
 [tool.ruff.lint.isort]
