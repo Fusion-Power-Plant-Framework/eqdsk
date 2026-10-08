@@ -246,13 +246,11 @@ def to_imas(  # noqa: PLR0915
     profiles_2d.resize(profiles_2d_index + 1)
     profiles_2d = profiles_2d[profiles_2d_index]
 
-    equilibrium_ids.time.resize(time_index + 1)
     equilibrium_ids.time = np.arange(time_index + 1.0)
     equilibrium_ids.ids_properties.comment = eqdsk.comment or "eqdsk python package"
     equilibrium_ids.ids_properties.name = eqdsk.name
     equilibrium_ids.ids_properties.homogeneous_time = 1
     global_quantities.ip = eqdsk.cplasma
-    vacuum_toroidal_field.b0.resize(time_index + 1)
     vacuum_toroidal_field.b0 = np.array([eqdsk.bcentre] * (time_index + 1))
     vacuum_toroidal_field.r0 = eqdsk.xcentre
     global_quantities.psi_boundary = eqdsk.psibdry
