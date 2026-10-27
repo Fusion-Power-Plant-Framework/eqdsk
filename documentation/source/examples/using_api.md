@@ -16,7 +16,7 @@ There are two required input parameters that must be specified (and know beforeh
 - `clockwise_phi`: Whether the magnetic field is defined in the clockwise or counter-clockwise direction, when viewed from above down.
 - `volt_seconds_per_radian`: Whether the flux function is in units of V.s or V.s/2π.
 
-``` py title="main.py"
+```py title="main.py"
 from eqdsk import EQDSKInterface
 ed = EQDSKInterface.from_file(
     file_path,
@@ -29,7 +29,7 @@ This will perform a conversion to the `DEFAULT_COCOS` value (COCOS 11) if no `to
 
 ### Perform a specific conversion
 
-``` py title="main.py"
+```py title="main.py"
 from eqdsk import EQDSKInterface
 ed = EQDSKInterface.from_file(
     file_path,
@@ -43,7 +43,7 @@ Will convert the eqdsk file to COCOS 13.
 
 Some known COCOS numbers from cetain code are provided (see [KnownCOCOS][eqdsk.cocos.KnownCOCOS]).
 
-``` py title="main.py"
+```py title="main.py"
 from eqdsk import EQDSKInterface
 ed = EQDSKInterface.from_file(
     file_path,
@@ -57,7 +57,7 @@ Will convert the eqdsk file to the known JETTO COCOS (COCOS 11).
 
 ### Perform no conversion
 
-``` py title="main.py"
+```py title="main.py"
 from eqdsk import EQDSKInterface
 ed = EQDSKInterface.from_file(
     file_path,
@@ -73,7 +73,7 @@ The COCOS identification procedure uses the sign of qpsi and thus requires there
 
 If this is case, the `qpsi_sign` parameter must be specified and will set the qpsi data to an array (+/-)1's.
 
-``` py title="main.py"
+```py title="main.py"
 from eqdsk import EQDSKInterface
 ed = EQDSKInterface.from_file(
     file_path,
@@ -87,7 +87,7 @@ ed = EQDSKInterface.from_file(
 
 The `clockwise_phi` and `volt_seconds_per_radian` parameters do not need to be set if you know the COCOS number already.
 
-``` py title="main.py"
+```py title="main.py"
 from eqdsk import EQDSKInterface
 ed = EQDSKInterface.from_file(
     file_path,
@@ -103,7 +103,7 @@ There are 4 possible versions if the `clockwise_phi` and `volt_seconds_per_radia
 
 You may want to read an eqdsk file and access the raw data, without any kind of COCOS identification or conversion.
 
-``` py title="main.py"
+```py title="main.py"
 from eqdsk import EQDSKInterface
 ed = EQDSKInterface.from_file(file_path, no_cocos=True)
 ```
@@ -114,7 +114,7 @@ The IMAS interface allows EQDSK data to be read in/written to an IMAS database c
 To enable this functionality, the optional `imas` dependencies should be install by running `pip install eqdsk[imas]`.
 
 IMAS data can be read in as follows:
-``` py title="main.py"
+```py title="main.py"
 from imas import DBEntry
 from eqdsk import EQDSKInterface
 with DBEntry("example.nc", "r", dd_version=...) as db:
@@ -131,7 +131,7 @@ The `ed` object can now be used as in previous examples to view the data, conver
 
 
 You can also use the interface to write EQDSK data into an IMAS database. This follows a similar format:
-``` py title="main.py"
+```py title="main.py"
 from imas import DBEntry
 from eqdsk import EQDSKInterface
 eq = EQDSKInterface.from_file("/path/to/file.eqdsk")
