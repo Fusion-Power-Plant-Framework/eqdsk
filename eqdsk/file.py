@@ -521,8 +521,6 @@ Grid properties:
         This returns a new instance of the EQDSKInterface class.
         """
         to_cocos = COCOS(to_cocos)
-        if self.cocos == to_cocos:
-            return self
         eqdsk_print(f"Converting EQDSK to COCOS {to_cocos.index}.")
         return convert_eqdsk(self, to_cocos.index)
 
@@ -572,7 +570,7 @@ Grid properties:
         The data should also be of the correct type specified by the EQDSKInterface.
         """
         for k, value in data.items():
-            if isinstance(value, list) and k not in {"coil_type", "coil_names"}:
+            if isinstance(value, list) and k not in {"coil_types", "coil_names"}:
                 data[k] = np.asarray(value)
 
         # For backward compatibility where 'psinorm' was sometimes 'pnorm'

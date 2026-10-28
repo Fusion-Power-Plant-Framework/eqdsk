@@ -53,7 +53,7 @@ ed = EQDSKInterface.from_file(
 )
 ```
 
-Will convert the eqdsk file to the known JETTO COCOS (COCOS 11).
+Will convert the eqdsk file to the known JETTO COCOS (COCOS 1).
 
 ### Perform no conversion
 
@@ -111,7 +111,7 @@ ed = EQDSKInterface.from_file(file_path, no_cocos=True)
 ## Using the IMAS interface
 
 The IMAS interface allows EQDSK data to be read in/written to an IMAS database connection.
-To enable this functionality, the optional `imas` dependencies should be install by running `pip install eqdsk[imas]`.
+To enable this functionality, the optional `imas` dependencies should be installed by running `pip install eqdsk[imas]`.
 
 IMAS data can be read in as follows:
 ```py title="main.py"
