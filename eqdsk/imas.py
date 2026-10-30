@@ -111,7 +111,7 @@ def from_imas(  # noqa: PLR0914
         xcentre = _unwrap_imas_value(eq_vtf.r0)
         bcentre = eq_vtf.b0[time_index]
     else:
-        xcentre = (max(xdim) + min(xdim)) / 2
+        xcentre = (min(gridx) + max(gridx)) / 2
         bcentre = (
             _unwrap_imas_value(global_quantities.magnetic_axis.b_field_phi)
             * _unwrap_imas_value(global_quantities.magnetic_axis.r)
