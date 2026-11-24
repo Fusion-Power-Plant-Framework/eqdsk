@@ -12,19 +12,19 @@ repos:
         exclude: test_data
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.5
+    rev: v0.17.6
     hooks:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.104
+    rev: v0.0.108
     hooks:
       - id: ty
 
   - repo: https://github.com/biomejs/pre-commit
-    rev: v2.6.4
+    rev: v2.6.8
     hooks:
       - id: biome-format
         files: "\\.(jsx?|tsx?|c(js|ts)|m(js|ts)|d\\.(ts|cts|mts)|jsonc?|css|svelte|vue|astro|graphql|gql|yml|yaml)$"

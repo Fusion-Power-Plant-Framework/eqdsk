@@ -4,6 +4,7 @@
 """Eqdsk CLI"""
 
 from collections.abc import Callable, Sequence
+from os import PathLike
 from pathlib import Path
 from typing import Literal
 
@@ -44,9 +45,9 @@ def _imas_decoration(func: Callable[..., None]) -> Callable[..., None]:
 class IMASPath(click.Path):
     """Path existence checking with imas avoidance"""
 
-    def convert(self, value: str, *args, **kwargs):
+    def convert(self, value: str | PathLike[str], *args, **kwargs):
         """Override Path check for imas databases"""  # noqa: DOC201
-        if value.startswith("imas:"):
+        if isinstance(value, str) and value.startswith("imas:"):
             return value
         return super().convert(value, *args, **kwargs)
 
